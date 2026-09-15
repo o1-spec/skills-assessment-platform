@@ -151,6 +151,7 @@ export async function getPublishedRoleProfilesForUserAssignment(tenantId: string
     where: {
       tenantId,
       status: RoleProfileStatus.PUBLISHED,
+      isArchived: false,
     },
     select: {
       id: true,
@@ -328,11 +329,12 @@ export async function updateTenantUser(
           id: data.roleProfileId,
           tenantId,
           status: RoleProfileStatus.PUBLISHED,
+          isArchived: false,
         },
       });
 
       if (!roleProfile) {
-        throw new Error('Assigned role profile must be a published role profile in this organization.');
+        throw new Error('Assigned role profile must be a published role profile in this organization (and not archived).');
       }
     }
   }

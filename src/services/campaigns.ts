@@ -258,6 +258,7 @@ export async function getPublishedRoleProfilesForTenant(
     where: {
       tenantId,
       status: RoleProfileStatus.PUBLISHED,
+      isArchived: false,
     },
     include: {
       requirements: {
@@ -456,11 +457,12 @@ export async function createAssessmentCampaign(
         id: input.roleProfileId,
         tenantId,
         status: RoleProfileStatus.PUBLISHED,
+        isArchived: false,
       },
     });
 
     if (!roleProfile) {
-      throw new Error('The selected role profile is invalid, unpublished, or belongs to another organization.');
+      throw new Error('The selected role profile is invalid, unpublished, archived, or belongs to another organization.');
     }
   }
 
@@ -578,10 +580,10 @@ export async function updateCampaignDraft(
   // Validate optional role profile
   if (input.roleProfileId) {
     const rp = await prisma.roleProfile.findFirst({
-      where: { id: input.roleProfileId, tenantId, status: RoleProfileStatus.PUBLISHED },
+      where: { id: input.roleProfileId, tenantId, status: RoleProfileStatus.PUBLISHED, isArchived: false },
     });
     if (!rp) {
-      throw new Error('The selected role profile is invalid, unpublished, or belongs to another organization.');
+      throw new Error('The selected role profile is invalid, unpublished, archived, or belongs to another organization.');
     }
   }
 

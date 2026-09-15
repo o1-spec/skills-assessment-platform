@@ -37,3 +37,35 @@ export const createRoleProfileSchema = z
 
 export type CreateRoleProfileInput = z.infer<typeof createRoleProfileSchema>;
 export type RoleRequirementInput = z.infer<typeof roleRequirementInputSchema>;
+
+export const updateRoleProfileSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, 'Role name is required')
+      .max(100, 'Role name cannot exceed 100 characters')
+      .optional(),
+    description: z
+      .string()
+      .trim()
+      .max(500, 'Description cannot exceed 500 characters')
+      .optional()
+      .or(z.literal('')),
+    status: z.nativeEnum(RoleProfileStatus).optional(),
+    requirements: z.array(roleRequirementInputSchema).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.status === RoleProfileStatus.PUBLISHED && data.requirements !== undefined) {
+        return data.requirements.length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Publishing a role profile requires at least one competency requirement.',
+      path: ['requirements'],
+    }
+  );
+
+export type UpdateRoleProfileInput = z.infer<typeof updateRoleProfileSchema>;

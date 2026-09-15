@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { requireTenantUser } from '@/lib/auth';
-import { getActiveCompetenciesForTenant } from '@/services';
+import { getActiveCompetenciesForTenant, getAvailableTemplateRolesForTenant } from '@/services';
 import { CreateRoleForm } from './create-role-form';
 
 export default async function NewRoleProfilePage() {
   const user = await requireTenantUser();
-  const competencies = await getActiveCompetenciesForTenant(user.tenantId);
+  const [competencies, availableTemplates] = await Promise.all([
+    getActiveCompetenciesForTenant(user.tenantId),
+    getAvailableTemplateRolesForTenant(user.tenantId),
+  ]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -33,7 +36,7 @@ export default async function NewRoleProfilePage() {
       </div>
 
       {/* Form Component */}
-      <CreateRoleForm competencies={competencies} />
+      <CreateRoleForm competencies={competencies} availableTemplates={availableTemplates} />
     </div>
   );
 }

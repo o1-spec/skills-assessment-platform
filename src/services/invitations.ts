@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
-import { TenantInvitation, Tenant, UserRole, TenantStatus } from '@prisma/client';
+import { TenantInvitation, Tenant, UserRole, TenantStatus, RoleProfileStatus } from '@prisma/client';
 import { AcceptInvitationInput } from '@/lib/validation/invitations';
 
 export interface GeneratedInvitation {
@@ -176,9 +176,16 @@ export async function createTenantUserInvitation(
 
   // 5. Validate Role Profile if provided
   if (input.roleProfileId) {
-    const roleProfile = await prisma.roleProfile.findUnique({ where: { id: input.roleProfileId } });
-    if (!roleProfile || roleProfile.tenantId !== tenantId) {
-      throw new Error('Selected role profile does not belong to this organization.');
+    const roleProfile = await prisma.roleProfile.findFirst({
+      where: {
+        id: input.roleProfileId,
+        tenantId,
+        status: RoleProfileStatus.PUBLISHED,
+        isArchived: false,
+      },
+    });
+    if (!roleProfile) {
+      throw new Error('Selected role profile does not belong to this organization or is not an active published role profile.');
     }
   }
 

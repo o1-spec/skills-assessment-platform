@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import Papa from 'papaparse';
 import { prisma } from '@/lib/db';
-import { UserRole } from '@prisma/client';
+import { UserRole, RoleProfileStatus } from '@prisma/client';
 import { GeneratedInvitation } from './invitations';
 
 /**
@@ -108,7 +108,7 @@ export async function validateUserImportRows(
       select: { id: true, email: true, name: true },
     }),
     prisma.roleProfile.findMany({
-      where: { tenantId },
+      where: { tenantId, status: RoleProfileStatus.PUBLISHED, isArchived: false },
       select: { id: true, name: true },
     }),
     prisma.team.findMany({

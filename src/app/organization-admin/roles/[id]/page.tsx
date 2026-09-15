@@ -4,6 +4,8 @@ import { requireTenantUser } from '@/lib/auth';
 import { getRoleProfileById } from '@/services';
 import { CompetencyType, RoleProfileStatus } from '@prisma/client';
 import { formatDate, formatRoleStatus } from '@/lib/format';
+import { RoleActions } from './role-actions';
+import { prisma } from '@/lib/db';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -18,6 +20,13 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
   if (!roleProfile) {
     notFound();
   }
+
+  const assignedUsersCount = await prisma.user.count({
+    where: {
+      tenantId: user.tenantId,
+      roleProfileId: roleProfile.id,
+    },
+  });
 
   const isPublished = roleProfile.status === RoleProfileStatus.PUBLISHED;
 
@@ -48,37 +57,84 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
           </ol>
         </nav>
 
-        <div className="sm:flex sm:items-center sm:justify-between">
-          <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold text-gray-900">{roleProfile.name}</h1>
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                isPublished
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'bg-amber-50 text-amber-700 border border-amber-200'
-              }`}
-            >
-              {formatRoleStatus(roleProfile.status)}
-            </span>
+        <div className="sm:flex sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center space-x-3 flex-wrap gap-y-2">
+              <h1 className="text-2xl font-bold text-gray-900">{roleProfile.name}</h1>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isPublished
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  }`}
+              >
+                {formatRoleStatus(roleProfile.status)}
+              </span>
+              {roleProfile.isArchived && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-300">
+                  Archived
+                </span>
+              )}
+            </div>
+            {roleProfile.description && (
+              <p className="mt-2 text-sm text-gray-600 max-w-2xl">{roleProfile.description}</p>
+            )}
           </div>
 
-          <div className="mt-4 sm:mt-0">
+          <div className="mt-4 sm:mt-0 flex items-center space-x-3 shrink-0">
             <Link
               href="/organization-admin/roles"
               className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             >
-              &larr; Back to Role Profiles
+              &larr; Back
             </Link>
           </div>
         </div>
+      </div>
 
-        {roleProfile.description && (
-          <p className="mt-2 text-sm text-gray-600 max-w-2xl">{roleProfile.description}</p>
-        )}
+      {/* Archived Warning Banner */}
+      {roleProfile.isArchived && (
+        <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-md">
+          <div className="flex">
+            <div className="shrink-0">
+              <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-bold text-amber-800">This role profile is archived</h3>
+              <p className="mt-1 text-xs text-amber-700">
+                It cannot be assigned to new users or selected for new assessment campaigns. Existing assigned users ({assignedUsersCount}) and historical assessment records retain their link.
+                {roleProfile.archivedAt && ` (Archived on ${formatDate(roleProfile.archivedAt)})`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action Bar */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Role Management</span>
+          <p className="text-xs text-gray-400">
+            {isPublished
+              ? 'Published roles are benchmark standards. You can safely archive them when obsolete.'
+              : 'Draft roles can be edited freely before benchmark publishing.'}
+          </p>
+        </div>
+        <RoleActions
+          roleProfile={{
+            id: roleProfile.id,
+            name: roleProfile.name,
+            status: roleProfile.status,
+            isArchived: roleProfile.isArchived,
+            requirementsCount: roleProfile.requirements.length,
+            assignedUsersCount,
+          }}
+        />
       </div>
 
       {/* Meta Stats Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <div>
           <div className="text-xs text-gray-500 font-medium">Total Competencies</div>
           <div className="mt-1 text-lg font-bold text-gray-900">{roleProfile.requirements.length}</div>
@@ -88,6 +144,10 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
           <div className="mt-1 text-lg font-bold text-gray-900">
             {technicalReqs.length} / {behavioralReqs.length}
           </div>
+        </div>
+        <div>
+          <div className="text-xs text-gray-500 font-medium">Assigned Users</div>
+          <div className="mt-1 text-lg font-bold text-gray-900">{assignedUsersCount}</div>
         </div>
         <div>
           <div className="text-xs text-gray-500 font-medium">Created On</div>
