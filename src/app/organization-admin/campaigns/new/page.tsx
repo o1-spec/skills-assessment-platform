@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requireTenantUser } from '@/lib/auth';
 import {
-  getCompetenciesForTenant,
+  getActiveCompetenciesForTenant,
   getPublishedRoleProfilesForTenant,
   getEligibleCampaignParticipants,
 } from '@/services';
@@ -12,7 +12,7 @@ export default async function NewCampaignPage() {
 
   const [roleProfiles, competencies, staffParticipants] = await Promise.all([
     getPublishedRoleProfilesForTenant(user.tenantId),
-    getCompetenciesForTenant(user.tenantId),
+    getActiveCompetenciesForTenant(user.tenantId),
     getEligibleCampaignParticipants(user.tenantId),
   ]);
 

@@ -624,7 +624,7 @@ export async function createDraftFromPublishedVersion(
     throw new Error(`Framework version '${newVersion.trim()}' already exists.`);
   }
 
-  // Perform full deep copy in a transaction
+  // Perform full deep copy in a transaction with extended timeout for latency
   return prisma.$transaction(async (tx) => {
     const draft = await tx.frameworkVersion.create({
       data: {
@@ -714,5 +714,8 @@ export async function createDraftFromPublishedVersion(
     }
 
     return draft;
+  }, {
+    timeout: 30000,
+    maxWait: 10000,
   });
 }

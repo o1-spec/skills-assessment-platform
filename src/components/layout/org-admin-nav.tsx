@@ -17,6 +17,11 @@ const navItems: NavItem[] = [
     activePattern: (p) => p === '/organization-admin',
   },
   {
+    name: 'Skills Library',
+    href: '/organization-admin/skills',
+    activePattern: (p) => p.startsWith('/organization-admin/skills'),
+  },
+  {
     name: 'Role Profiles',
     href: '/organization-admin/roles',
     activePattern: (p) => p.startsWith('/organization-admin/roles'),
@@ -26,7 +31,6 @@ const navItems: NavItem[] = [
     href: '/organization-admin/campaigns',
     activePattern: (p) => p.startsWith('/organization-admin/campaigns'),
   },
-
   {
     name: 'Gap Analysis',
     href: '/organization-admin/gap-analysis',

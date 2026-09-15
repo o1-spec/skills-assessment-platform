@@ -294,6 +294,14 @@ export async function createAssessmentCampaign(
 
   // 5. Execute atomic transaction
   return prisma.$transaction(async (tx) => {
+    // Capture active framework version for campaign cycle provenance
+    const activeAdoption = await tx.tenantFrameworkAdoption.findFirst({
+      where: {
+        tenantId,
+        isActive: true,
+      },
+    });
+
     // Create base campaign with join rows
     const campaign = await tx.assessmentCampaign.create({
       data: {
@@ -304,6 +312,7 @@ export async function createAssessmentCampaign(
         requiresCorroboration: input.requiresCorroboration,
         status: input.status,
         roleProfileId: input.roleProfileId || null,
+        frameworkVersionId: activeAdoption?.frameworkVersionId || null,
         competencies: {
           create: input.competencyIds.map((competencyId) => ({
             competencyId,

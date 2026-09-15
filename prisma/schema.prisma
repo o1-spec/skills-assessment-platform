@@ -82,6 +82,7 @@ model FrameworkVersion {
 
   categories FrameworkCategory[]
   adoptions  TenantFrameworkAdoption[]
+  campaigns  AssessmentCampaign[]
 }
 
 model FrameworkCategory {
@@ -200,6 +201,7 @@ model Competency {
   campaignCompetencies CampaignCompetency[]
   assessmentItems      AssessmentItem[]
 
+  @@unique([tenantId, frameworkCompetencyId])
   @@index([tenantId])
   @@index([frameworkCompetencyId])
 }
@@ -253,24 +255,27 @@ model RoleRequirement {
 // ------------------------------------------------------
 
 model AssessmentCampaign {
-  id                    String         @id @default(cuid())
+  id                    String            @id @default(cuid())
   tenantId              String
   name                  String
   description           String?
   roleProfileId         String?
+  frameworkVersionId    String?
   deadline              DateTime
-  requiresCorroboration Boolean        @default(false)
-  status                CampaignStatus @default(DRAFT)
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
+  requiresCorroboration Boolean           @default(false)
+  status                CampaignStatus    @default(DRAFT)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 
-  tenant       Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  roleProfile  RoleProfile?          @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
-  competencies CampaignCompetency[]
-  participants CampaignParticipant[]
-  assessments  Assessment[]
+  tenant           Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roleProfile      RoleProfile?          @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
+  frameworkVersion FrameworkVersion?     @relation(fields: [frameworkVersionId], references: [id], onDelete: SetNull)
+  competencies     CampaignCompetency[]
+  participants     CampaignParticipant[]
+  assessments      Assessment[]
 
   @@index([tenantId])
+  @@index([frameworkVersionId])
 }
 
 model CampaignCompetency {
