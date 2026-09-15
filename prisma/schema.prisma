@@ -1,0 +1,260 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------
+
+enum UserRole {
+  PLATFORM_ADMIN
+  ORGANIZATION_ADMIN
+  MANAGER
+  STAFF
+}
+
+enum CompetencyType {
+  TECHNICAL
+  BEHAVIORAL
+}
+
+enum RoleProfileStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum AssessmentStatus {
+  NOT_STARTED
+  DRAFT
+  SUBMITTED
+  PENDING_CORROBORATION
+  COMPLETED
+}
+
+// ------------------------------------------------------
+// TENANT
+// ------------------------------------------------------
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users        User[]
+  competencies Competency[]
+  roleProfiles RoleProfile[]
+  campaigns    AssessmentCampaign[]
+}
+
+// ------------------------------------------------------
+// USER
+// ------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          UserRole
+  isActive      Boolean   @default(true)
+  deactivatedAt DateTime?
+  tenantId      String?
+  managerId     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Tenant relation (nullable for PLATFORM_ADMIN)
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Self-relation: Manager and Direct Reports
+  manager       User?  @relation("ManagerReports", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports User[] @relation("ManagerReports")
+
+  campaignParticipations CampaignParticipant[]
+  assessments            Assessment[]
+  corroborations         Corroboration[]
+
+  @@index([tenantId])
+  @@index([managerId])
+}
+
+// ------------------------------------------------------
+// COMPETENCY & LEVELS
+// ------------------------------------------------------
+
+model Competency {
+  id          String         @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  type        CompetencyType
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  tenant               Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  levels               CompetencyLevel[]
+  roleRequirements     RoleRequirement[]
+  campaignCompetencies CampaignCompetency[]
+  assessmentItems      AssessmentItem[]
+
+  @@index([tenantId])
+}
+
+model CompetencyLevel {
+  id             String  @id @default(cuid())
+  competencyId   String
+  level          Int
+  description    String
+  evidencePrompt String?
+
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@unique([competencyId, level])
+}
+
+// ------------------------------------------------------
+// ROLE PROFILE & REQUIREMENTS
+// ------------------------------------------------------
+
+model RoleProfile {
+  id          String            @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  status      RoleProfileStatus @default(DRAFT)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requirements RoleRequirement[]
+  campaigns    AssessmentCampaign[]
+
+  @@index([tenantId])
+}
+
+model RoleRequirement {
+  id            String @id @default(cuid())
+  roleProfileId String
+  competencyId  String
+  targetLevel   Int
+
+  roleProfile RoleProfile @relation(fields: [roleProfileId], references: [id], onDelete: Cascade)
+  competency  Competency  @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@unique([roleProfileId, competencyId])
+}
+
+// ------------------------------------------------------
+// ASSESSMENT CAMPAIGN
+// ------------------------------------------------------
+
+model AssessmentCampaign {
+  id                    String         @id @default(cuid())
+  tenantId              String
+  name                  String
+  description           String?
+  roleProfileId         String?
+  deadline              DateTime
+  requiresCorroboration Boolean        @default(false)
+  status                CampaignStatus @default(DRAFT)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  tenant       Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roleProfile  RoleProfile?          @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
+  competencies CampaignCompetency[]
+  participants CampaignParticipant[]
+  assessments  Assessment[]
+
+  @@index([tenantId])
+}
+
+model CampaignCompetency {
+  id           String @id @default(cuid())
+  campaignId   String
+  competencyId String
+
+  campaign   AssessmentCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  competency Competency         @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, competencyId])
+}
+
+model CampaignParticipant {
+  id         String @id @default(cuid())
+  campaignId String
+  userId     String
+
+  campaign AssessmentCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([campaignId, userId])
+}
+
+// ------------------------------------------------------
+// ASSESSMENT & CORROBORATION
+// ------------------------------------------------------
+
+model Assessment {
+  id          String           @id @default(cuid())
+  campaignId  String
+  userId      String
+  status      AssessmentStatus @default(NOT_STARTED)
+  submittedAt DateTime?
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  campaign AssessmentCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items    AssessmentItem[]
+
+  @@unique([campaignId, userId])
+  @@index([userId])
+  @@index([campaignId])
+}
+
+model AssessmentItem {
+  id           String   @id @default(cuid())
+  assessmentId String
+  competencyId String
+  selfRating   Int?
+  evidenceText String?
+  finalRating  Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assessment    Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  competency    Competency     @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  corroboration Corroboration?
+
+  @@unique([assessmentId, competencyId])
+}
+
+model Corroboration {
+  id               String   @id @default(cuid())
+  assessmentItemId String   @unique
+  managerId        String
+  rating           Int
+  justification    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  assessmentItem AssessmentItem @relation(fields: [assessmentItemId], references: [id], onDelete: Cascade)
+  manager        User           @relation(fields: [managerId], references: [id], onDelete: Restrict)
+}
