@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requireTenantUser } from '@/lib/auth';
 import { getRoleProfilesForTenant } from '@/services';
 import { RoleProfileStatus } from '@prisma/client';
+import { formatDate, formatRoleStatus } from '@/lib/format';
 
 export default async function RoleProfilesListPage() {
   const user = await requireTenantUser();
@@ -70,7 +71,7 @@ export default async function RoleProfilesListPage() {
                               : 'bg-amber-50 text-amber-700 border border-amber-200'
                           }`}
                         >
-                          {role.status}
+                          {formatRoleStatus(role.status)}
                         </span>
                       </div>
                       <div className="text-xs text-gray-400">
@@ -84,11 +85,7 @@ export default async function RoleProfilesListPage() {
 
                     <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
                       <span>
-                        Created {new Date(role.createdAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
+                        Created {formatDate(role.createdAt)}
                       </span>
                       <span className="font-medium text-blue-600">View details &rarr;</span>
                     </div>

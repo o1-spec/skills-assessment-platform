@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { getGapAnalysisAssessmentsForTenant } from '@/services';
 import { UserRole } from '@prisma/client';
+import { formatDate } from '@/lib/format';
 
 export default async function GapAnalysisListPage() {
   const user = await requireTenantUser();
@@ -193,13 +194,7 @@ export default async function GapAnalysisListPage() {
                       {a.roleProfile.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
-                      {a.completedAt
-                        ? new Date(a.completedAt).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })
-                        : '—'}
+                      {formatDate(a.completedAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
                       <div className="flex items-center space-x-1.5">

@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { getStaffAssessmentById } from '@/services';
 import { AssessmentStatus, CompetencyType, UserRole } from '@prisma/client';
+import { formatDate, formatAssessmentStatus } from '@/lib/format';
 import { AssessmentForm } from './assessment-form';
 
 interface PageProps {
@@ -68,7 +69,7 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
                     : 'bg-blue-50 text-blue-700 border-blue-200'
                 }`}
             >
-              {assessment.status.replace('_', ' ')}
+              {formatAssessmentStatus(assessment.status)}
             </span>
           </div>
 
@@ -108,11 +109,7 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
         <div>
           <div className="text-xs text-gray-500 font-medium">Deadline</div>
           <div className="mt-1 text-sm font-semibold text-gray-900">
-            {new Date(assessment.campaign.deadline).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
+            {formatDate(assessment.campaign.deadline)}
           </div>
         </div>
       </div>
@@ -181,8 +178,7 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
                 Assessment Deadline Has Passed
               </h3>
               <p className="mt-1 text-xs text-amber-700">
-                The deadline for this assessment was{' '}
-                {new Date(assessment.campaign.deadline).toLocaleDateString()}. New submissions or draft changes are closed.
+                The deadline for this assessment was {formatDate(assessment.campaign.deadline)}. New submissions or draft changes are closed.
               </p>
             </div>
           </div>

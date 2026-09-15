@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { getAssessmentsForStaff } from '@/services';
 import { AssessmentStatus, UserRole } from '@prisma/client';
+import { formatDate } from '@/lib/format';
 
 export default async function StaffAssessmentsPage() {
   const user = await requireTenantUser();
@@ -116,11 +117,7 @@ export default async function StaffAssessmentsPage() {
                   <div className="text-right sm:text-right">
                     <div className="text-xs text-gray-500">Deadline</div>
                     <div className="text-sm font-semibold text-gray-900">
-                      {new Date(assessment.campaign.deadline).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {formatDate(assessment.campaign.deadline)}
                     </div>
                   </div>
                 </div>
@@ -162,11 +159,7 @@ export default async function StaffAssessmentsPage() {
 
                     {assessment.submittedAt && (
                       <span>
-                        Submitted on{' '}
-                        {new Date(assessment.submittedAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
+                        Submitted on {formatDate(assessment.submittedAt)}
                       </span>
                     )}
                   </div>

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requireTenantUser } from '@/lib/auth';
 import { getCampaignsForTenant } from '@/services';
 import { CampaignStatus } from '@prisma/client';
+import { formatDate, formatCampaignStatus } from '@/lib/format';
 
 export default async function CampaignsListPage() {
   const user = await requireTenantUser();
@@ -70,7 +71,7 @@ export default async function CampaignsListPage() {
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusBadgeStyles}`}
                         >
-                          {camp.status}
+                          {formatCampaignStatus(camp.status)}
                         </span>
                         {camp.requiresCorroboration && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
@@ -82,11 +83,7 @@ export default async function CampaignsListPage() {
                       <div className="text-xs text-gray-500">
                         Deadline:{' '}
                         <span className="font-medium text-gray-900">
-                          {new Date(camp.deadline).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
+                          {formatDate(camp.deadline)}
                         </span>
                       </div>
                     </div>

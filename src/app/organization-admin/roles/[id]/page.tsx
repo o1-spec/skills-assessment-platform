@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { requireTenantUser } from '@/lib/auth';
 import { getRoleProfileById } from '@/services';
 import { CompetencyType, RoleProfileStatus } from '@prisma/client';
+import { formatDate, formatRoleStatus } from '@/lib/format';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -57,7 +58,7 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
                   : 'bg-amber-50 text-amber-700 border border-amber-200'
               }`}
             >
-              {roleProfile.status}
+              {formatRoleStatus(roleProfile.status)}
             </span>
           </div>
 
@@ -91,11 +92,7 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
         <div>
           <div className="text-xs text-gray-500 font-medium">Created On</div>
           <div className="mt-1 text-sm font-medium text-gray-900">
-            {new Date(roleProfile.createdAt).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
+            {formatDate(roleProfile.createdAt)}
           </div>
         </div>
       </div>

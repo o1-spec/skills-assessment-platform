@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { getAssessmentGapAnalysis, CompetencyGapItem } from '@/services';
 import { UserRole } from '@prisma/client';
+import { formatDate } from '@/lib/format';
 
 interface PageProps {
   params: Promise<{ assessmentId: string }>;
@@ -93,13 +94,7 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
         <div>
           <div className="text-xs text-gray-500 font-medium">Evaluation Completed On</div>
           <div className="mt-1 text-sm font-bold text-gray-900">
-            {analysis.completedAt
-              ? new Date(analysis.completedAt).toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })
-              : 'N/A'}
+            {formatDate(analysis.completedAt)}
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { getManagerCorroborationById } from '@/services';
 import { AssessmentStatus, CompetencyType, UserRole } from '@prisma/client';
+import { formatDate, formatAssessmentStatus } from '@/lib/format';
 import { CorroborationForm } from './corroboration-form';
 
 interface PageProps {
@@ -66,7 +67,7 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
                     : 'bg-purple-50 text-purple-700 border-purple-200'
                 }`}
               >
-                {assessment.status.replace('_', ' ')}
+                {formatAssessmentStatus(assessment.status)}
               </span>
             </div>
             <p className="mt-1 text-sm text-gray-500">
@@ -96,13 +97,7 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
         <div>
           <div className="text-xs text-gray-500 font-medium">Submission Date</div>
           <div className="mt-1 text-sm font-semibold text-gray-900">
-            {assessment.submittedAt
-              ? new Date(assessment.submittedAt).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })
-              : 'Not recorded'}
+            {formatDate(assessment.submittedAt)}
           </div>
         </div>
 
@@ -133,9 +128,7 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
               </h3>
               <p className="mt-1 text-xs text-emerald-700">
                 This assessment evaluation was completed and finalized on{' '}
-                {assessment.completedAt
-                  ? new Date(assessment.completedAt).toLocaleDateString()
-                  : 'N/A'}. Final capability ratings are locked.
+                {formatDate(assessment.completedAt)}. Final capability ratings are locked.
               </p>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { requireTenantUser } from '@/lib/auth';
 import { getCampaignById } from '@/services';
 import { CampaignStatus, CompetencyType, AssessmentStatus } from '@prisma/client';
+import { formatDate, formatCampaignStatus, formatAssessmentStatus } from '@/lib/format';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -79,7 +80,7 @@ export default async function CampaignDetailPage({ params }: PageProps) {
                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                 }`}
             >
-              {campaign.status}
+              {formatCampaignStatus(campaign.status)}
             </span>
           </div>
 
@@ -150,11 +151,7 @@ export default async function CampaignDetailPage({ params }: PageProps) {
         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 font-medium">Deadline</div>
           <div className="mt-1 text-lg font-bold text-gray-900">
-            {new Date(campaign.deadline).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
+            {formatDate(campaign.deadline)}
           </div>
           <div className="mt-1 text-xs text-gray-500">
             {campaign.requiresCorroboration ? (
@@ -340,7 +337,7 @@ export default async function CampaignDetailPage({ params }: PageProps) {
                                       : 'bg-gray-100 text-gray-800'
                               }`}
                           >
-                            {assessment.status.replace('_', ' ')}
+                            {formatAssessmentStatus(assessment.status)}
                           </span>
                         ) : (
                           <span className="text-xs text-gray-400 italic">

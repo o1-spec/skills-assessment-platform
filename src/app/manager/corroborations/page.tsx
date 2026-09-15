@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { getPendingCorroborationsForManager } from '@/services';
 import { UserRole } from '@prisma/client';
+import { formatDate } from '@/lib/format';
 
 export default async function ManagerCorroborationsQueuePage() {
   const user = await requireTenantUser();
@@ -99,13 +100,7 @@ export default async function ManagerCorroborationsQueuePage() {
                       {item.campaign.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
-                      {item.submittedAt
-                        ? new Date(item.submittedAt).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })
-                        : '—'}
+                      {formatDate(item.submittedAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-800">
@@ -113,11 +108,7 @@ export default async function ManagerCorroborationsQueuePage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
-                      {new Date(item.campaign.deadline).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {formatDate(item.campaign.deadline)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link
