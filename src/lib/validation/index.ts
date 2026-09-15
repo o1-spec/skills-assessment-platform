@@ -8,3 +8,4 @@ export const emailSchema = z.string().email('Invalid email address');
 export * from './auth';
 export * from './role-profile';
 export * from './campaign';
+export * from './assessment';
