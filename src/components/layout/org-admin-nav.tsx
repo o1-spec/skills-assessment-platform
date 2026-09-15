@@ -23,10 +23,10 @@ const navItems: NavItem[] = [
   },
   {
     name: 'Campaigns',
-    href: '#',
-    activePattern: () => false,
-    disabled: true,
+    href: '/organization-admin/campaigns',
+    activePattern: (p) => p.startsWith('/organization-admin/campaigns'),
   },
+
   {
     name: 'Gap Analysis',
     href: '#',
