@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
-import { PrismaClient, UserRole, CompetencyType, RoleProfileStatus, CampaignStatus, AssessmentStatus } from '@prisma/client';
+import { PrismaClient, UserRole, CompetencyType, RoleProfileStatus, CampaignStatus, AssessmentStatus, FrameworkStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const connectionString = process.env.DATABASE_URL?.replace(/[?&]sslmode=[^&]+/, '');
@@ -11,9 +11,6 @@ const pool = new Pool({
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
-
-
-
 
 async function main() {
   console.log('🌱 Starting database seed...');
@@ -105,11 +102,128 @@ async function main() {
 
   console.log(`✓ Users ready: Platform Admin (${platformAdmin.email}), Org Admin (${orgAdmin.email}), Manager (${manager.email}), Staff (${staff.email})`);
 
-  // 3. Competencies & Levels Definition
-  const competencyData = [
+  // 3. Canonical Framework: Version 1.0 (Platform Level)
+  const frameworkVersion = await prisma.frameworkVersion.upsert({
+    where: { version: '1.0' },
+    update: {
+      status: FrameworkStatus.PUBLISHED,
+      description: 'Canonical IT & Software Delivery Competency Framework v1.0',
+      publishedAt: new Date('2026-01-01T00:00:00.000Z'),
+    },
+    create: {
+      version: '1.0',
+      status: FrameworkStatus.PUBLISHED,
+      description: 'Canonical IT & Software Delivery Competency Framework v1.0',
+      publishedAt: new Date('2026-01-01T00:00:00.000Z'),
+    },
+  });
+
+  // 3a. Canonical Category Hierarchy
+  // Technical Root Category
+  let techRootCat = await prisma.frameworkCategory.findFirst({
+    where: {
+      frameworkVersionId: frameworkVersion.id,
+      name: 'Software Engineering',
+      parentId: null,
+    },
+  });
+  if (!techRootCat) {
+    techRootCat = await prisma.frameworkCategory.create({
+      data: {
+        frameworkVersionId: frameworkVersion.id,
+        name: 'Software Engineering',
+        description: 'Core software engineering, programming, and architecture competencies.',
+        type: CompetencyType.TECHNICAL,
+        parentId: null,
+      },
+    });
+  }
+
+  // Technical Subcategories
+  let techSubcatFrontend = await prisma.frameworkCategory.findFirst({
+    where: {
+      frameworkVersionId: frameworkVersion.id,
+      name: 'Frontend & Runtime',
+      parentId: techRootCat.id,
+    },
+  });
+  if (!techSubcatFrontend) {
+    techSubcatFrontend = await prisma.frameworkCategory.create({
+      data: {
+        frameworkVersionId: frameworkVersion.id,
+        name: 'Frontend & Runtime',
+        description: 'Client and server JavaScript runtime competencies.',
+        type: CompetencyType.TECHNICAL,
+        parentId: techRootCat.id,
+      },
+    });
+  }
+
+  let techSubcatData = await prisma.frameworkCategory.findFirst({
+    where: {
+      frameworkVersionId: frameworkVersion.id,
+      name: 'Data & APIs',
+      parentId: techRootCat.id,
+    },
+  });
+  if (!techSubcatData) {
+    techSubcatData = await prisma.frameworkCategory.create({
+      data: {
+        frameworkVersionId: frameworkVersion.id,
+        name: 'Data & APIs',
+        description: 'Relational data persistence and API communication competencies.',
+        type: CompetencyType.TECHNICAL,
+        parentId: techRootCat.id,
+      },
+    });
+  }
+
+  // Behavioral Root Category
+  let behavioralRootCat = await prisma.frameworkCategory.findFirst({
+    where: {
+      frameworkVersionId: frameworkVersion.id,
+      name: 'Professional Effectiveness',
+      parentId: null,
+    },
+  });
+  if (!behavioralRootCat) {
+    behavioralRootCat = await prisma.frameworkCategory.create({
+      data: {
+        frameworkVersionId: frameworkVersion.id,
+        name: 'Professional Effectiveness',
+        description: 'Core behavioral and professional workplace competencies.',
+        type: CompetencyType.BEHAVIORAL,
+        parentId: null,
+      },
+    });
+  }
+
+  // Behavioral Subcategory
+  let behavioralSubcatExecution = await prisma.frameworkCategory.findFirst({
+    where: {
+      frameworkVersionId: frameworkVersion.id,
+      name: 'Interpersonal & Execution',
+      parentId: behavioralRootCat.id,
+    },
+  });
+  if (!behavioralSubcatExecution) {
+    behavioralSubcatExecution = await prisma.frameworkCategory.create({
+      data: {
+        frameworkVersionId: frameworkVersion.id,
+        name: 'Interpersonal & Execution',
+        description: 'Teamwork, communication, and systematic problem solving.',
+        type: CompetencyType.BEHAVIORAL,
+        parentId: behavioralRootCat.id,
+      },
+    });
+  }
+
+  // 3b. Competencies & Levels Data Definition
+  const canonicalCompetenciesData = [
     {
       name: 'JavaScript',
       type: CompetencyType.TECHNICAL,
+      categoryId: techSubcatFrontend.id,
       description: 'Core JavaScript language fundamentals, asynchronous programming, modern ES features, and design patterns.',
       levels: [
         { level: 1, description: 'Understands basic JavaScript syntax and concepts.' },
@@ -122,6 +236,7 @@ async function main() {
     {
       name: 'Node.js',
       type: CompetencyType.TECHNICAL,
+      categoryId: techSubcatFrontend.id,
       description: 'Server-side runtime, event loop, stream processing, module systems, and backend frameworks.',
       levels: [
         { level: 1, description: 'Understands basic server-side JavaScript concepts.' },
@@ -134,6 +249,7 @@ async function main() {
     {
       name: 'SQL',
       type: CompetencyType.TECHNICAL,
+      categoryId: techSubcatData.id,
       description: 'Relational database schema design, querying, indexing strategies, constraints, and query optimization.',
       levels: [
         { level: 1, description: 'Understands basic relational database concepts.' },
@@ -146,6 +262,7 @@ async function main() {
     {
       name: 'REST APIs',
       type: CompetencyType.TECHNICAL,
+      categoryId: techSubcatData.id,
       description: 'HTTP protocol semantics, RESTful resource design, authentication, validation, pagination, and error handling.',
       levels: [
         { level: 1, description: 'Understands basic HTTP and API concepts.' },
@@ -158,6 +275,7 @@ async function main() {
     {
       name: 'Communication',
       type: CompetencyType.BEHAVIORAL,
+      categoryId: behavioralSubcatExecution.id,
       description: 'Conveying technical ideas, status updates, documentation, and active listening across diverse audiences.',
       levels: [
         { level: 1, description: 'Communicates basic information when prompted.' },
@@ -170,6 +288,7 @@ async function main() {
     {
       name: 'Collaboration',
       type: CompetencyType.BEHAVIORAL,
+      categoryId: behavioralSubcatExecution.id,
       description: 'Cross-functional teamwork, constructive code reviews, conflict resolution, and fostering psychological safety.',
       levels: [
         { level: 1, description: 'Participates in team activities with guidance.' },
@@ -182,6 +301,7 @@ async function main() {
     {
       name: 'Problem Solving',
       type: CompetencyType.BEHAVIORAL,
+      categoryId: behavioralSubcatExecution.id,
       description: 'Root cause analysis, debugging under ambiguity, pragmatic trade-off analysis, and innovative solution design.',
       levels: [
         { level: 1, description: 'Solves simple, clearly defined problems with guidance.' },
@@ -193,10 +313,79 @@ async function main() {
     },
   ];
 
+  // Map canonical competency name -> FrameworkCompetency ID
+  const frameworkCompMap = new Map<string, string>();
+
+  for (const comp of canonicalCompetenciesData) {
+    let canonicalComp = await prisma.frameworkCompetency.findFirst({
+      where: {
+        categoryId: comp.categoryId,
+        name: comp.name,
+      },
+    });
+
+    if (!canonicalComp) {
+      canonicalComp = await prisma.frameworkCompetency.create({
+        data: {
+          categoryId: comp.categoryId,
+          name: comp.name,
+          description: comp.description,
+        },
+      });
+    }
+
+    frameworkCompMap.set(comp.name, canonicalComp.id);
+
+    // Upsert FrameworkLevels
+    for (const lvl of comp.levels) {
+      await prisma.frameworkLevel.upsert({
+        where: {
+          frameworkCompetencyId_level: {
+            frameworkCompetencyId: canonicalComp.id,
+            level: lvl.level,
+          },
+        },
+        update: {
+          description: lvl.description,
+          evidencePrompt: 'Describe a recent project example or situation demonstrating your experience at this level.',
+        },
+        create: {
+          frameworkCompetencyId: canonicalComp.id,
+          level: lvl.level,
+          description: lvl.description,
+          evidencePrompt: 'Describe a recent project example or situation demonstrating your experience at this level.',
+        },
+      });
+    }
+  }
+
+  console.log(`✓ Seeded Canonical Framework Version 1.0 with ${canonicalCompetenciesData.length} competencies and levels.`);
+
+  // 3c. Tenant Framework Adoption
+  await prisma.tenantFrameworkAdoption.upsert({
+    where: {
+      tenantId_frameworkVersionId: {
+        tenantId: tenant.id,
+        frameworkVersionId: frameworkVersion.id,
+      },
+    },
+    update: {
+      isActive: true,
+    },
+    create: {
+      tenantId: tenant.id,
+      frameworkVersionId: frameworkVersion.id,
+      isActive: true,
+    },
+  });
+  console.log(`✓ Acme Technologies adopted Framework Version 1.0.`);
+
+  // 3d. Operational Tenant Competencies & Levels
   const competencyMap = new Map<string, string>();
 
-  for (const comp of competencyData) {
-    // Find or create competency
+  for (const comp of canonicalCompetenciesData) {
+    const canonicalId = frameworkCompMap.get(comp.name) || null;
+
     let existingComp = await prisma.competency.findFirst({
       where: {
         tenantId: tenant.id,
@@ -211,13 +400,25 @@ async function main() {
           name: comp.name,
           type: comp.type,
           description: comp.description,
+          frameworkCompetencyId: canonicalId,
+          isCustom: false,
+          isActive: true,
+        },
+      });
+    } else {
+      existingComp = await prisma.competency.update({
+        where: { id: existingComp.id },
+        data: {
+          frameworkCompetencyId: canonicalId,
+          isCustom: false,
+          isActive: true,
         },
       });
     }
 
     competencyMap.set(comp.name, existingComp.id);
 
-    // Upsert levels
+    // Upsert operational levels
     for (const lvl of comp.levels) {
       await prisma.competencyLevel.upsert({
         where: {
@@ -240,7 +441,7 @@ async function main() {
     }
   }
 
-  console.log(`✓ Seeded ${competencyData.length} competencies with 5 levels each (35 total levels).`);
+  console.log(`✓ Seeded/linked ${canonicalCompetenciesData.length} operational competencies for Acme Technologies.`);
 
   // 4. Role Profile: Backend Engineer
   let roleProfile = await prisma.roleProfile.findFirst({

@@ -36,6 +36,11 @@ enum CampaignStatus {
   CLOSED
 }
 
+enum FrameworkStatus {
+  DRAFT
+  PUBLISHED
+}
+
 enum AssessmentStatus {
   NOT_STARTED
   DRAFT
@@ -55,10 +60,89 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users        User[]
+  users              User[]
+  competencies       Competency[]
+  roleProfiles       RoleProfile[]
+  campaigns          AssessmentCampaign[]
+  frameworkAdoptions TenantFrameworkAdoption[]
+}
+
+// ------------------------------------------------------
+// CANONICAL FRAMEWORK (PLATFORM LEVEL)
+// ------------------------------------------------------
+
+model FrameworkVersion {
+  id          String          @id @default(cuid())
+  version     String          @unique
+  status      FrameworkStatus @default(DRAFT)
+  description String?
+  publishedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  categories FrameworkCategory[]
+  adoptions  TenantFrameworkAdoption[]
+}
+
+model FrameworkCategory {
+  id                 String         @id @default(cuid())
+  frameworkVersionId String
+  name               String
+  description        String?
+  type               CompetencyType
+  parentId           String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  frameworkVersion FrameworkVersion      @relation(fields: [frameworkVersionId], references: [id], onDelete: Cascade)
+  parent           FrameworkCategory?    @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children         FrameworkCategory[]   @relation("CategoryHierarchy")
+  competencies     FrameworkCompetency[]
+
+  @@index([frameworkVersionId])
+  @@index([parentId])
+}
+
+model FrameworkCompetency {
+  id          String   @id @default(cuid())
+  categoryId  String
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category     FrameworkCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  levels       FrameworkLevel[]
   competencies Competency[]
-  roleProfiles RoleProfile[]
-  campaigns    AssessmentCampaign[]
+
+  @@index([categoryId])
+}
+
+model FrameworkLevel {
+  id                    String  @id @default(cuid())
+  frameworkCompetencyId String
+  level                 Int
+  description           String
+  evidencePrompt        String?
+
+  frameworkCompetency FrameworkCompetency @relation(fields: [frameworkCompetencyId], references: [id], onDelete: Cascade)
+
+  @@unique([frameworkCompetencyId, level])
+}
+
+model TenantFrameworkAdoption {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  frameworkVersionId String
+  adoptedAt          DateTime @default(now())
+  isActive           Boolean  @default(true)
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  frameworkVersion FrameworkVersion @relation(fields: [frameworkVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, frameworkVersionId])
+  @@index([tenantId])
+  @@index([frameworkVersionId])
 }
 
 // ------------------------------------------------------
@@ -98,21 +182,26 @@ model User {
 // ------------------------------------------------------
 
 model Competency {
-  id          String         @id @default(cuid())
-  tenantId    String
-  name        String
-  description String?
-  type        CompetencyType
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id                    String               @id @default(cuid())
+  tenantId              String
+  name                  String
+  description           String?
+  type                  CompetencyType
+  frameworkCompetencyId String?
+  isCustom              Boolean              @default(true)
+  isActive              Boolean              @default(true)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
 
-  tenant               Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  frameworkCompetency  FrameworkCompetency?  @relation(fields: [frameworkCompetencyId], references: [id], onDelete: SetNull)
   levels               CompetencyLevel[]
   roleRequirements     RoleRequirement[]
   campaignCompetencies CampaignCompetency[]
   assessmentItems      AssessmentItem[]
 
   @@index([tenantId])
+  @@index([frameworkCompetencyId])
 }
 
 model CompetencyLevel {
