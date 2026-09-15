@@ -5,6 +5,7 @@ import { getStaffAssessmentById } from '@/services';
 import { AssessmentStatus, CompetencyType, UserRole } from '@prisma/client';
 import { formatDate, formatAssessmentStatus } from '@/lib/format';
 import { AssessmentForm } from './assessment-form';
+import { EvidenceAttachmentsSection } from './evidence-attachments-section';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -260,6 +261,13 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
                         <p className="text-gray-400 italic">No evidence provided.</p>
                       )}
                     </div>
+
+                    <EvidenceAttachmentsSection
+                      assessmentItemId={item.id}
+                      assessmentId={assessment.id}
+                      initialAttachments={item.attachments || []}
+                      isReadOnly={true}
+                    />
                   </div>
                 );
               })}

@@ -15,8 +15,8 @@ import {
   getCampaignById,
   getCampaignMonitoringStats,
   resolveCampaignParticipants,
-  getEligibleCampaignTeams,
 } from '../src/services/campaigns';
+
 
 async function runTests() {
   console.log('🧪 Starting Campaign Scoping + Draft Lifecycle + Monitoring Tests...\n');

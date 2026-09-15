@@ -69,3 +69,27 @@ export async function submitCorroborationAction(
   revalidatePath(`/manager/corroborations/${validated.data.assessmentId}`);
   redirect(`/manager/corroborations/${validated.data.assessmentId}`);
 }
+
+export async function getManagerEvidenceSignedUrlAction(
+  attachmentId: string
+): Promise<{ success?: boolean; url?: string; fileName?: string; error?: string }> {
+  const user = await requireTenantUser();
+
+  if (user.role !== UserRole.MANAGER) {
+    return { error: 'Only managers can access review evidence.' };
+  }
+
+  try {
+    const { getEvidenceAttachmentSignedUrl } = await import('@/services');
+    const res = await getEvidenceAttachmentSignedUrl(
+      user.id,
+      user.role,
+      user.tenantId,
+      attachmentId
+    );
+    return { success: true, url: res.url, fileName: res.fileName };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve attachment URL.';
+    return { error: message };
+  }
+}

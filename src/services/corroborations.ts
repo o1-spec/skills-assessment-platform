@@ -8,6 +8,7 @@ import {
   Competency,
   CompetencyLevel,
   Corroboration,
+  EvidenceAttachment,
   User,
 } from '@prisma/client';
 
@@ -34,6 +35,7 @@ export type ManagerCorroborationDetail = Assessment & {
         levels: CompetencyLevel[];
       };
       corroboration: Corroboration | null;
+      attachments: EvidenceAttachment[];
     }
   >;
 };
@@ -184,6 +186,11 @@ export async function getManagerCorroborationById(
             },
           },
           corroboration: true,
+          attachments: {
+            orderBy: {
+              createdAt: 'asc',
+            },
+          },
         },
         orderBy: [
           { competency: { type: 'asc' } },

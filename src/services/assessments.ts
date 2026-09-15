@@ -7,6 +7,7 @@ import {
   Competency,
   CompetencyLevel,
   AssessmentCampaign,
+  EvidenceAttachment,
 } from '@prisma/client';
 
 export type StaffAssessmentListItem = Assessment & {
@@ -29,6 +30,7 @@ export type StaffAssessmentDetail = Assessment & {
       competency: Competency & {
         levels: CompetencyLevel[];
       };
+      attachments: EvidenceAttachment[];
     }
   >;
 };
@@ -130,6 +132,11 @@ export async function getStaffAssessmentById(
                   level: 'asc',
                 },
               },
+            },
+          },
+          attachments: {
+            orderBy: {
+              createdAt: 'asc',
             },
           },
         },

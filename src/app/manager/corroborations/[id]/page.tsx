@@ -5,6 +5,7 @@ import { getManagerCorroborationById } from '@/services';
 import { AssessmentStatus, CompetencyType, UserRole } from '@prisma/client';
 import { formatDate, formatAssessmentStatus } from '@/lib/format';
 import { CorroborationForm } from './corroboration-form';
+import { EvidenceAttachmentsSection } from '@/app/staff/assessments/[id]/evidence-attachments-section';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -206,6 +207,14 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
                       <p className="text-gray-800 whitespace-pre-wrap">
                         {item.evidenceText || 'No evidence provided.'}
                       </p>
+
+                      <EvidenceAttachmentsSection
+                        assessmentItemId={item.id}
+                        assessmentId={assessment.id}
+                        initialAttachments={item.attachments || []}
+                        isReadOnly={true}
+                        isManager={true}
+                      />
                     </div>
 
                     {/* Manager Corroboration */}

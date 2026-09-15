@@ -498,11 +498,26 @@ model AssessmentItem {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  assessment    Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  competency    Competency     @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  assessment    Assessment           @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  competency    Competency           @relation(fields: [competencyId], references: [id], onDelete: Cascade)
   corroboration Corroboration?
+  attachments   EvidenceAttachment[]
 
   @@unique([assessmentId, competencyId])
+}
+
+model EvidenceAttachment {
+  id               String         @id @default(cuid())
+  assessmentItemId String
+  storagePath      String
+  fileName         String
+  mimeType         String
+  fileSize         Int
+  createdAt        DateTime       @default(now())
+
+  assessmentItem   AssessmentItem @relation(fields: [assessmentItemId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentItemId])
 }
 
 model Corroboration {

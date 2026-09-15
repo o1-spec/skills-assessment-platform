@@ -124,3 +124,120 @@ export async function submitAssessmentAction(
   revalidatePath(`/staff/assessments/${validated.data.assessmentId}`);
   redirect(`/staff/assessments/${validated.data.assessmentId}`);
 }
+
+export async function uploadEvidenceAttachmentAction(formData: FormData): Promise<{
+  success?: boolean;
+  error?: string;
+  attachment?: {
+    id: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    createdAt: Date;
+  };
+}> {
+  const user = await requireTenantUser();
+
+  if (user.role !== UserRole.STAFF) {
+    return { error: 'Only staff members can upload evidence.' };
+  }
+
+  const assessmentItemId = formData.get('assessmentItemId');
+  const assessmentId = formData.get('assessmentId');
+  const file = formData.get('file');
+
+  if (typeof assessmentItemId !== 'string' || !assessmentItemId) {
+    return { error: 'Assessment item ID is missing.' };
+  }
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: 'Please select a valid file to upload.' };
+  }
+
+  try {
+    const { uploadEvidenceAttachment } = await import('@/services');
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    const attachment = await uploadEvidenceAttachment(
+      user.id,
+      user.tenantId,
+      assessmentItemId,
+      {
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        size: file.size,
+        buffer,
+      }
+    );
+
+    if (typeof assessmentId === 'string' && assessmentId) {
+      revalidatePath(`/staff/assessments/${assessmentId}`);
+    }
+    revalidatePath('/staff/assessments');
+
+    return {
+      success: true,
+      attachment: {
+        id: attachment.id,
+        fileName: attachment.fileName,
+        fileSize: attachment.fileSize,
+        mimeType: attachment.mimeType,
+        createdAt: attachment.createdAt,
+      },
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to upload evidence attachment.';
+    return { error: message };
+  }
+}
+
+export async function deleteEvidenceAttachmentAction(
+  attachmentId: string,
+  assessmentId?: string
+): Promise<{ success?: boolean; error?: string }> {
+  const user = await requireTenantUser();
+
+  if (user.role !== UserRole.STAFF) {
+    return { error: 'Only staff members can delete evidence attachments.' };
+  }
+
+  try {
+    const { deleteEvidenceAttachment } = await import('@/services');
+    await deleteEvidenceAttachment(user.id, user.tenantId, attachmentId);
+
+    if (assessmentId) {
+      revalidatePath(`/staff/assessments/${assessmentId}`);
+    }
+    revalidatePath('/staff/assessments');
+
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to delete evidence attachment.';
+    return { error: message };
+  }
+}
+
+export async function getStaffEvidenceSignedUrlAction(
+  attachmentId: string
+): Promise<{ success?: boolean; url?: string; fileName?: string; error?: string }> {
+  const user = await requireTenantUser();
+
+  if (user.role !== UserRole.STAFF) {
+    return { error: 'Only staff members can view evidence attachments.' };
+  }
+
+  try {
+    const { getEvidenceAttachmentSignedUrl } = await import('@/services');
+    const res = await getEvidenceAttachmentSignedUrl(
+      user.id,
+      user.role,
+      user.tenantId,
+      attachmentId
+    );
+    return { success: true, url: res.url, fileName: res.fileName };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve attachment URL.';
+    return { error: message };
+  }
+}
+

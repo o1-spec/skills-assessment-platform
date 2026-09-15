@@ -9,6 +9,7 @@ import {
 } from '../actions';
 import { StaffAssessmentDetail } from '@/services';
 import { CompetencyType } from '@prisma/client';
+import { EvidenceAttachmentsSection } from './evidence-attachments-section';
 
 interface AssessmentFormProps {
   assessment: StaffAssessmentDetail;
@@ -491,6 +492,13 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
             onChange={(e) => handleEvidenceChange(item.id, e.target.value)}
             placeholder="Provide specific examples, context, or achievements..."
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-xs shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          />
+
+          <EvidenceAttachmentsSection
+            assessmentItemId={item.id}
+            assessmentId={assessment.id}
+            initialAttachments={item.attachments || []}
+            isReadOnly={false}
           />
         </div>
       </div>

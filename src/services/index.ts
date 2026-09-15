@@ -13,3 +13,4 @@ export * from './industry-templates';
 export * from './users';
 export * from './organization-structure';
 export * from './csv-import';
+export * from './evidence-attachments';

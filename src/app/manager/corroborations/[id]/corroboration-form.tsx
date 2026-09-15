@@ -8,6 +8,7 @@ import {
 } from '../actions';
 import { ManagerCorroborationDetail } from '@/services';
 import { CompetencyType } from '@prisma/client';
+import { EvidenceAttachmentsSection } from '@/app/staff/assessments/[id]/evidence-attachments-section';
 
 interface CorroborationFormProps {
   assessment: ManagerCorroborationDetail;
@@ -372,6 +373,14 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
                 No supporting evidence was submitted.
               </p>
             )}
+
+            <EvidenceAttachmentsSection
+              assessmentItemId={item.id}
+              assessmentId={assessment.id}
+              initialAttachments={item.attachments || []}
+              isReadOnly={true}
+              isManager={true}
+            />
           </div>
         </div>
 
