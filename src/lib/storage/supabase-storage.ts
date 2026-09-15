@@ -135,17 +135,44 @@ export function getStorageClient(): StorageClient {
   }
 
   if (!storageClientInstance) {
+    const isProduction = process.env.NODE_ENV === 'production';
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const bucket = process.env.SUPABASE_EVIDENCE_BUCKET || 'assessment-evidence';
+    const bucket = process.env.SUPABASE_EVIDENCE_BUCKET;
 
-    if (supabaseUrl && supabaseKey && supabaseUrl.startsWith('http')) {
-      storageClientInstance = new SupabaseStorageClient(supabaseUrl, supabaseKey, bucket);
+    if (isProduction) {
+      const missing: string[] = [];
+      if (!supabaseUrl || !supabaseUrl.startsWith('http')) missing.push('SUPABASE_URL');
+      if (!supabaseKey) missing.push('SUPABASE_SERVICE_ROLE_KEY');
+      if (!bucket) missing.push('SUPABASE_EVIDENCE_BUCKET');
+
+      if (missing.length > 0) {
+        throw new Error(
+          `Production storage configuration error: Missing required environment variable(s) for Supabase Storage: ${missing.join(
+            ', '
+          )}. Local filesystem storage is strictly prohibited in production.`
+        );
+      }
+
+      storageClientInstance = new SupabaseStorageClient(supabaseUrl!, supabaseKey!, bucket!);
     } else {
-      // Resilient fallback for local test/dev when Supabase storage credentials are not yet populated
-      storageClientInstance = new LocalFilesystemStorageClient(bucket);
+      const activeBucket = bucket || 'assessment-evidence';
+      if (supabaseUrl && supabaseKey && supabaseUrl.startsWith('http')) {
+        storageClientInstance = new SupabaseStorageClient(supabaseUrl, supabaseKey, activeBucket);
+      } else {
+        // Local filesystem storage is allowed ONLY in development or test environments
+        storageClientInstance = new LocalFilesystemStorageClient(activeBucket);
+      }
     }
   }
 
   return storageClientInstance;
 }
+
+/**
+ * For testing purposes only: resets the cached storage client instance.
+ */
+export function _resetStorageClientForTesting(): void {
+  storageClientInstance = null;
+}
+
