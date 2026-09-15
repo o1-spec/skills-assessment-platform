@@ -9,8 +9,19 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined;
 };
 
+function cleanConnectionString(rawUrl?: string) {
+  if (!rawUrl) return rawUrl;
+  try {
+    const parsed = new URL(rawUrl);
+    parsed.searchParams.delete('sslmode');
+    return parsed.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL?.replace(/[?&]sslmode=[^&]+/, '');
+  const connectionString = cleanConnectionString(process.env.DATABASE_URL);
   const pool =
     globalForPrisma.pool ??
     new Pool({

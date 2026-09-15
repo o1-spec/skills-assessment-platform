@@ -6,11 +6,12 @@ import Link from 'next/link';
 export default async function PlatformAdminPage() {
   const user = await requireRole(UserRole.PLATFORM_ADMIN);
 
-  const [tenantCount, userCount, frameworkCount, competencyCount] = await Promise.all([
+  const [tenantCount, userCount, frameworkCount, competencyCount, templateCount] = await Promise.all([
     prisma.tenant.count(),
     prisma.user.count(),
     prisma.frameworkVersion.count(),
     prisma.frameworkCompetency.count(),
+    prisma.industryTemplate.count(),
   ]);
 
   return (
@@ -34,6 +35,12 @@ export default async function PlatformAdminPage() {
             className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-xs text-xs font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
             Frameworks
+          </Link>
+          <Link
+            href="/platform-admin/templates"
+            className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-xs text-xs font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          >
+            Industry Templates ({templateCount})
           </Link>
           <Link
             href="/platform-admin/tenants"

@@ -137,9 +137,10 @@ model FrameworkVersion {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  categories FrameworkCategory[]
-  adoptions  TenantFrameworkAdoption[]
-  campaigns  AssessmentCampaign[]
+  categories        FrameworkCategory[]
+  adoptions         TenantFrameworkAdoption[]
+  campaigns         AssessmentCampaign[]
+  industryTemplates IndustryTemplate[]
 }
 
 model FrameworkCategory {
@@ -169,9 +170,11 @@ model FrameworkCompetency {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  category     FrameworkCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  levels       FrameworkLevel[]
-  competencies Competency[]
+  category             FrameworkCategory            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  levels               FrameworkLevel[]
+  competencies         Competency[]
+  templateCompetencies IndustryTemplateCompetency[]
+  templateRequirements TemplateRequirement[]
 
   @@index([categoryId])
 }
@@ -186,6 +189,70 @@ model FrameworkLevel {
   frameworkCompetency FrameworkCompetency @relation(fields: [frameworkCompetencyId], references: [id], onDelete: Cascade)
 
   @@unique([frameworkCompetencyId, level])
+}
+
+// ------------------------------------------------------
+// INDUSTRY TEMPLATES (PLATFORM LEVEL)
+// ------------------------------------------------------
+
+model IndustryTemplate {
+  id                 String   @id @default(cuid())
+  name               String   @unique
+  description        String?
+  frameworkVersionId String
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  frameworkVersion FrameworkVersion             @relation(fields: [frameworkVersionId], references: [id], onDelete: Restrict)
+  competencies     IndustryTemplateCompetency[]
+  roleProfiles     TemplateRoleProfile[]
+
+  @@index([frameworkVersionId])
+}
+
+model IndustryTemplateCompetency {
+  id                    String   @id @default(cuid())
+  industryTemplateId    String
+  frameworkCompetencyId String
+  createdAt             DateTime @default(now())
+
+  industryTemplate    IndustryTemplate    @relation(fields: [industryTemplateId], references: [id], onDelete: Cascade)
+  frameworkCompetency FrameworkCompetency @relation(fields: [frameworkCompetencyId], references: [id], onDelete: Cascade)
+
+  @@unique([industryTemplateId, frameworkCompetencyId])
+  @@index([industryTemplateId])
+  @@index([frameworkCompetencyId])
+}
+
+model TemplateRoleProfile {
+  id                 String   @id @default(cuid())
+  industryTemplateId String
+  name               String
+  description        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  industryTemplate IndustryTemplate      @relation(fields: [industryTemplateId], references: [id], onDelete: Cascade)
+  requirements     TemplateRequirement[]
+
+  @@index([industryTemplateId])
+}
+
+model TemplateRequirement {
+  id                    String   @id @default(cuid())
+  templateRoleProfileId String
+  frameworkCompetencyId String
+  targetLevel           Int
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  templateRoleProfile TemplateRoleProfile @relation(fields: [templateRoleProfileId], references: [id], onDelete: Cascade)
+  frameworkCompetency FrameworkCompetency @relation(fields: [frameworkCompetencyId], references: [id], onDelete: Cascade)
+
+  @@unique([templateRoleProfileId, frameworkCompetencyId])
+  @@index([templateRoleProfileId])
+  @@index([frameworkCompetencyId])
 }
 
 model TenantFrameworkAdoption {

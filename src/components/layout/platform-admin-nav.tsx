@@ -37,11 +37,10 @@ export function PlatformAdminNav() {
     },
     {
       name: 'Industry Templates',
-      href: '#',
+      href: '/platform-admin/templates',
       exact: false,
-      active: false,
-      enabled: false,
-      badge: 'Coming Soon',
+      active: pathname?.startsWith('/platform-admin/templates'),
+      enabled: true,
     },
     {
       name: 'Analytics & Audit',

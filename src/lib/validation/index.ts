@@ -12,3 +12,7 @@ export * from './assessment';
 export * from './corroboration';
 export * from './framework';
 export * from './custom-competency';
+export * from './plans';
+export * from './tenants';
+export * from './invitations';
+export * from './industry-templates';

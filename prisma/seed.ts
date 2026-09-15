@@ -4,7 +4,18 @@ import bcrypt from 'bcryptjs';
 import { PrismaClient, UserRole, CompetencyType, RoleProfileStatus, CampaignStatus, AssessmentStatus, FrameworkStatus, TenantStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-const connectionString = process.env.DATABASE_URL?.replace(/[?&]sslmode=[^&]+/, '');
+function cleanConnectionString(rawUrl?: string) {
+  if (!rawUrl) return rawUrl;
+  try {
+    const parsed = new URL(rawUrl);
+    parsed.searchParams.delete('sslmode');
+    return parsed.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+const connectionString = cleanConnectionString(process.env.DATABASE_URL);
 const pool = new Pool({
   connectionString,
   ssl: { rejectUnauthorized: false },
@@ -404,6 +415,94 @@ async function main() {
   }
 
   console.log(`✓ Seeded Canonical Framework Version 1.0 with ${canonicalCompetenciesData.length} competencies and levels.`);
+
+  // 3b-2. Seed Demo Industry Template: IT & Software Delivery (Platform Level)
+  const itTemplate = await prisma.industryTemplate.upsert({
+    where: { name: 'IT & Software Delivery' },
+    update: {
+      frameworkVersionId: frameworkVersion.id,
+      description: 'Standard competency baseline and role profiles for modern software engineering and IT delivery organizations.',
+      isActive: true,
+    },
+    create: {
+      name: 'IT & Software Delivery',
+      frameworkVersionId: frameworkVersion.id,
+      description: 'Standard competency baseline and role profiles for modern software engineering and IT delivery organizations.',
+      isActive: true,
+    },
+  });
+
+  // Link all 7 canonical competencies to IT & Software Delivery template
+  for (const comp of canonicalCompetenciesData) {
+    const canonicalCompId = frameworkCompMap.get(comp.name);
+    if (!canonicalCompId) continue;
+
+    await prisma.industryTemplateCompetency.upsert({
+      where: {
+        industryTemplateId_frameworkCompetencyId: {
+          industryTemplateId: itTemplate.id,
+          frameworkCompetencyId: canonicalCompId,
+        },
+      },
+      update: {},
+      create: {
+        industryTemplateId: itTemplate.id,
+        frameworkCompetencyId: canonicalCompId,
+      },
+    });
+  }
+
+  // Predefined Role Profile: Backend Engineer (Platform Level Template)
+  let itTemplateBackendRole = await prisma.templateRoleProfile.findFirst({
+    where: {
+      industryTemplateId: itTemplate.id,
+      name: 'Backend Engineer',
+    },
+  });
+
+  if (!itTemplateBackendRole) {
+    itTemplateBackendRole = await prisma.templateRoleProfile.create({
+      data: {
+        industryTemplateId: itTemplate.id,
+        name: 'Backend Engineer',
+        description: 'Predefined role template for core backend service and API development.',
+      },
+    });
+  }
+
+  const templateRoleRequirements = [
+    { name: 'JavaScript', targetLevel: 4 },
+    { name: 'Node.js', targetLevel: 4 },
+    { name: 'SQL', targetLevel: 3 },
+    { name: 'REST APIs', targetLevel: 4 },
+    { name: 'Communication', targetLevel: 3 },
+    { name: 'Collaboration', targetLevel: 3 },
+    { name: 'Problem Solving', targetLevel: 3 },
+  ];
+
+  for (const req of templateRoleRequirements) {
+    const canonicalCompId = frameworkCompMap.get(req.name);
+    if (!canonicalCompId) continue;
+
+    await prisma.templateRequirement.upsert({
+      where: {
+        templateRoleProfileId_frameworkCompetencyId: {
+          templateRoleProfileId: itTemplateBackendRole.id,
+          frameworkCompetencyId: canonicalCompId,
+        },
+      },
+      update: {
+        targetLevel: req.targetLevel,
+      },
+      create: {
+        templateRoleProfileId: itTemplateBackendRole.id,
+        frameworkCompetencyId: canonicalCompId,
+        targetLevel: req.targetLevel,
+      },
+    });
+  }
+
+  console.log(`✓ Seeded Industry Template: ${itTemplate.name} with ${canonicalCompetenciesData.length} competencies and ${templateRoleRequirements.length} role requirements.`);
 
   // 3c. Tenant Framework Adoption
   await prisma.tenantFrameworkAdoption.upsert({
