@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireTenantUser } from '@/lib/auth';
-import { getCampaignById } from '@/services';
-import { CampaignStatus, CompetencyType, AssessmentStatus } from '@prisma/client';
-import { formatDate, formatCampaignStatus, formatAssessmentStatus } from '@/lib/format';
+import { getCampaignById, getCampaignMonitoringStats } from '@/services';
+import { CampaignStatus, CompetencyType } from '@prisma/client';
+import { formatDate, formatCampaignStatus } from '@/lib/format';
+import { CampaignMonitoringView } from './campaign-monitoring-view';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,6 +20,12 @@ export default async function CampaignDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const stats = await getCampaignMonitoringStats(user.tenantId, id);
+
+  if (!stats) {
+    notFound();
+  }
+
   const technicalComps = campaign.competencies.filter(
     (c) => c.competency.type === CompetencyType.TECHNICAL
   );
@@ -26,28 +33,8 @@ export default async function CampaignDetailPage({ params }: PageProps) {
     (c) => c.competency.type === CompetencyType.BEHAVIORAL
   );
 
-  // Calculate assessment counts
-  const totalAssessments = campaign.assessments.length;
-  const completedAssessments = campaign.assessments.filter(
-    (a) => a.status === AssessmentStatus.COMPLETED
-  ).length;
-  const inProgressOrSubmitted = campaign.assessments.filter(
-    (a) =>
-      a.status === AssessmentStatus.DRAFT ||
-      a.status === AssessmentStatus.SUBMITTED ||
-      a.status === AssessmentStatus.PENDING_CORROBORATION
-  ).length;
-  const notStartedAssessments = campaign.assessments.filter(
-    (a) => a.status === AssessmentStatus.NOT_STARTED
-  ).length;
-
   const isDraft = campaign.status === CampaignStatus.DRAFT;
   const isActive = campaign.status === CampaignStatus.ACTIVE;
-
-  // Build a map of userId -> assessment for quick lookup in the participant roster
-  const assessmentByUserMap = new Map(
-    campaign.assessments.map((assessment) => [assessment.userId, assessment])
-  );
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -73,18 +60,27 @@ export default async function CampaignDetailPage({ params }: PageProps) {
           <div className="flex items-center space-x-3">
             <h1 className="text-2xl font-bold text-gray-900">{campaign.name}</h1>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                isActive
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   : isDraft
-                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                    : 'bg-gray-100 text-gray-700 border border-gray-200'
-                }`}
+                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                  : 'bg-gray-100 text-gray-700 border border-gray-200'
+              }`}
             >
               {formatCampaignStatus(campaign.status)}
             </span>
           </div>
 
-          <div className="mt-4 sm:mt-0">
+          <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+            {isDraft && (
+              <Link
+                href={`/organization-admin/campaigns/${campaign.id}/edit`}
+                className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              >
+                Edit Draft
+              </Link>
+            )}
             <Link
               href="/organization-admin/campaigns"
               className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
@@ -99,68 +95,41 @@ export default async function CampaignDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* DRAFT Warning Banner if applicable */}
-      {isDraft && (
-        <div className="rounded-md bg-amber-50 p-4 border border-amber-200">
-          <div className="flex">
-            <div className="shrink-0">
-              <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-amber-800">Draft Campaign</h3>
-              <div className="mt-1 text-xs text-amber-700">
-                This campaign is saved as a draft. Staff assessment records are not created until a campaign is launched as Active.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Meta Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-          <div className="text-xs text-gray-500 font-medium">Participants</div>
-          <div className="mt-1 text-2xl font-bold text-gray-900">{campaign.participants.length}</div>
-          <div className="mt-1 text-xs text-gray-500">Staff members enrolled</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-          <div className="text-xs text-gray-500 font-medium">Competencies</div>
-          <div className="mt-1 text-2xl font-bold text-gray-900">{campaign.competencies.length}</div>
-          <div className="mt-1 text-xs text-gray-500">
-            {technicalComps.length} Tech / {behavioralComps.length} Behav
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-          <div className="text-xs text-gray-500 font-medium">Assessment Status</div>
-          <div className="mt-1 text-2xl font-bold text-gray-900">
-            {completedAssessments} / {totalAssessments}
-          </div>
-          <div className="mt-1 text-xs text-gray-500">
-            {notStartedAssessments} Not Started, {inProgressOrSubmitted} In Progress
-          </div>
-        </div>
-
+      {/* Campaign Details Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 font-medium">Deadline</div>
           <div className="mt-1 text-lg font-bold text-gray-900">
             {formatDate(campaign.deadline)}
           </div>
           <div className="mt-1 text-xs text-gray-500">
-            {campaign.requiresCorroboration ? (
-              <span className="inline-flex items-center text-blue-700 font-medium">
-                Manager Corroboration Required
-              </span>
+            {new Date(campaign.deadline) < new Date() && campaign.status !== CampaignStatus.CLOSED ? (
+              <span className="text-red-600 font-semibold">Deadline passed</span>
             ) : (
-              <span className="text-gray-500">Self-assessment only</span>
+              <span>Target completion date</span>
             )}
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+          <div className="text-xs text-gray-500 font-medium">Corroboration</div>
+          <div className="mt-1 text-lg font-bold text-gray-900">
+            {campaign.requiresCorroboration ? 'Required' : 'Self-Assessment Only'}
+          </div>
+          <div className="mt-1 text-xs text-gray-500">
+            {campaign.requiresCorroboration
+              ? 'Managers must corroborate'
+              : 'Direct staff completion'}
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+          <div className="text-xs text-gray-500 font-medium">Assessed Competencies</div>
+          <div className="mt-1 text-lg font-bold text-gray-900">
+            {campaign.competencies.length}
+          </div>
+          <div className="mt-1 text-xs text-gray-500">
+            {technicalComps.length} Technical, {behavioralComps.length} Behavioral
           </div>
         </div>
       </div>
@@ -186,13 +155,16 @@ export default async function CampaignDetailPage({ params }: PageProps) {
         </div>
       )}
 
+      {/* Interactive Monitoring Dashboard */}
+      <CampaignMonitoringView campaign={campaign} stats={stats} />
+
       {/* Competencies Section */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
         <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-gray-900">Assessed Competencies</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Competencies evaluated in this assessment campaign.
+              Competencies evaluated in this assessment cycle.
             </p>
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded bg-gray-100 text-gray-700">
@@ -275,81 +247,6 @@ export default async function CampaignDetailPage({ params }: PageProps) {
                 </div>
               </div>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Participants & Assessment Roster */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
-        <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-gray-900">Assigned Staff Participants</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Staff members enrolled in this campaign and their current assessment status.
-            </p>
-          </div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded bg-gray-100 text-gray-700">
-            {campaign.participants.length} enrolled
-          </span>
-        </div>
-
-        {campaign.participants.length === 0 ? (
-          <p className="text-sm text-gray-400 italic">No participants enrolled in this campaign.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Staff Member
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Assessment Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {campaign.participants.map((p) => {
-                  const assessment = assessmentByUserMap.get(p.userId);
-
-                  return (
-                    <tr key={p.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {p.user.name}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                        {p.user.email}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm">
-                        {assessment ? (
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${assessment.status === AssessmentStatus.COMPLETED
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : assessment.status === AssessmentStatus.PENDING_CORROBORATION
-                                  ? 'bg-indigo-100 text-indigo-800'
-                                  : assessment.status === AssessmentStatus.SUBMITTED
-                                    ? 'bg-purple-100 text-purple-800'
-                                    : assessment.status === AssessmentStatus.DRAFT
-                                      ? 'bg-blue-100 text-blue-800'
-                                      : 'bg-gray-100 text-gray-800'
-                              }`}
-                          >
-                            {formatAssessmentStatus(assessment.status)}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-400 italic">
-                            {isDraft ? 'Pending activation' : 'Not generated'}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
           </div>
         )}
       </div>

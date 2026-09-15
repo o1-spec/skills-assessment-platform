@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requireTenantUser } from '@/lib/auth';
 import { getCampaignsForTenant } from '@/services';
-import { CampaignStatus } from '@prisma/client';
+import { CampaignStatus, CampaignScope } from '@prisma/client';
 import { formatDate, formatCampaignStatus } from '@/lib/format';
 
 export default async function CampaignsListPage() {
@@ -60,11 +60,13 @@ export default async function CampaignsListPage() {
                 [CampaignStatus.CLOSED]: 'bg-gray-50 text-gray-600 border-gray-200',
               }[camp.status];
 
+              const teamNames = camp.campaignTeams?.map((ct) => ct.team.name).join(', ');
+
               return (
                 <li key={camp.id} className="hover:bg-gray-50 transition-colors">
                   <Link href={`/organization-admin/campaigns/${camp.id}`} className="block p-5 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-base font-semibold text-blue-600 hover:underline">
                           {camp.name}
                         </span>
@@ -73,14 +75,29 @@ export default async function CampaignsListPage() {
                         >
                           {formatCampaignStatus(camp.status)}
                         </span>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
+                            camp.scope === CampaignScope.ORGANIZATION
+                              ? 'bg-purple-50 text-purple-700 border-purple-200'
+                              : camp.scope === CampaignScope.TEAM
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : 'bg-gray-50 text-gray-700 border-gray-200'
+                          }`}
+                        >
+                          {camp.scope === CampaignScope.ORGANIZATION
+                            ? '🏢 Org-wide'
+                            : camp.scope === CampaignScope.TEAM
+                            ? `👥 Team: ${teamNames || 'Selected Teams'}`
+                            : '👤 Individual'}
+                        </span>
                         {camp.requiresCorroboration && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
                             Manager Review Required
                           </span>
                         )}
                       </div>
 
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 shrink-0">
                         Deadline:{' '}
                         <span className="font-medium text-gray-900">
                           {formatDate(camp.deadline)}

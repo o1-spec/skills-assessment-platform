@@ -4,16 +4,18 @@ import {
   getActiveCompetenciesForTenant,
   getPublishedRoleProfilesForTenant,
   getEligibleCampaignParticipants,
+  getEligibleCampaignTeams,
 } from '@/services';
 import { CreateCampaignForm } from './create-campaign-form';
 
 export default async function NewCampaignPage() {
   const user = await requireTenantUser();
 
-  const [roleProfiles, competencies, staffParticipants] = await Promise.all([
+  const [roleProfiles, competencies, staffParticipants, teams] = await Promise.all([
     getPublishedRoleProfilesForTenant(user.tenantId),
     getActiveCompetenciesForTenant(user.tenantId),
     getEligibleCampaignParticipants(user.tenantId),
+    getEligibleCampaignTeams(user.tenantId),
   ]);
 
   return (
@@ -37,7 +39,7 @@ export default async function NewCampaignPage() {
         </nav>
         <h1 className="text-2xl font-bold text-gray-900">Create Assessment Campaign</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Set up a new assessment cycle, choose assessed competencies, and assign staff participants.
+          Set up a new assessment cycle, choose your scope, select assessed competencies, and target participants.
         </p>
       </div>
 
@@ -46,6 +48,7 @@ export default async function NewCampaignPage() {
         roleProfiles={roleProfiles}
         competencies={competencies}
         staffParticipants={staffParticipants}
+        teams={teams}
       />
     </div>
   );

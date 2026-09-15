@@ -36,6 +36,12 @@ enum CampaignStatus {
   CLOSED
 }
 
+enum CampaignScope {
+  ORGANIZATION
+  TEAM
+  INDIVIDUAL
+}
+
 enum FrameworkStatus {
   DRAFT
   PUBLISHED
@@ -407,6 +413,7 @@ model AssessmentCampaign {
   deadline              DateTime
   requiresCorroboration Boolean           @default(false)
   status                CampaignStatus    @default(DRAFT)
+  scope                 CampaignScope     @default(INDIVIDUAL)
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
 
@@ -415,6 +422,7 @@ model AssessmentCampaign {
   frameworkVersion FrameworkVersion?     @relation(fields: [frameworkVersionId], references: [id], onDelete: SetNull)
   competencies     CampaignCompetency[]
   participants     CampaignParticipant[]
+  campaignTeams    CampaignTeam[]
   assessments      Assessment[]
 
   @@index([tenantId])
@@ -441,6 +449,20 @@ model CampaignParticipant {
   user     User               @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([campaignId, userId])
+}
+
+model CampaignTeam {
+  id         String   @id @default(cuid())
+  campaignId String
+  teamId     String
+  createdAt  DateTime @default(now())
+
+  campaign AssessmentCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  team     Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, teamId])
+  @@index([campaignId])
+  @@index([teamId])
 }
 
 // ------------------------------------------------------
@@ -532,6 +554,7 @@ model Team {
   manager         User?                @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
   memberships     TeamMembership[]
   invitationTeams TenantInvitationTeam[]
+  campaignTeams   CampaignTeam[]
 
   @@unique([tenantId, name])
   @@index([tenantId])

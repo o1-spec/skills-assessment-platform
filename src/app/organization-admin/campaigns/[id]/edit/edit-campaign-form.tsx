@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { createCampaignAction, CreateCampaignFormState } from '../actions';
+import { updateCampaignDraftAction, CreateCampaignFormState } from '../../actions';
 import {
+  CampaignDetail,
   PublishedRoleProfileOption,
   EligibleParticipantOption,
   EligibleCampaignTeamOption,
@@ -11,7 +12,8 @@ import {
 } from '@/services';
 import { CampaignScope, CompetencyType } from '@prisma/client';
 
-interface CreateCampaignFormProps {
+interface EditCampaignFormProps {
+  campaign: CampaignDetail;
   roleProfiles: PublishedRoleProfileOption[];
   competencies: CompetencyWithLevels[];
   staffParticipants: EligibleParticipantOption[];
@@ -20,31 +22,40 @@ interface CreateCampaignFormProps {
 
 const initialState: CreateCampaignFormState = {};
 
-export function CreateCampaignForm({
+export function EditCampaignForm({
+  campaign,
   roleProfiles,
   competencies,
   staffParticipants,
   teams,
-}: CreateCampaignFormProps) {
-  const [state, formAction, isPending] = useActionState(createCampaignAction, initialState);
+}: EditCampaignFormProps) {
+  const updateWithId = updateCampaignDraftAction.bind(null, campaign.id);
+  const [state, formAction, isPending] = useActionState(updateWithId, initialState);
 
-  // Default deadline 30 days in the future (YYYY-MM-DD)
-  const [defaultDeadline] = useState(() =>
-    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const [name, setName] = useState(campaign.name);
+  const [description, setDescription] = useState(campaign.description || '');
+  const [deadline, setDeadline] = useState(() =>
+    new Date(campaign.deadline).toISOString().split('T')[0]
+  );
+  const [requiresCorroboration, setRequiresCorroboration] = useState(campaign.requiresCorroboration);
+
+  const [selectedRoleProfileId, setSelectedRoleProfileId] = useState<string>(
+    campaign.roleProfileId || ''
+  );
+  const [selectedCompetencies, setSelectedCompetencies] = useState<Set<string>>(
+    new Set(campaign.competencies.map((c) => c.competencyId))
+  );
+  const [scope, setScope] = useState<CampaignScope>(campaign.scope);
+  const [selectedTeams, setSelectedTeams] = useState<Set<string>>(
+    new Set(campaign.campaignTeams.map((ct) => ct.teamId))
+  );
+  const [selectedParticipants, setSelectedParticipants] = useState<Set<string>>(
+    new Set(campaign.participants.map((p) => p.userId))
   );
 
-  const [selectedRoleProfileId, setSelectedRoleProfileId] = useState<string>('');
-  const [selectedCompetencies, setSelectedCompetencies] = useState<Set<string>>(new Set());
-  const [scope, setScope] = useState<CampaignScope>(CampaignScope.INDIVIDUAL);
-  const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
-  const [selectedParticipants, setSelectedParticipants] = useState<Set<string>>(new Set());
-  const [requiresCorroboration, setRequiresCorroboration] = useState<boolean>(true);
-
-  // Group competencies
   const technicalComps = competencies.filter((c) => c.type === CompetencyType.TECHNICAL);
   const behavioralComps = competencies.filter((c) => c.type === CompetencyType.BEHAVIORAL);
 
-  // Handle Role Profile selection change & competency preselection
   const handleRoleProfileChange = (roleId: string) => {
     setSelectedRoleProfileId(roleId);
 
@@ -59,7 +70,6 @@ export function CreateCampaignForm({
     }
   };
 
-  // Competency toggling
   const toggleCompetency = (id: string) => {
     setSelectedCompetencies((prev) => {
       const next = new Set(prev);
@@ -80,7 +90,6 @@ export function CreateCampaignForm({
     setSelectedCompetencies(new Set());
   };
 
-  // Team toggling
   const toggleTeam = (id: string) => {
     setSelectedTeams((prev) => {
       const next = new Set(prev);
@@ -101,7 +110,6 @@ export function CreateCampaignForm({
     }
   };
 
-  // Participant toggling
   const toggleParticipant = (id: string) => {
     setSelectedParticipants((prev) => {
       const next = new Set(prev);
@@ -157,9 +165,10 @@ export function CreateCampaignForm({
             type="text"
             id="name"
             name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
             maxLength={100}
-            placeholder="e.g., Q4 Engineering Skills Assessment"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 bg-white"
           />
           {state?.fieldErrors?.name && (
@@ -176,7 +185,8 @@ export function CreateCampaignForm({
             name="description"
             rows={2}
             maxLength={500}
-            placeholder="Provide context or instructions for participating staff and managers..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 bg-white"
           />
           {state?.fieldErrors?.description && (
@@ -193,7 +203,8 @@ export function CreateCampaignForm({
               type="date"
               id="deadline"
               name="deadline"
-              defaultValue={defaultDeadline}
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
               required
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 bg-white"
             />
@@ -252,11 +263,6 @@ export function CreateCampaignForm({
               </option>
             ))}
           </select>
-          {selectedRoleProfileId && (
-            <p className="mt-2 text-xs text-blue-700 bg-blue-50 p-2.5 rounded border border-blue-100">
-              💡 Preselected competencies from the <strong>{roleProfiles.find((r) => r.id === selectedRoleProfileId)?.name}</strong> template. You can adjust the selection below.
-            </p>
-          )}
         </div>
       </div>
 
@@ -368,7 +374,7 @@ export function CreateCampaignForm({
         </div>
       </div>
 
-      {/* 4. Campaign Scope & Target Audience Card */}
+      {/* 4. Campaign Scope & Audience Card */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
         <div className="border-b border-gray-100 pb-3">
           <h2 className="text-base font-semibold text-gray-900">4. Campaign Scope & Audience</h2>
@@ -459,7 +465,7 @@ export function CreateCampaignForm({
                 <p className="text-xs text-blue-700 mt-1">
                   At campaign launch, every active staff member in the organization (currently{' '}
                   <strong>{staffParticipants.length}</strong> eligible staff) will automatically be enrolled.
-                  Managers and administrators are automatically excluded.
+                  Managers and administrators are excluded.
                 </p>
               </div>
             </div>
@@ -603,7 +609,7 @@ export function CreateCampaignForm({
       {/* Form Submission Actions */}
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-gray-200">
         <Link
-          href="/organization-admin/campaigns"
+          href={`/organization-admin/campaigns/${campaign.id}`}
           className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
         >
           Cancel
@@ -616,7 +622,7 @@ export function CreateCampaignForm({
           disabled={isPending}
           className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
         >
-          {isPending ? 'Saving...' : 'Save as Draft'}
+          {isPending ? 'Saving...' : 'Save Draft Changes'}
         </button>
 
         <button
@@ -626,7 +632,7 @@ export function CreateCampaignForm({
           disabled={isPending}
           className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
         >
-          {isPending ? 'Launching...' : 'Launch Campaign'}
+          {isPending ? 'Launching...' : 'Save & Launch Campaign'}
         </button>
       </div>
     </form>
