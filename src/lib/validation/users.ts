@@ -30,6 +30,7 @@ export const inviteTenantUserSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => (val && val.trim().length > 0 ? val.trim() : null)),
+  teamIds: z.array(z.string()).optional(),
 });
 
 export const updateTenantUserSchema = z.object({

@@ -152,6 +152,12 @@ export function UsersDirectoryView({
         </div>
         <div className="flex items-center space-x-3">
           <Link
+            href="/organization-admin/users/import"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-xs text-xs font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          >
+            Import CSV
+          </Link>
+          <Link
             href="/organization-admin/users/new"
             className="inline-flex items-center px-4 py-2 border border-transparent shadow-xs text-xs font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
@@ -177,6 +183,15 @@ export function UsersDirectoryView({
                   ({Math.max(0, seatLimit - activeCount)} available)
                 </span>
               )}
+            </div>
+            <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+              <span>
+                Active Seats: <strong className="text-gray-900 font-semibold">{activeCount}</strong>
+              </span>
+              <span>•</span>
+              <span>
+                Pending Invitations: <strong className="text-amber-700 font-semibold">{pendingInvitations.length}</strong>
+              </span>
             </div>
           </div>
 

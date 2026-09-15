@@ -12,6 +12,7 @@ export interface GeneratedInvitation {
   role: UserRole;
   roleProfileId?: string | null;
   managerId?: string | null;
+  teamIds?: string[];
   expiresAt: Date;
   rawToken: string;
   invitationUrl: string;
@@ -43,6 +44,40 @@ export function hashInvitationToken(rawToken: string): string {
 }
 
 /**
+ * Asserts no email conflict: rejects any existing user account (active or inactive),
+ * and rejects a live pending invitation for the same tenant+email.
+ */
+async function assertNoEmailConflict(
+  tenantId: string,
+  email: string,
+  excludeInvitationId?: string
+): Promise<void> {
+  // Reject any existing account (active or inactive)
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    throw new Error(`An account with this email already exists.`);
+  }
+
+  // Reject a live pending invitation for the same tenant + email
+  const now = new Date();
+  const livePending = await prisma.tenantInvitation.findFirst({
+    where: {
+      tenantId,
+      email,
+      acceptedAt: null,
+      cancelledAt: null,
+      expiresAt: { gt: now },
+      ...(excludeInvitationId ? { NOT: { id: excludeInvitationId } } : {}),
+    },
+  });
+  if (livePending) {
+    throw new Error(
+      `A pending invitation for this email address already exists. Cancel the existing invitation before sending a new one.`
+    );
+  }
+}
+
+/**
  * Creates an initial Organization Admin invitation for a tenant during provisioning.
  */
 export async function createTenantAdminInvitation(
@@ -56,25 +91,11 @@ export async function createTenantAdminInvitation(
   const email = input.email.toLowerCase().trim();
   const name = input.name.trim();
 
-  // Verify tenant exists
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: tenantId },
-  });
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+  if (!tenant) throw new Error('Tenant not found.');
 
-  if (!tenant) {
-    throw new Error('Tenant not found.');
-  }
+  await assertNoEmailConflict(tenantId, email);
 
-  // Check if an active user with this email already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (existingUser && existingUser.isActive) {
-    throw new Error(`An active user with email "${email}" already exists.`);
-  }
-
-  // Generate cryptographically secure token
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashInvitationToken(rawToken);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -91,8 +112,6 @@ export async function createTenantAdminInvitation(
     },
   });
 
-  const invitationUrl = `/accept-invitation?token=${rawToken}`;
-
   return {
     id: invitation.id,
     tenantId: invitation.tenantId,
@@ -101,12 +120,13 @@ export async function createTenantAdminInvitation(
     role: invitation.role,
     expiresAt: invitation.expiresAt,
     rawToken,
-    invitationUrl,
+    invitationUrl: `/accept-invitation?token=${rawToken}`,
   };
 }
 
 /**
  * Creates a standard tenant user invitation created by an Organization Admin.
+ * Optionally assigns the invitee to one or more teams (stored in TenantInvitationTeam).
  */
 export async function createTenantUserInvitation(
   tenantId: string,
@@ -117,12 +137,13 @@ export async function createTenantUserInvitation(
     role: UserRole;
     roleProfileId?: string | null;
     managerId?: string | null;
+    teamIds?: string[] | null;
   }
 ): Promise<GeneratedInvitation> {
   const email = input.email.toLowerCase().trim();
   const name = input.name.trim();
 
-  // 1. Role validation: Must be an allowed tenant role (never PLATFORM_ADMIN)
+  // 1. Role validation: must be a tenant role (never PLATFORM_ADMIN)
   if (
     input.role !== UserRole.ORGANIZATION_ADMIN &&
     input.role !== UserRole.MANAGER &&
@@ -132,41 +153,22 @@ export async function createTenantUserInvitation(
   }
 
   // 2. Verify tenant exists and is ACTIVE
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: tenantId },
-  });
-
-  if (!tenant) {
-    throw new Error('Organization not found.');
-  }
-
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+  if (!tenant) throw new Error('Organization not found.');
   if (tenant.status !== TenantStatus.ACTIVE) {
     throw new Error('Cannot invite users to a suspended or inactive organization.');
   }
 
-  // 3. Check for existing active account
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (existingUser && existingUser.isActive) {
-    throw new Error(`An active user with email "${email}" already exists.`);
-  }
+  // 3. Reject existing account or duplicate pending invitation
+  await assertNoEmailConflict(tenantId, email);
 
   // 4. Validate Manager if provided
   if (input.managerId) {
-    const manager = await prisma.user.findUnique({
-      where: { id: input.managerId },
-    });
-
+    const manager = await prisma.user.findUnique({ where: { id: input.managerId } });
     if (!manager || manager.tenantId !== tenantId) {
       throw new Error('Selected manager does not belong to this organization.');
     }
-
-    if (!manager.isActive) {
-      throw new Error('Selected manager is inactive.');
-    }
-
+    if (!manager.isActive) throw new Error('Selected manager is inactive.');
     if (manager.role !== UserRole.MANAGER) {
       throw new Error('Assigned manager must have the Manager application role.');
     }
@@ -174,16 +176,28 @@ export async function createTenantUserInvitation(
 
   // 5. Validate Role Profile if provided
   if (input.roleProfileId) {
-    const roleProfile = await prisma.roleProfile.findUnique({
-      where: { id: input.roleProfileId },
-    });
-
+    const roleProfile = await prisma.roleProfile.findUnique({ where: { id: input.roleProfileId } });
     if (!roleProfile || roleProfile.tenantId !== tenantId) {
       throw new Error('Selected role profile does not belong to this organization.');
     }
   }
 
-  // 6. Generate secure token
+  // 6. Validate Teams if provided
+  const resolvedTeamIds: string[] = [];
+  if (input.teamIds && input.teamIds.length > 0) {
+    for (const teamId of input.teamIds) {
+      const team = await prisma.team.findUnique({ where: { id: teamId } });
+      if (!team || team.tenantId !== tenantId) {
+        throw new Error(`Team does not belong to this organization.`);
+      }
+      if (!team.isActive) {
+        throw new Error(`Team "${team.name}" is inactive and cannot receive new members.`);
+      }
+      resolvedTeamIds.push(teamId);
+    }
+  }
+
+  // 7. Generate secure token
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashInvitationToken(rawToken);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -202,7 +216,13 @@ export async function createTenantUserInvitation(
     },
   });
 
-  const invitationUrl = `/accept-invitation?token=${rawToken}`;
+  // 8. Store team assignments (read at accept time — never re-supplied by client)
+  if (resolvedTeamIds.length > 0) {
+    await prisma.tenantInvitationTeam.createMany({
+      data: resolvedTeamIds.map((teamId) => ({ invitationId: invitation.id, teamId })),
+      skipDuplicates: true,
+    });
+  }
 
   return {
     id: invitation.id,
@@ -212,9 +232,10 @@ export async function createTenantUserInvitation(
     role: invitation.role,
     roleProfileId: invitation.roleProfileId,
     managerId: invitation.managerId,
+    teamIds: resolvedTeamIds,
     expiresAt: invitation.expiresAt,
     rawToken,
-    invitationUrl,
+    invitationUrl: `/accept-invitation?token=${rawToken}`,
   };
 }
 
@@ -230,37 +251,25 @@ export async function getInvitationByRawToken(rawToken: string): Promise<Invitat
     where: { tokenHash },
     include: {
       tenant: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          status: true,
-        },
+        select: { id: true, name: true, slug: true, status: true },
       },
       manager: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
+        select: { id: true, name: true, email: true },
       },
       roleProfile: {
-        select: {
-          id: true,
-          name: true,
-        },
+        select: { id: true, name: true },
       },
     },
   });
 
   if (!invitation) return null;
-
   return invitation;
 }
 
 /**
- * Accepts an invitation: creates user with role, manager, roleProfile from invitation,
- * enforces seat limit at acceptance time, marks invitation accepted, and updates tenant if pending.
+ * Accepts an invitation: creates user from server-derived invitation values,
+ * enforces seat limit at acceptance time, creates TeamMembership rows from
+ * stored TenantInvitationTeam data (never from client input).
  */
 export async function acceptTenantInvitation(
   input: AcceptInvitationInput
@@ -269,35 +278,26 @@ export async function acceptTenantInvitation(
 
   return prisma.$transaction(
     async (tx) => {
-      // 1. Fetch invitation
+      // 1. Fetch invitation with stored team assignments
       const invitation = await tx.tenantInvitation.findUnique({
         where: { tokenHash },
         include: {
           tenant: true,
+          teams: { select: { teamId: true } },
         },
       });
 
-      if (!invitation) {
-        throw new Error('Invalid invitation link or token.');
-      }
-
+      if (!invitation) throw new Error('Invalid invitation link or token.');
       if (invitation.cancelledAt) {
         throw new Error('This invitation has been cancelled. Please contact your organization administrator.');
       }
-
-      if (invitation.acceptedAt) {
-        throw new Error('This invitation has already been accepted.');
-      }
-
+      if (invitation.acceptedAt) throw new Error('This invitation has already been accepted.');
       if (invitation.expiresAt < new Date()) {
         throw new Error('This invitation link has expired. Please contact your administrator.');
       }
 
       const tenant = invitation.tenant;
-      if (!tenant) {
-        throw new Error('Associated organization was not found.');
-      }
-
+      if (!tenant) throw new Error('Associated organization was not found.');
       if (tenant.status === TenantStatus.SUSPENDED) {
         throw new Error('This organization is currently suspended.');
       }
@@ -305,12 +305,8 @@ export async function acceptTenantInvitation(
       // 2. Check seat limits at acceptance time
       if (tenant.seatLimit !== null) {
         const activeUsersCount = await tx.user.count({
-          where: {
-            tenantId: tenant.id,
-            isActive: true,
-          },
+          where: { tenantId: tenant.id, isActive: true },
         });
-
         if (activeUsersCount >= tenant.seatLimit) {
           throw new Error(
             `Organization seat limit reached (${activeUsersCount}/${tenant.seatLimit}). Please contact your administrator to increase seats.`
@@ -318,19 +314,18 @@ export async function acceptTenantInvitation(
         }
       }
 
-      // 3. Check for existing active email
+      // 3. Check for existing account (any state)
       const existingUser = await tx.user.findUnique({
         where: { email: invitation.email.toLowerCase().trim() },
       });
-
-      if (existingUser && existingUser.isActive) {
-        throw new Error(`An active user with email "${invitation.email}" already exists.`);
+      if (existingUser) {
+        throw new Error(`An account with email "${invitation.email}" already exists.`);
       }
 
       // 4. Hash password securely
       const passwordHash = await bcrypt.hash(input.password, 10);
 
-      // 5. Create User using server-derived invitation values
+      // 5. Create User using server-derived invitation values only
       const user = await tx.user.create({
         data: {
           name: invitation.name,
@@ -344,40 +339,40 @@ export async function acceptTenantInvitation(
         },
       });
 
-      // 6. Mark invitation as accepted
+      // 6. Create TeamMembership rows from stored TenantInvitationTeam (never from client)
+      const invitationTeamIds = invitation.teams.map((t) => t.teamId);
+      if (invitationTeamIds.length > 0) {
+        await tx.teamMembership.createMany({
+          data: invitationTeamIds.map((teamId) => ({ teamId, userId: user.id })),
+          skipDuplicates: true,
+        });
+      }
+
+      // 7. Mark invitation as accepted
       await tx.tenantInvitation.update({
         where: { id: invitation.id },
-        data: {
-          acceptedAt: new Date(),
-        },
+        data: { acceptedAt: new Date() },
       });
 
-      // 7. Update tenant status if pending onboarding
+      // 8. Update tenant status if pending onboarding
       let updatedTenant = tenant;
       if (tenant.status === TenantStatus.PENDING_ONBOARDING) {
         updatedTenant = await tx.tenant.update({
           where: { id: tenant.id },
-          data: {
-            status: TenantStatus.ACTIVE,
-          },
+          data: { status: TenantStatus.ACTIVE },
         });
       }
 
       return {
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        },
+        user: { id: user.id, email: user.email, name: user.name, role: user.role },
         tenant: updatedTenant,
       };
     },
-    {
-      timeout: 15000,
-    }
+    { timeout: 15000 }
   );
 }
 
+
 // Backward-compatible alias
 export const acceptTenantAdminInvitation = acceptTenantInvitation;
+

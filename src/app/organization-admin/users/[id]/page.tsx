@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { UserRole } from '@prisma/client';
 import { requireRole } from '@/lib/auth';
+import { prisma } from '@/lib/db';
 import {
   getUserByIdForTenant,
   getManagersForTenant,
@@ -24,16 +25,29 @@ export default async function OrganizationUserDetailPage({ params }: PageProps) 
     notFound();
   }
 
-  const [managers, roleProfiles] = await Promise.all([
+  const [managers, roleProfiles, teams, userMemberships] = await Promise.all([
     getManagersForTenant(tenantId, targetUser.id),
     getPublishedRoleProfilesForUserAssignment(tenantId),
+    prisma.team.findMany({
+      where: { tenantId },
+      select: { id: true, name: true, isActive: true },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.teamMembership.findMany({
+      where: { userId: targetUser.id, team: { tenantId } },
+      select: { teamId: true },
+    }),
   ]);
+
+  const initialTeamIds = userMemberships.map((m) => m.teamId);
 
   return (
     <UserDetailView
       targetUser={targetUser}
       managers={managers}
       roleProfiles={roleProfiles}
+      teams={teams}
+      initialTeamIds={initialTeamIds}
       currentUserId={currentUser.id}
     />
   );

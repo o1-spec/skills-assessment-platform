@@ -17,6 +17,11 @@ interface RoleProfileOption {
   description: string | null;
 }
 
+interface TeamOption {
+  id: string;
+  name: string;
+}
+
 interface InviteUserFormProps {
   managers: ManagerOption[];
   roleProfiles: RoleProfileOption[];
@@ -25,14 +30,16 @@ interface InviteUserFormProps {
     seatLimit: number | null;
     availableSeats: number | null;
   };
+  teams?: TeamOption[];
 }
 
-export function InviteUserForm({ managers, roleProfiles, seatUsage }: InviteUserFormProps) {
+export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }: InviteUserFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'ORGANIZATION_ADMIN' | 'MANAGER' | 'STAFF'>(UserRole.STAFF);
   const [roleProfileId, setRoleProfileId] = useState('');
   const [managerId, setManagerId] = useState('');
+  const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +78,7 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage }: InviteUser
         role,
         roleProfileId: roleProfileId || null,
         managerId: role !== UserRole.ORGANIZATION_ADMIN && managerId ? managerId : null,
+        teamIds: selectedTeamIds.length > 0 ? selectedTeamIds : undefined,
       });
 
       if (!res.success) {
@@ -316,6 +324,45 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage }: InviteUser
                 )}
                 <p className="text-[11px] text-gray-500 mt-1">
                   Manager responsible for corroborating this employee&apos;s self-assessments.
+                </p>
+              </div>
+            )}
+
+            {/* Team Selector */}
+            {teams && teams.length > 0 && (
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Team Assignments <span className="text-gray-400 font-normal">(Optional)</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                  {teams.map((t) => {
+                    const checked = selectedTeamIds.includes(t.id);
+                    return (
+                      <label
+                        key={t.id}
+                        className={`flex items-center p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
+                          checked
+                            ? 'border-blue-500 bg-blue-50/50 text-blue-900 font-medium'
+                            : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => {
+                            setSelectedTeamIds((prev) =>
+                              prev.includes(t.id) ? prev.filter((id) => id !== t.id) : [...prev, t.id]
+                            );
+                          }}
+                          className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="ml-2.5">{t.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-gray-500 mt-1">
+                  Employee will be automatically added to selected teams upon accepting this invitation.
                 </p>
               </div>
             )}

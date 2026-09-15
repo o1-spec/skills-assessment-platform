@@ -10,6 +10,7 @@ import {
   deactivateTenantUserAction,
   reactivateTenantUserAction,
 } from '@/actions/users';
+import { setUserTeamMembershipsAction } from '@/actions/organization-structure';
 
 interface ManagerOption {
   id: string;
@@ -23,10 +24,18 @@ interface RoleProfileOption {
   description: string | null;
 }
 
+interface TeamOption {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
+
 interface UserDetailViewProps {
   targetUser: TenantUserWithRelations;
   managers: ManagerOption[];
   roleProfiles: RoleProfileOption[];
+  teams: TeamOption[];
+  initialTeamIds: string[];
   currentUserId: string;
 }
 
@@ -34,6 +43,8 @@ export function UserDetailView({
   targetUser,
   managers,
   roleProfiles,
+  teams,
+  initialTeamIds,
   currentUserId,
 }: UserDetailViewProps) {
   const router = useRouter();
@@ -47,9 +58,39 @@ export function UserDetailView({
   const [roleProfileId, setRoleProfileId] = useState(targetUser.roleProfileId || '');
   const [managerId, setManagerId] = useState(targetUser.managerId || '');
 
+  const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>(initialTeamIds);
+  const [isSavingTeams, setIsSavingTeams] = useState(false);
+  const [teamError, setTeamError] = useState<string | null>(null);
+  const [teamSuccess, setTeamSuccess] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const handleTeamToggle = (teamId: string) => {
+    setSelectedTeamIds((prev) =>
+      prev.includes(teamId) ? prev.filter((id) => id !== teamId) : [...prev, teamId]
+    );
+  };
+
+  const handleSaveTeams = async () => {
+    setTeamError(null);
+    setTeamSuccess(null);
+    setIsSavingTeams(true);
+    try {
+      const res = await setUserTeamMembershipsAction(targetUser.id, selectedTeamIds);
+      if (!res.success) {
+        setTeamError(res.error || 'Failed to update team memberships.');
+      } else {
+        setTeamSuccess('Team memberships updated successfully.');
+        router.refresh();
+      }
+    } catch {
+      setTeamError('An unexpected error occurred while updating team memberships.');
+    } finally {
+      setIsSavingTeams(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,6 +410,82 @@ export function UserDetailView({
           </button>
         </div>
       </form>
+
+      {/* Team Memberships Card */}
+      <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">Team Memberships</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Assign this employee to one or more functional teams.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleSaveTeams}
+            disabled={isSavingTeams}
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
+          >
+            {isSavingTeams ? 'Saving…' : 'Save Teams'}
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {teamError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+              {teamError}
+            </div>
+          )}
+          {teamSuccess && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700">
+              {teamSuccess}
+            </div>
+          )}
+
+          {teams.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">
+              No teams created in this organization yet.{' '}
+              <Link
+                href="/organization-admin/organization/teams/new"
+                className="text-blue-600 hover:underline"
+              >
+                Create a team
+              </Link>
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {teams.map((t) => {
+                const checked = selectedTeamIds.includes(t.id);
+                return (
+                  <label
+                    key={t.id}
+                    className={`flex items-start p-3 rounded-lg border text-sm cursor-pointer transition-colors ${
+                      checked
+                        ? 'border-blue-500 bg-blue-50/40 text-gray-900'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => handleTeamToggle(t.id)}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="ml-3">
+                      <span className="font-medium text-gray-900">{t.name}</span>
+                      {!t.isActive && (
+                        <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

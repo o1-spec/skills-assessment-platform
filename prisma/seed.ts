@@ -740,6 +740,67 @@ async function main() {
   }
 
   console.log(`✓ Sarah Staff Assessment initialized with status NOT_STARTED and 7 blank assessment items.`);
+
+  // 7. Fix Sarah's roleProfileId deterministically
+  await prisma.user.update({
+    where: { id: staff.id },
+    data: { roleProfileId: roleProfile.id },
+  });
+  console.log(`✓ Sarah Staff roleProfileId = Backend Engineer (deterministic).`);
+
+  // 8. Organization Structure: Engineering Department + Backend Engineering Team
+  const engineeringDept = await prisma.department.upsert({
+    where: {
+      tenantId_name: {
+        tenantId: tenant.id,
+        name: 'Engineering',
+      },
+    },
+    update: { isActive: true },
+    create: {
+      tenantId: tenant.id,
+      name: 'Engineering',
+      description: 'Engineering and software delivery teams.',
+      isActive: true,
+    },
+  });
+
+  const backendTeam = await prisma.team.upsert({
+    where: {
+      tenantId_name: {
+        tenantId: tenant.id,
+        name: 'Backend Engineering',
+      },
+    },
+    update: {
+      departmentId: engineeringDept.id,
+      managerId: manager.id,
+      isActive: true,
+    },
+    create: {
+      tenantId: tenant.id,
+      departmentId: engineeringDept.id,
+      managerId: manager.id,
+      name: 'Backend Engineering',
+      description: 'Backend services and API development team.',
+      isActive: true,
+    },
+  });
+
+  // Team memberships (idempotent)
+  await prisma.teamMembership.upsert({
+    where: { teamId_userId: { teamId: backendTeam.id, userId: manager.id } },
+    update: {},
+    create: { teamId: backendTeam.id, userId: manager.id },
+  });
+
+  await prisma.teamMembership.upsert({
+    where: { teamId_userId: { teamId: backendTeam.id, userId: staff.id } },
+    update: {},
+    create: { teamId: backendTeam.id, userId: staff.id },
+  });
+
+  console.log(`✓ Organization structure: Engineering dept → Backend Engineering team (Michael + Sarah).`);
   console.log('✨ Database seed completed successfully!');
 }
 
