@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
-import { PrismaClient, UserRole, CompetencyType, RoleProfileStatus, CampaignStatus, AssessmentStatus, FrameworkStatus } from '@prisma/client';
+import { PrismaClient, UserRole, CompetencyType, RoleProfileStatus, CampaignStatus, AssessmentStatus, FrameworkStatus, TenantStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const connectionString = process.env.DATABASE_URL?.replace(/[?&]sslmode=[^&]+/, '');
@@ -18,16 +18,60 @@ async function main() {
   // Hash shared demo password for development accounts
   const demoPasswordHash = await bcrypt.hash('Password123!', 10);
 
+  // 0. Seed Demo Subscription Plans
+  await prisma.subscriptionPlan.upsert({
+    where: { name: 'Starter' },
+    update: { defaultSeatLimit: 10, isActive: true },
+    create: {
+      name: 'Starter',
+      description: 'Foundational skill framework and assessment for teams up to 10 members.',
+      defaultSeatLimit: 10,
+      isActive: true,
+    },
+  });
+
+  const proPlan = await prisma.subscriptionPlan.upsert({
+    where: { name: 'Professional' },
+    update: { defaultSeatLimit: 50, isActive: true },
+    create: {
+      name: 'Professional',
+      description: 'Comprehensive competency assessment, manager corroboration, and gap analysis for growing organizations.',
+      defaultSeatLimit: 50,
+      isActive: true,
+    },
+  });
+
+  await prisma.subscriptionPlan.upsert({
+    where: { name: 'Enterprise' },
+    update: { defaultSeatLimit: 250, isActive: true },
+    create: {
+      name: 'Enterprise',
+      description: 'Full-scale organizational skill benchmarking with custom competency authoring and multi-tier management.',
+      defaultSeatLimit: 250,
+      isActive: true,
+    },
+  });
+  console.log(`✓ Subscription plans ready: Starter, Professional, Enterprise`);
+
   // 1. Primary Demo Tenant
   const tenant = await prisma.tenant.upsert({
     where: { slug: 'acme-technologies' },
-    update: {},
+    update: {
+      status: TenantStatus.ACTIVE,
+      isOnboarded: true,
+      planId: proPlan.id,
+      seatLimit: 50,
+    },
     create: {
       name: 'Acme Technologies',
       slug: 'acme-technologies',
+      status: TenantStatus.ACTIVE,
+      isOnboarded: true,
+      planId: proPlan.id,
+      seatLimit: 50,
     },
   });
-  console.log(`✓ Tenant ready: ${tenant.name} (${tenant.id})`);
+  console.log(`✓ Tenant ready: ${tenant.name} (${tenant.id}) on ${proPlan.name} Plan`);
 
   // 2. Demo Users
   // Platform Admin (Global, tenantId = null)

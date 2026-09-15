@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { UserRole } from '@prisma/client';
+import { UserRole, TenantStatus } from '@prisma/client';
 import { getCurrentUser, AuthenticatedUser } from './service';
 
 export function getRoleDashboardPath(role: UserRole): string {
@@ -40,6 +40,7 @@ export interface TenantUser extends AuthenticatedUser {
     id: string;
     name: string;
     slug: string;
+    status: TenantStatus;
   };
 }
 

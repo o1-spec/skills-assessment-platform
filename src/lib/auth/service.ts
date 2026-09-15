@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { createSessionToken, setSessionCookie, deleteSessionCookie, getSessionToken, verifySessionToken } from './session';
-import type { UserRole } from '@prisma/client';
+import type { UserRole, TenantStatus } from '@prisma/client';
 
 export interface AuthenticatedUser {
   id: string;
@@ -17,6 +17,7 @@ export interface AuthenticatedUser {
     id: string;
     name: string;
     slug: string;
+    status: TenantStatus;
   } | null;
 }
 
@@ -33,12 +34,18 @@ export async function authenticateUser(email: string, password: string): Promise
           id: true,
           name: true,
           slug: true,
+          status: true,
         },
       },
     },
   });
 
   if (!user || !user.isActive) {
+    return null;
+  }
+
+  // Deny access if user belongs to a suspended tenant
+  if (user.tenant && user.tenant.status === 'SUSPENDED') {
     return null;
   }
 
@@ -89,12 +96,18 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
           id: true,
           name: true,
           slug: true,
+          status: true,
         },
       },
     },
   });
 
   if (!user || !user.isActive) {
+    return null;
+  }
+
+  // Deny access if user belongs to a suspended tenant
+  if (user.tenant && user.tenant.status === 'SUSPENDED') {
     return null;
   }
 

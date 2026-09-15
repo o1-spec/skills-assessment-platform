@@ -22,18 +22,30 @@ export default async function PlatformAdminPage() {
             Global SaaS tenant oversight, canonical competency frameworks, and platform metrics.
           </p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/platform-admin/frameworks"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            href="/platform-admin/plans"
+            className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-xs text-xs font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
-            Manage Frameworks
+            Subscription Plans
           </Link>
           <Link
-            href="/platform-admin/frameworks/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 transition-colors"
+            href="/platform-admin/frameworks"
+            className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-xs text-xs font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
-            + Create Framework Draft
+            Frameworks
+          </Link>
+          <Link
+            href="/platform-admin/tenants"
+            className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-xs text-xs font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          >
+            Organizations
+          </Link>
+          <Link
+            href="/platform-admin/tenants/new"
+            className="inline-flex items-center px-3.5 py-2 border border-transparent shadow-xs text-xs font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+          >
+            + Provision Organization
           </Link>
         </div>
       </div>

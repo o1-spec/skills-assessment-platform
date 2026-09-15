@@ -49,22 +49,79 @@ enum AssessmentStatus {
   COMPLETED
 }
 
+enum TenantStatus {
+  PENDING_ONBOARDING
+  ACTIVE
+  SUSPENDED
+}
+
+// ------------------------------------------------------
+// SUBSCRIPTION PLANS (PLATFORM LEVEL)
+// ------------------------------------------------------
+
+model SubscriptionPlan {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  description      String?
+  defaultSeatLimit Int
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tenants Tenant[]
+}
+
 // ------------------------------------------------------
 // TENANT
 // ------------------------------------------------------
 
 model Tenant {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String       @id @default(cuid())
+  name                String
+  slug                String       @unique
+  status              TenantStatus @default(PENDING_ONBOARDING)
+  planId              String?
+  seatLimit           Int?
+  isOnboarded         Boolean      @default(false)
+  domain              String?
+  primaryContactName  String?
+  primaryContactEmail String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
+  plan               SubscriptionPlan?         @relation(fields: [planId], references: [id], onDelete: SetNull)
   users              User[]
   competencies       Competency[]
   roleProfiles       RoleProfile[]
   campaigns          AssessmentCampaign[]
   frameworkAdoptions TenantFrameworkAdoption[]
+  invitations        TenantInvitation[]
+
+  @@index([planId])
+}
+
+// ------------------------------------------------------
+// TENANT INVITATION
+// ------------------------------------------------------
+
+model TenantInvitation {
+  id          String    @id @default(cuid())
+  tenantId    String
+  email       String
+  name        String
+  role        UserRole  @default(ORGANIZATION_ADMIN)
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation("InvitationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([tokenHash])
 }
 
 // ------------------------------------------------------
@@ -173,6 +230,7 @@ model User {
   campaignParticipations CampaignParticipant[]
   assessments            Assessment[]
   corroborations         Corroboration[]
+  createdInvitations     TenantInvitation[]    @relation("InvitationCreator")
 
   @@index([tenantId])
   @@index([managerId])

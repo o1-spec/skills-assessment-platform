@@ -23,11 +23,17 @@ export function PlatformAdminNav() {
     },
     {
       name: 'Tenants',
-      href: '#',
+      href: '/platform-admin/tenants',
       exact: false,
-      active: false,
-      enabled: false,
-      badge: 'Coming Soon',
+      active: pathname?.startsWith('/platform-admin/tenants'),
+      enabled: true,
+    },
+    {
+      name: 'Subscription Plans',
+      href: '/platform-admin/plans',
+      exact: false,
+      active: pathname?.startsWith('/platform-admin/plans'),
+      enabled: true,
     },
     {
       name: 'Industry Templates',
