@@ -1,0 +1,550 @@
+import { prisma } from '@/lib/db';
+import Papa from 'papaparse';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import {
+  getOrganizationGapAnalysis,
+  getTeamGapAnalysis,
+  getAssessmentGapAnalysis,
+} from './gap-analysis';
+import { getCampaignById, getCampaignMonitoringStats } from './campaigns';
+import { formatDate, formatAssessmentStatus, formatCampaignStatus } from '@/lib/format';
+import { CompetencyType } from '@prisma/client';
+
+/**
+ * Sanitizes a string into a clean, safe filename with the given extension.
+ * Replaces non-alphanumeric characters with hyphens, collapses duplicates, and lowercases.
+ */
+export function sanitizeReportFilename(rawName: string, extension: string): string {
+  const ext = extension.startsWith('.') ? extension.slice(1).toLowerCase() : extension.toLowerCase();
+  const slug = rawName
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `${slug || 'report'}.${ext}`;
+}
+
+/**
+ * Formats a Date into ISO date string for filenames (YYYY-MM-DD).
+ */
+function getFilenameDate(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export interface OrganizationGapCsvResult {
+  filename: string;
+  csv: string;
+}
+
+/**
+ * Generates Organization Gap Analysis CSV (OA-10, XC-04).
+ * Reuses getOrganizationGapAnalysis to ensure complete consistency with UI.
+ */
+export async function generateOrganizationGapCsv(tenantId: string): Promise<OrganizationGapCsvResult> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { name: true, slug: true },
+  });
+
+  const tenantSlug = tenant?.slug || 'organization';
+  const filename = sanitizeReportFilename(
+    `${tenantSlug}-organization-gap-${getFilenameDate()}`,
+    'csv'
+  );
+
+  const orgAnalysis = await getOrganizationGapAnalysis(tenantId);
+
+  const rows = orgAnalysis.competencies.map((comp) => ({
+    'Competency': comp.competencyName,
+    'Type': comp.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral',
+    'Employees Requiring Skill': comp.employeesRequiringCount,
+    'Assessed': comp.assessedCount,
+    'Below Target': comp.belowTargetCount,
+    'Meets Target': comp.meetsTargetCount,
+    'Exceeds Target': comp.exceedsTargetCount,
+    'Not Assessed': comp.notAssessedCount,
+    'Average Verified Level':
+      comp.averageVerifiedLevel !== null ? comp.averageVerifiedLevel.toFixed(1) : 'N/A',
+  }));
+
+  const csv = Papa.unparse(rows, {
+    header: true,
+    quotes: true,
+  });
+
+  return { filename, csv };
+}
+
+export interface TeamGapCsvResult {
+  filename: string;
+  csv: string;
+}
+
+/**
+ * Generates Team Gap Analysis CSV (OA-10, XC-04).
+ * Reuses getTeamGapAnalysis to ensure complete consistency with UI.
+ */
+export async function generateTeamGapCsv(
+  tenantId: string,
+  teamId: string
+): Promise<TeamGapCsvResult | null> {
+  const team = await prisma.team.findFirst({
+    where: { id: teamId, tenantId },
+    select: { id: true, name: true },
+  });
+
+  if (!team) return null;
+
+  const teamAnalysis = await getTeamGapAnalysis(teamId, tenantId);
+  if (!teamAnalysis) return null;
+
+  const filename = sanitizeReportFilename(
+    `${team.name}-team-gap-${getFilenameDate()}`,
+    'csv'
+  );
+
+  const rows = teamAnalysis.competencies.map((comp) => ({
+    'Team': team.name,
+    'Competency': comp.competencyName,
+    'Type': comp.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral',
+    'Employees Requiring Skill': comp.employeesRequiringCount,
+    'Assessed': comp.assessedCount,
+    'Below Target': comp.belowTargetCount,
+    'Meets Target': comp.meetsTargetCount,
+    'Exceeds Target': comp.exceedsTargetCount,
+    'Not Assessed': comp.notAssessedCount,
+    'Average Verified Level':
+      comp.averageVerifiedLevel !== null ? comp.averageVerifiedLevel.toFixed(1) : 'N/A',
+  }));
+
+  const csv = Papa.unparse(rows, {
+    header: true,
+    quotes: true,
+  });
+
+  return { filename, csv };
+}
+
+export interface IndividualGapCsvResult {
+  filename: string;
+  csv: string;
+}
+
+/**
+ * Generates Individual Assessment Gap CSV (OA-10, XC-04).
+ * Reuses getAssessmentGapAnalysis to export an individual employee's gap analysis.
+ */
+export async function generateIndividualGapCsv(
+  tenantId: string,
+  assessmentId: string
+): Promise<IndividualGapCsvResult | null> {
+  const gapDetail = await getAssessmentGapAnalysis(assessmentId, tenantId);
+  if (!gapDetail) return null;
+
+  const filename = sanitizeReportFilename(
+    `${gapDetail.user.name}-${gapDetail.roleProfile.name}-gap-${getFilenameDate()}`,
+    'csv'
+  );
+
+  const allGaps = [...gapDetail.technicalGaps, ...gapDetail.behavioralGaps];
+
+  const rows = allGaps.map((item) => {
+    let statusLabel = 'Meets Target';
+    if (item.status === 'BELOW_TARGET') statusLabel = 'Below Target';
+    else if (item.status === 'EXCEEDS_TARGET') statusLabel = 'Exceeds Target';
+
+    return {
+      'Employee': gapDetail.user.name,
+      'Email': gapDetail.user.email,
+      'Role Profile': gapDetail.roleProfile.name,
+      'Campaign': gapDetail.campaign.name,
+      'Competency': item.competencyName,
+      'Type': item.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral',
+      'Current Verified Level': item.currentLevel,
+      'Target Level': item.targetLevel,
+      'Gap': item.gap,
+      'Status': statusLabel,
+    };
+  });
+
+  const csv = Papa.unparse(rows, {
+    header: true,
+    quotes: true,
+  });
+
+  return { filename, csv };
+}
+
+export interface CampaignSummaryPdfResult {
+  filename: string;
+  pdfBuffer: Uint8Array;
+}
+
+/**
+ * Generates a structured Assessment Campaign Summary PDF (OA-10).
+ * Uses historical CampaignParticipant snapshot via getCampaignMonitoringStats.
+ */
+export async function generateCampaignSummaryPdf(
+  tenantId: string,
+  campaignId: string
+): Promise<CampaignSummaryPdfResult | null> {
+  const campaign = await getCampaignById(campaignId, tenantId);
+  if (!campaign) return null;
+
+  const stats = await getCampaignMonitoringStats(tenantId, campaignId);
+  if (!stats) return null;
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { name: true },
+  });
+  const orgName = tenant?.name || 'Organization';
+
+  const filename = sanitizeReportFilename(
+    `${campaign.name}-summary-${getFilenameDate()}`,
+    'pdf'
+  );
+
+  // Initialize PDF Document (A4 size: 595.28 x 841.89 points)
+  const pdfDoc = await PDFDocument.create();
+  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const margin = 40;
+  const contentWidth = pageWidth - margin * 2;
+
+  // Colors
+  const primaryColor = rgb(0.12, 0.23, 0.54); // Dark Navy Blue
+  const textColor = rgb(0.07, 0.09, 0.15); // Slate 900
+  const mutedColor = rgb(0.35, 0.40, 0.47); // Slate 500
+  const lightBg = rgb(0.96, 0.97, 0.98); // Light gray
+  const borderColor = rgb(0.88, 0.90, 0.93); // Border gray
+  const successColor = rgb(0.09, 0.64, 0.29); // Green
+  const dangerColor = rgb(0.86, 0.15, 0.15); // Red
+  const warningColor = rgb(0.85, 0.47, 0.02); // Amber
+
+  let currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
+  let y = pageHeight - margin;
+
+  // Helper to ensure vertical space and add new page when needed
+  const ensureSpace = (neededHeight: number): void => {
+    if (y - neededHeight < margin + 40) {
+      currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
+      y = pageHeight - margin;
+      drawHeaderSmall();
+    }
+  };
+
+  const drawHeaderSmall = () => {
+    currentPage.drawText(`${orgName.toUpperCase()} — ASSESSMENT CAMPAIGN REPORT`, {
+      x: margin,
+      y: pageHeight - 25,
+      size: 8,
+      font: fontRegular,
+      color: mutedColor,
+    });
+    currentPage.drawLine({
+      start: { x: margin, y: pageHeight - 30 },
+      end: { x: pageWidth - margin, y: pageHeight - 30 },
+      thickness: 0.5,
+      color: borderColor,
+    });
+  };
+
+  // --- PAGE 1: FULL HEADER ---
+  currentPage.drawText(orgName.toUpperCase(), {
+    x: margin,
+    y,
+    size: 10,
+    font: fontBold,
+    color: primaryColor,
+  });
+  y -= 22;
+
+  currentPage.drawText(campaign.name, {
+    x: margin,
+    y,
+    size: 20,
+    font: fontBold,
+    color: textColor,
+  });
+  y -= 16;
+
+  const generatedDateStr = `Generated on ${formatDate(new Date())}  •  Status: ${formatCampaignStatus(campaign.status)}`;
+  currentPage.drawText(generatedDateStr, {
+    x: margin,
+    y,
+    size: 9,
+    font: fontRegular,
+    color: mutedColor,
+  });
+  y -= 15;
+
+  currentPage.drawLine({
+    start: { x: margin, y },
+    end: { x: pageWidth - margin, y },
+    thickness: 1,
+    color: borderColor,
+  });
+  y -= 20;
+
+  // --- CAMPAIGN METADATA BOX ---
+  const metaBoxHeight = 45;
+  currentPage.drawRectangle({
+    x: margin,
+    y: y - metaBoxHeight,
+    width: contentWidth,
+    height: metaBoxHeight,
+    color: lightBg,
+    borderColor,
+    borderWidth: 0.5,
+  });
+
+  const col1X = margin + 15;
+  const col2X = margin + 145;
+  const col3X = margin + 275;
+  const col4X = margin + 395;
+  const metaLabelY = y - 16;
+  const metaValY = y - 32;
+
+  currentPage.drawText('SCOPE', { x: col1X, y: metaLabelY, size: 7.5, font: fontBold, color: mutedColor });
+  currentPage.drawText(campaign.scope.replace(/_/g, ' '), { x: col1X, y: metaValY, size: 9, font: fontBold, color: textColor });
+
+  currentPage.drawText('DEADLINE', { x: col2X, y: metaLabelY, size: 7.5, font: fontBold, color: mutedColor });
+  currentPage.drawText(formatDate(campaign.deadline), { x: col2X, y: metaValY, size: 9, font: fontBold, color: textColor });
+
+  currentPage.drawText('CORROBORATION', { x: col3X, y: metaLabelY, size: 7.5, font: fontBold, color: mutedColor });
+  currentPage.drawText(campaign.requiresCorroboration ? 'Required' : 'Optional', { x: col3X, y: metaValY, size: 9, font: fontBold, color: textColor });
+
+  currentPage.drawText('FRAMEWORK', { x: col4X, y: metaLabelY, size: 7.5, font: fontBold, color: mutedColor });
+  const frameworkText = campaign.frameworkVersion
+    ? `Framework v${campaign.frameworkVersion.version}`
+    : 'Standard Framework';
+  currentPage.drawText(frameworkText, { x: col4X, y: metaValY, size: 9, font: fontBold, color: textColor });
+
+  y -= metaBoxHeight + 20;
+
+  // --- PROGRESS SUMMARY METRICS ---
+  currentPage.drawText('Campaign Progress Summary', {
+    x: margin,
+    y,
+    size: 12,
+    font: fontBold,
+    color: textColor,
+  });
+  y -= 12;
+
+  const statBoxWidth = (contentWidth - 25) / 6;
+  const statBoxHeight = 46;
+  const statsList = [
+    { label: 'Total Staff', value: String(stats.totalParticipants), color: textColor },
+    { label: 'Completed', value: String(stats.completed), color: successColor },
+    { label: 'Pending Corrob.', value: String(stats.submitted), color: primaryColor },
+    { label: 'In Progress', value: String(stats.inProgress), color: warningColor },
+    { label: 'Not Started', value: String(stats.notStarted), color: mutedColor },
+    { label: 'Overdue', value: String(stats.overdue), color: dangerColor },
+  ];
+
+  statsList.forEach((st, idx) => {
+    const boxX = margin + idx * (statBoxWidth + 5);
+    currentPage.drawRectangle({
+      x: boxX,
+      y: y - statBoxHeight,
+      width: statBoxWidth,
+      height: statBoxHeight,
+      color: lightBg,
+      borderColor,
+      borderWidth: 0.5,
+    });
+
+    currentPage.drawText(st.label, {
+      x: boxX + 6,
+      y: y - 15,
+      size: 7,
+      font: fontBold,
+      color: mutedColor,
+    });
+
+    currentPage.drawText(st.value, {
+      x: boxX + 6,
+      y: y - 36,
+      size: 16,
+      font: fontBold,
+      color: st.color,
+    });
+  });
+
+  y -= statBoxHeight + 25;
+
+  // --- PARTICIPANTS TABLE ---
+  currentPage.drawText(`Participants Progress (${stats.participants.length})`, {
+    x: margin,
+    y,
+    size: 12,
+    font: fontBold,
+    color: textColor,
+  });
+  y -= 14;
+
+  const drawTableHeader = () => {
+    currentPage.drawRectangle({
+      x: margin,
+      y: y - 18,
+      width: contentWidth,
+      height: 18,
+      color: rgb(0.93, 0.94, 0.96),
+    });
+
+    currentPage.drawText('NAME', { x: margin + 6, y: y - 13, size: 7.5, font: fontBold, color: textColor });
+    currentPage.drawText('EMAIL', { x: margin + 110, y: y - 13, size: 7.5, font: fontBold, color: textColor });
+    currentPage.drawText('ROLE PROFILE', { x: margin + 230, y: y - 13, size: 7.5, font: fontBold, color: textColor });
+    currentPage.drawText('STATUS', { x: margin + 345, y: y - 13, size: 7.5, font: fontBold, color: textColor });
+    currentPage.drawText('SUBMITTED', { x: margin + 420, y: y - 13, size: 7.5, font: fontBold, color: textColor });
+    currentPage.drawText('COMPLETED', { x: margin + 475, y: y - 13, size: 7.5, font: fontBold, color: textColor });
+
+    y -= 18;
+  };
+
+  drawTableHeader();
+
+  if (stats.participants.length === 0) {
+    ensureSpace(30);
+    currentPage.drawText('No participants enrolled in this campaign.', {
+      x: margin + 10,
+      y: y - 18,
+      size: 9,
+      font: fontRegular,
+      color: mutedColor,
+    });
+    y -= 25;
+  } else {
+    stats.participants.forEach((p, idx) => {
+      ensureSpace(20);
+
+      // Zebra striping
+      if (idx % 2 === 1) {
+        currentPage.drawRectangle({
+          x: margin,
+          y: y - 18,
+          width: contentWidth,
+          height: 18,
+          color: rgb(0.98, 0.99, 1.0),
+        });
+      }
+
+      // Border underline
+      currentPage.drawLine({
+        start: { x: margin, y: y - 18 },
+        end: { x: pageWidth - margin, y: y - 18 },
+        thickness: 0.3,
+        color: borderColor,
+      });
+
+      // Name (truncate if too long)
+      const cleanName = p.name.length > 18 ? p.name.slice(0, 16) + '…' : p.name;
+      currentPage.drawText(cleanName, {
+        x: margin + 6,
+        y: y - 13,
+        size: 8,
+        font: fontBold,
+        color: textColor,
+      });
+
+      // Email
+      const cleanEmail = p.email.length > 24 ? p.email.slice(0, 22) + '…' : p.email;
+      currentPage.drawText(cleanEmail, {
+        x: margin + 110,
+        y: y - 13,
+        size: 8,
+        font: fontRegular,
+        color: textColor,
+      });
+
+      // Role profile
+      const roleStr = p.roleProfileName || 'Unassigned';
+      const cleanRole = roleStr.length > 20 ? roleStr.slice(0, 18) + '…' : roleStr;
+      currentPage.drawText(cleanRole, {
+        x: margin + 230,
+        y: y - 13,
+        size: 8,
+        font: fontRegular,
+        color: mutedColor,
+      });
+
+      // Status
+      let statusColor = mutedColor;
+      if (p.assessmentStatus === 'COMPLETED') statusColor = successColor;
+      else if (p.isOverdue) statusColor = dangerColor;
+      else if (p.assessmentStatus === 'DRAFT') statusColor = warningColor;
+      else if (p.assessmentStatus === 'SUBMITTED' || p.assessmentStatus === 'PENDING_CORROBORATION') statusColor = primaryColor;
+
+      const statusText = p.isOverdue ? 'Overdue' : formatAssessmentStatus(p.assessmentStatus);
+      const cleanStatus = statusText.length > 14 ? statusText.slice(0, 12) + '…' : statusText;
+      currentPage.drawText(cleanStatus, {
+        x: margin + 345,
+        y: y - 13,
+        size: 8,
+        font: fontBold,
+        color: statusColor,
+      });
+
+      // Submitted date
+      currentPage.drawText(formatDate(p.submittedAt), {
+        x: margin + 420,
+        y: y - 13,
+        size: 7.5,
+        font: fontRegular,
+        color: mutedColor,
+      });
+
+      // Completed date
+      currentPage.drawText(formatDate(p.completedAt), {
+        x: margin + 475,
+        y: y - 13,
+        size: 7.5,
+        font: fontRegular,
+        color: mutedColor,
+      });
+
+      y -= 18;
+    });
+  }
+
+  // --- FOOTERS ON ALL PAGES ---
+  const totalPages = pdfDoc.getPageCount();
+  pdfDoc.getPages().forEach((page, pageIdx) => {
+    page.drawLine({
+      start: { x: margin, y: 30 },
+      end: { x: pageWidth - margin, y: 30 },
+      thickness: 0.5,
+      color: borderColor,
+    });
+
+    page.drawText(`${orgName} • Confidential`, {
+      x: margin,
+      y: 18,
+      size: 7.5,
+      font: fontRegular,
+      color: mutedColor,
+    });
+
+    const pageStr = `Page ${pageIdx + 1} of ${totalPages}`;
+    const pageStrWidth = fontRegular.widthOfTextAtSize(pageStr, 7.5);
+    page.drawText(pageStr, {
+      x: pageWidth - margin - pageStrWidth,
+      y: 18,
+      size: 7.5,
+      font: fontRegular,
+      color: mutedColor,
+    });
+  });
+
+  const pdfBuffer = await pdfDoc.save();
+  return { filename, pdfBuffer };
+}

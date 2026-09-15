@@ -49,9 +49,8 @@ export default async function ManagerOverviewPage() {
               </div>
             </div>
             <div
-              className={`h-12 w-12 rounded-lg flex items-center justify-center ${
-                stats.pendingReviewsCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400'
-              }`}
+              className={`h-12 w-12 rounded-lg flex items-center justify-center ${stats.pendingReviewsCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400'
+                }`}
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -260,7 +259,7 @@ export default async function ManagerOverviewPage() {
                 <tr>
                   <th
                     scope="col"
-                    className="sticky left-0 bg-gray-50 z-10 px-4 py-3 text-left font-semibold uppercase tracking-wider border-r border-gray-200 min-w-[180px]"
+                    className="sticky left-0 bg-gray-50 z-10 px-4 py-3 text-left font-semibold uppercase tracking-wider border-r border-gray-200 min-w-45"
                   >
                     Direct Report
                   </th>
@@ -268,10 +267,10 @@ export default async function ManagerOverviewPage() {
                     <th
                       key={comp.id}
                       scope="col"
-                      className="px-3 py-3 text-center font-medium uppercase tracking-wider min-w-[120px]"
+                      className="px-3 py-3 text-center font-medium uppercase tracking-wider min-w-30"
                       title={comp.name}
                     >
-                      <div className="truncate max-w-[120px] font-semibold text-gray-900">
+                      <div className="truncate max-w-30 font-semibold text-gray-900">
                         {comp.name}
                       </div>
                       <span className="text-[10px] text-gray-400 font-normal">
@@ -286,7 +285,7 @@ export default async function ManagerOverviewPage() {
                   <tr key={row.userId} className="hover:bg-gray-50/70 transition-colors">
                     <td className="sticky left-0 bg-white z-10 px-4 py-3 whitespace-nowrap border-r border-gray-200">
                       <div className="font-semibold text-gray-900">{row.name}</div>
-                      <div className="text-[11px] text-gray-500 truncate max-w-[160px]">
+                      <div className="text-[11px] text-gray-500 truncate max-w-40">
                         {row.roleProfileName ?? 'No role'}
                       </div>
                     </td>
@@ -335,11 +334,10 @@ export default async function ManagerOverviewPage() {
                     <td className="px-6 py-4 font-medium text-gray-900">{agg.competencyName}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          agg.competencyType === CompetencyType.TECHNICAL
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'bg-purple-50 text-purple-700'
-                        }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${agg.competencyType === CompetencyType.TECHNICAL
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'bg-purple-50 text-purple-700'
+                          }`}
                       >
                         {agg.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral'}
                       </span>

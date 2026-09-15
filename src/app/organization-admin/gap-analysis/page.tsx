@@ -229,7 +229,15 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                         <td className="px-6 py-4 text-center text-xs text-gray-500">
                           {item.completedAt ? formatDate(item.completedAt) : '—'}
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4 text-right space-x-3">
+                          <a
+                            href={`/api/reports/gap-analysis/individual/${item.assessmentId}`}
+                            download
+                            className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                            title="Export CSV"
+                          >
+                            Export CSV
+                          </a>
                           <Link
                             href={`/organization-admin/gap-analysis/${item.assessmentId}`}
                             className="text-xs font-semibold text-blue-600 hover:text-blue-800"
@@ -315,12 +323,24 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
           ) : (
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">
-                  {teamAnalysis.team.name} Competency Capability Gaps
-                </h2>
-                <span className="text-xs text-gray-500">
-                  {teamAnalysis.competencies.length} Competencies Evaluated
-                </span>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900">
+                    {teamAnalysis.team.name} Competency Capability Gaps
+                  </h2>
+                  <span className="text-xs text-gray-500">
+                    {teamAnalysis.competencies.length} Competencies Evaluated
+                  </span>
+                </div>
+                <a
+                  href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}`}
+                  download
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export CSV
+                </a>
               </div>
 
               <div className="overflow-x-auto">
@@ -435,12 +455,24 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
           {/* Organization Competency Aggregation Table */}
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">
-                Organization-Wide Competency Capability Distribution
-              </h2>
-              <span className="text-xs text-gray-500">
-                {orgAnalysis.competencies.length} Required Competencies
-              </span>
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">
+                  Organization-Wide Competency Capability Distribution
+                </h2>
+                <span className="text-xs text-gray-500">
+                  {orgAnalysis.competencies.length} Required Competencies
+                </span>
+              </div>
+              <a
+                href="/api/reports/gap-analysis/organization"
+                download
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export CSV
+              </a>
             </div>
 
             {orgAnalysis.competencies.length === 0 ? (

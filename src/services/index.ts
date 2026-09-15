@@ -16,4 +16,5 @@ export * from './csv-import';
 export * from './evidence-attachments';
 export * from './skills-profile';
 export * from './manager-analytics';
+export * from './reports';
 
