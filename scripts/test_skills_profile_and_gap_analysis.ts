@@ -5,7 +5,6 @@ import {
   AssessmentStatus,
   UserRole,
   TenantStatus,
-  CompetencyType,
   CampaignScope,
   CampaignStatus,
 } from '@prisma/client';
@@ -376,9 +375,6 @@ async function runTests() {
     assert(!!sarahGap, 'Personal gap analysis loaded');
     assert(sarahGap!.hasRoleProfile === true, 'Sarah hasRoleProfile === true');
 
-    // req1Comp in Backend Engineer has a defined target. Let's find it.
-    const sarahReq1Target = backendRole.requirements.find((r) => r.competencyId === req1Comp.id)!.targetLevel;
-    const sarahReq1GapItem = sarahGap!.requirements.find((r) => r.competencyId === req1Comp.id)!;
 
     // Test calculations
     const calcBelow = calculateCapabilityGap(1, 3);
