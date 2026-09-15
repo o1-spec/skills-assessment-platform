@@ -9,3 +9,4 @@ export * from './auth';
 export * from './role-profile';
 export * from './campaign';
 export * from './assessment';
+export * from './corroboration';
