@@ -105,23 +105,30 @@ model Tenant {
 // ------------------------------------------------------
 
 model TenantInvitation {
-  id          String    @id @default(cuid())
-  tenantId    String
-  email       String
-  name        String
-  role        UserRole  @default(ORGANIZATION_ADMIN)
-  tokenHash   String    @unique
-  expiresAt   DateTime
-  acceptedAt  DateTime?
-  createdById String?
-  createdAt   DateTime  @default(now())
+  id            String    @id @default(cuid())
+  tenantId      String
+  email         String
+  name          String
+  role          UserRole  @default(ORGANIZATION_ADMIN)
+  managerId     String?
+  roleProfileId String?
+  tokenHash     String    @unique
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  cancelledAt   DateTime?
+  createdById   String?
+  createdAt     DateTime  @default(now())
 
-  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdBy User?  @relation("InvitationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy   User?        @relation("InvitationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  manager     User?        @relation("InvitationManager", fields: [managerId], references: [id], onDelete: SetNull)
+  roleProfile RoleProfile? @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([email])
   @@index([tokenHash])
+  @@index([managerId])
+  @@index([roleProfileId])
 }
 
 // ------------------------------------------------------
@@ -284,11 +291,13 @@ model User {
   deactivatedAt DateTime?
   tenantId      String?
   managerId     String?
+  roleProfileId String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Tenant relation (nullable for PLATFORM_ADMIN)
-  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant      Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roleProfile RoleProfile? @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
 
   // Self-relation: Manager and Direct Reports
   manager       User?  @relation("ManagerReports", fields: [managerId], references: [id], onDelete: SetNull)
@@ -298,9 +307,11 @@ model User {
   assessments            Assessment[]
   corroborations         Corroboration[]
   createdInvitations     TenantInvitation[]    @relation("InvitationCreator")
+  managedInvitations     TenantInvitation[]    @relation("InvitationManager")
 
   @@index([tenantId])
   @@index([managerId])
+  @@index([roleProfileId])
 }
 
 // ------------------------------------------------------
@@ -359,6 +370,8 @@ model RoleProfile {
   tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   requirements RoleRequirement[]
   campaigns    AssessmentCampaign[]
+  users        User[]
+  invitations  TenantInvitation[]
 
   @@index([tenantId])
 }

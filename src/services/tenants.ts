@@ -308,6 +308,19 @@ export async function updateTenantPlanAndSeatLimit(
     throw new Error('Seat limit must be at least 1.');
   }
 
+  const activeUserCount = await prisma.user.count({
+    where: {
+      tenantId,
+      isActive: true,
+    },
+  });
+
+  if (input.seatLimit < activeUserCount) {
+    throw new Error(
+      `Cannot set seat limit to ${input.seatLimit} because the organization currently has ${activeUserCount} active users.`
+    );
+  }
+
   return prisma.tenant.update({
     where: { id: tenantId },
     data: {

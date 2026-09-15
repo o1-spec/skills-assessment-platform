@@ -67,8 +67,25 @@ export function AcceptInvitationForm({ token, invitation }: AcceptInvitationForm
       <div className="p-4 bg-indigo-50/60 rounded-xl border border-indigo-100 text-xs space-y-1.5">
         <div className="text-indigo-900 font-bold text-sm">{invitation.tenant.name}</div>
         <div className="text-indigo-700">
-          Role: <span className="font-semibold">Organization Administrator</span>
+          Role:{' '}
+          <span className="font-semibold">
+            {invitation.role === 'ORGANIZATION_ADMIN'
+              ? 'Organization Administrator'
+              : invitation.role === 'MANAGER'
+              ? 'Manager'
+              : 'Staff'}
+          </span>
         </div>
+        {invitation.roleProfile && (
+          <div className="text-gray-700">
+            Assigned Role Profile: <span className="font-semibold">{invitation.roleProfile.name}</span>
+          </div>
+        )}
+        {invitation.manager && (
+          <div className="text-gray-700">
+            Reporting Manager: <span className="font-semibold">{invitation.manager.name}</span>
+          </div>
+        )}
         <div className="text-gray-500">
           Invited Name: <span className="text-gray-900 font-medium">{invitation.name}</span>
         </div>

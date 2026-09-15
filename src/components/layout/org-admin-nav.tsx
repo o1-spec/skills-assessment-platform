@@ -17,6 +17,11 @@ const navItems: NavItem[] = [
     activePattern: (p) => p === '/organization-admin',
   },
   {
+    name: 'Users',
+    href: '/organization-admin/users',
+    activePattern: (p) => p.startsWith('/organization-admin/users'),
+  },
+  {
     name: 'Skills Library',
     href: '/organization-admin/skills',
     activePattern: (p) => p.startsWith('/organization-admin/skills'),

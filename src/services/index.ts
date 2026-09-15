@@ -10,3 +10,4 @@ export * from './plans';
 export * from './tenants';
 export * from './invitations';
 export * from './industry-templates';
+export * from './users';

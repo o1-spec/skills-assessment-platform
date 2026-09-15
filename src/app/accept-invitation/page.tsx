@@ -134,7 +134,7 @@ export default async function AcceptInvitationPage({ searchParams }: AcceptInvit
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
         <h1 className="text-2xl font-black text-gray-900 tracking-tight">Skills Assessment Platform</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Complete your Organization Administrator account setup
+          Complete your organization account setup
         </p>
       </div>
 

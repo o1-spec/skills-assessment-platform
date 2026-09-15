@@ -22,11 +22,18 @@ export async function acceptInvitationAction(formData: FormData) {
     // Create session cookie automatically for newly registered admin
     await createSession(result.user.id);
 
+    let redirectUrl = '/staff';
+    if (result.user.role === 'ORGANIZATION_ADMIN') {
+      redirectUrl = '/organization-admin';
+    } else if (result.user.role === 'MANAGER') {
+      redirectUrl = '/manager';
+    }
+
     return {
       success: true,
       user: result.user,
       tenant: result.tenant,
-      redirectUrl: '/organization-admin',
+      redirectUrl,
     };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
