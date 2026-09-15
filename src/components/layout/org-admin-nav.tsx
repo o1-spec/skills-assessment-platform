@@ -29,9 +29,8 @@ const navItems: NavItem[] = [
 
   {
     name: 'Gap Analysis',
-    href: '#',
-    activePattern: () => false,
-    disabled: true,
+    href: '/organization-admin/gap-analysis',
+    activePattern: (p) => p.startsWith('/organization-admin/gap-analysis'),
   },
 ];
 
