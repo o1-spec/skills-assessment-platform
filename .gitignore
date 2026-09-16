@@ -52,3 +52,10 @@ next-env.d.ts
 # temporary export/report artifacts
 *.xlsx
 *.pdf
+
+# ai editor skills & agent artifacts
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
