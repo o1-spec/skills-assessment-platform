@@ -12,6 +12,7 @@ import {
   ALLOWED_EVIDENCE_MIME_TYPES,
   MAX_EVIDENCE_FILE_SIZE_BYTES,
 } from '@/lib/validation';
+import { ConfirmDialog } from '@/components/app';
 
 interface EvidenceAttachmentsSectionProps {
   assessmentItemId: string;
@@ -70,6 +71,7 @@ export function EvidenceAttachmentsSection({
   const [isUploading, setIsUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<EvidenceAttachment | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [, startTransition] = useTransition();
@@ -78,35 +80,42 @@ export function EvidenceAttachmentsSection({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setErrorMessage(null);
-
     if (file.size > MAX_EVIDENCE_FILE_SIZE_BYTES) {
-      setErrorMessage('File size exceeds the 10MB limit.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setErrorMessage(
+        `File is too large (${formatBytes(file.size)}). Maximum allowed size is ${formatBytes(
+          MAX_EVIDENCE_FILE_SIZE_BYTES
+        )}.`
+      );
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
     if (!(ALLOWED_EVIDENCE_MIME_TYPES as readonly string[]).includes(file.type.toLowerCase())) {
       setErrorMessage(
-        'File type not allowed. Supported formats: PDF, PNG, JPG, DOC, DOCX.'
+        `Invalid file type (${file.type || 'unknown'}). Allowed: PDF, PNG, JPEG, DOC, DOCX.`
       );
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
+
+    setErrorMessage(null);
+    setIsUploading(true);
 
     const formData = new FormData();
     formData.append('assessmentItemId', assessmentItemId);
     formData.append('assessmentId', assessmentId);
     formData.append('file', file);
 
-    setIsUploading(true);
-
     try {
       const result = await uploadEvidenceAttachmentAction(formData);
       if (result.error) {
         setErrorMessage(result.error);
       } else if (result.attachment) {
-        setAttachments((prev) => [...prev, result.attachment as unknown as EvidenceAttachment]);
+        setAttachments((prev) => [...prev, result.attachment as EvidenceAttachment]);
       }
     } catch {
       setErrorMessage('An unexpected error occurred while uploading.');
@@ -118,10 +127,13 @@ export function EvidenceAttachmentsSection({
     }
   };
 
-  const handleDelete = (attachmentId: string) => {
-    if (!confirm('Are you sure you want to delete this evidence attachment?')) {
-      return;
-    }
+  const handleDeleteRequest = (attachment: EvidenceAttachment) => {
+    setAttachmentToDelete(attachment);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!attachmentToDelete) return;
+    const attachmentId = attachmentToDelete.id;
 
     setErrorMessage(null);
     setDeletingId(attachmentId);
@@ -133,6 +145,7 @@ export function EvidenceAttachmentsSection({
           setErrorMessage(result.error);
         } else {
           setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
+          setAttachmentToDelete(null);
         }
       } catch {
         setErrorMessage('Failed to delete attachment.');
@@ -223,9 +236,9 @@ export function EvidenceAttachmentsSection({
                   {!isReadOnly && !isManager && (
                     <button
                       type="button"
-                      onClick={() => handleDelete(att.id)}
+                      onClick={() => handleDeleteRequest(att)}
                       disabled={isDeleting}
-                      className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       {isDeleting ? 'Deleting...' : 'Remove'}
                     </button>
@@ -278,6 +291,22 @@ export function EvidenceAttachmentsSection({
           </span>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(attachmentToDelete)}
+        onClose={() => setAttachmentToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Evidence Attachment"
+        description={
+          attachmentToDelete
+            ? `Are you sure you want to permanently delete "${attachmentToDelete.fileName}"? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete Attachment"
+        cancelLabel="Cancel"
+        variant="danger"
+        isPending={deletingId !== null}
+      />
     </div>
   );
 }

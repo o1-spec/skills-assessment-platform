@@ -6,3 +6,4 @@ export * from './stat-card';
 export * from './section-card';
 export * from './status-badge';
 export * from './empty-state';
+export * from './confirm-dialog';

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { TenantWithStats } from '@/services/tenants';
 import { SubscriptionPlan, TenantStatus } from '@prisma/client';
 import { updateTenantPlanAction, updateTenantStatusAction } from '@/actions/tenants';
+import { ConfirmDialog } from '@/components/app';
 
 interface TenantDetailViewProps {
   tenant: TenantWithStats;
@@ -60,16 +61,16 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
     }
   }
 
-  async function handleStatusChange(newStatus: TenantStatus) {
-    const actionLabel =
-      newStatus === TenantStatus.SUSPENDED
-        ? 'suspend'
-        : newStatus === TenantStatus.ARCHIVED
-        ? 'permanently archive'
-        : 'reactivate';
-    if (!confirm(`Are you sure you want to ${actionLabel} organization "${tenant.name}"?`)) {
-      return;
-    }
+  const [pendingStatusChange, setPendingStatusChange] = useState<TenantStatus | null>(null);
+
+  function handleStatusChange(newStatus: TenantStatus) {
+    setError(null);
+    setPendingStatusChange(newStatus);
+  }
+
+  async function confirmStatusChange() {
+    if (!pendingStatusChange) return;
+    const newStatus = pendingStatusChange;
 
     setError(null);
     setSuccessMsg(null);
@@ -84,6 +85,7 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
       }
 
       setSuccessMsg(`Organization status updated to ${newStatus}.`);
+      setPendingStatusChange(null);
       router.refresh();
     } catch {
       setError('An unexpected error occurred.');
@@ -421,6 +423,34 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(pendingStatusChange)}
+        onClose={() => setPendingStatusChange(null)}
+        onConfirm={confirmStatusChange}
+        title={`${
+          pendingStatusChange === TenantStatus.SUSPENDED
+            ? 'Suspend'
+            : pendingStatusChange === TenantStatus.ARCHIVED
+            ? 'Archive'
+            : 'Reactivate'
+        } Organization`}
+        description={
+          pendingStatusChange
+            ? `Are you sure you want to update the status of "${tenant.name}" to ${pendingStatusChange}? Users belonging to this organization will be affected immediately.`
+            : ''
+        }
+        confirmLabel={`${
+          pendingStatusChange === TenantStatus.SUSPENDED
+            ? 'Suspend Organization'
+            : pendingStatusChange === TenantStatus.ARCHIVED
+            ? 'Archive Organization'
+            : 'Reactivate Organization'
+        }`}
+        cancelLabel="Cancel"
+        variant={pendingStatusChange === TenantStatus.ACTIVE ? 'primary' : 'danger'}
+        isPending={isSubmitting}
+      />
     </div>
   );
 }

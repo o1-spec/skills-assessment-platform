@@ -10,6 +10,7 @@ import {
   reactivateTenantUserAction,
   cancelTenantInvitationAction,
 } from '@/actions/users';
+import { ConfirmDialog } from '@/components/app';
 
 interface UsersDirectoryViewProps {
   initialUsers: TenantUserWithRelations[];
@@ -41,6 +42,8 @@ export function UsersDirectoryView({
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [userToDeactivate, setUserToDeactivate] = useState<TenantUserWithRelations | null>(null);
+  const [invitationToCancel, setInvitationToCancel] = useState<PendingInvitationWithRelations | null>(null);
 
   const seatLimit = seatUsage.seatLimit;
   const activeCount = users.filter((u) => u.isActive).length;
@@ -53,26 +56,27 @@ export function UsersDirectoryView({
       (u.roleProfile && u.roleProfile.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (u.manager && u.manager.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesRole = roleFilter === 'ALL' ? true : u.role === roleFilter;
+    const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
     const matchesStatus =
-      statusFilter === 'ALL' ? true : statusFilter === 'ACTIVE' ? u.isActive : !u.isActive;
+      statusFilter === 'ALL' ||
+      (statusFilter === 'ACTIVE' && u.isActive) ||
+      (statusFilter === 'INACTIVE' && !u.isActive);
 
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const handleDeactivate = async (targetUser: TenantUserWithRelations) => {
+  const handleDeactivate = (targetUser: TenantUserWithRelations) => {
     if (targetUser.id === currentUserId) {
       setError('You cannot deactivate your own administrative account.');
       return;
     }
+    setError(null);
+    setUserToDeactivate(targetUser);
+  };
 
-    if (
-      !confirm(
-        `Are you sure you want to deactivate ${targetUser.name}? Deactivated users retain all historical assessment records but lose workspace access.`
-      )
-    ) {
-      return;
-    }
+  const confirmDeactivate = async () => {
+    if (!userToDeactivate) return;
+    const targetUser = userToDeactivate;
 
     setError(null);
     setSuccessMsg(null);
@@ -87,6 +91,7 @@ export function UsersDirectoryView({
         prev.map((u) => (u.id === targetUser.id ? { ...u, isActive: false, deactivatedAt: new Date() } : u))
       );
       setSuccessMsg(`User ${targetUser.name} has been deactivated.`);
+      setUserToDeactivate(null);
       router.refresh();
     } catch {
       setError('An unexpected error occurred.');
@@ -117,8 +122,15 @@ export function UsersDirectoryView({
     }
   };
 
-  const handleCancelInvitation = async (invitation: PendingInvitationWithRelations) => {
-    if (!confirm(`Cancel pending invitation for ${invitation.email}?`)) return;
+  const handleCancelInvitation = (invitation: PendingInvitationWithRelations) => {
+    setError(null);
+    setInvitationToCancel(invitation);
+  };
+
+  const confirmCancelInvitation = async () => {
+    if (!invitationToCancel) return;
+    const invitation = invitationToCancel;
+
     setError(null);
     setSuccessMsg(null);
     setIsProcessing(invitation.id);
@@ -130,6 +142,7 @@ export function UsersDirectoryView({
       }
       setPendingInvitations((prev) => prev.filter((i) => i.id !== invitation.id));
       setSuccessMsg(`Invitation for ${invitation.email} was cancelled.`);
+      setInvitationToCancel(null);
       router.refresh();
     } catch {
       setError('An unexpected error occurred.');
@@ -503,6 +516,38 @@ export function UsersDirectoryView({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(userToDeactivate)}
+        onClose={() => setUserToDeactivate(null)}
+        onConfirm={confirmDeactivate}
+        title="Deactivate Workspace User"
+        description={
+          userToDeactivate
+            ? `Are you sure you want to deactivate ${userToDeactivate.name}? Deactivated users retain all historical assessment and corroboration records but lose workspace access.`
+            : ''
+        }
+        confirmLabel="Deactivate User"
+        cancelLabel="Cancel"
+        variant="danger"
+        isPending={Boolean(isProcessing && userToDeactivate && isProcessing === userToDeactivate.id)}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(invitationToCancel)}
+        onClose={() => setInvitationToCancel(null)}
+        onConfirm={confirmCancelInvitation}
+        title="Cancel Pending Invitation"
+        description={
+          invitationToCancel
+            ? `Are you sure you want to cancel the invitation sent to ${invitationToCancel.email}? The invitation link will immediately expire.`
+            : ''
+        }
+        confirmLabel="Cancel Invitation"
+        cancelLabel="Keep Invitation"
+        variant="danger"
+        isPending={Boolean(isProcessing && invitationToCancel && isProcessing === invitationToCancel.id)}
+      />
     </div>
   );
 }

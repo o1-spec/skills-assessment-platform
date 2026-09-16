@@ -11,6 +11,7 @@ import {
   reactivateTenantUserAction,
 } from '@/actions/users';
 import { setUserTeamMembershipsAction } from '@/actions/organization-structure';
+import { ConfirmDialog } from '@/components/app';
 
 interface ManagerOption {
   id: string;
@@ -126,20 +127,18 @@ export function UserDetailView({
     }
   };
 
-  const handleDeactivate = async () => {
+  const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
+
+  const handleDeactivate = () => {
     if (isSelf) {
       setError('You cannot deactivate your own administrative account.');
       return;
     }
+    setError(null);
+    setIsDeactivateOpen(true);
+  };
 
-    if (
-      !confirm(
-        `Are you sure you want to deactivate ${targetUser.name}? Deactivated users retain all historical assessment and corroboration records but lose workspace access.`
-      )
-    ) {
-      return;
-    }
-
+  const confirmDeactivate = async () => {
     setError(null);
     setSuccessMsg(null);
     setIsSubmitting(true);
@@ -152,6 +151,7 @@ export function UserDetailView({
       }
 
       setSuccessMsg(`User ${targetUser.name} has been deactivated.`);
+      setIsDeactivateOpen(false);
       router.refresh();
     } catch {
       setError('An unexpected error occurred.');
@@ -480,6 +480,18 @@ export function UserDetailView({
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isDeactivateOpen}
+        onClose={() => setIsDeactivateOpen(false)}
+        onConfirm={confirmDeactivate}
+        title="Deactivate Workspace User"
+        description={`Are you sure you want to deactivate ${targetUser.name}? Deactivated users retain all historical assessment and corroboration records but lose workspace access.`}
+        confirmLabel="Deactivate User"
+        cancelLabel="Cancel"
+        variant="danger"
+        isPending={isSubmitting}
+      />
     </div>
   );
 }

@@ -152,7 +152,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Sticky Progress & Actions Toolbar */}
       <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-xs sticky top-16 z-20 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -164,12 +163,12 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap w-full sm:w-auto">
             <button
               type="button"
               onClick={handleSaveDraft}
               disabled={isDraftPending || isSubmitPending}
-              className="inline-flex items-center px-4 py-2 border border-stone-200/80 text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 shadow-2xs disabled:opacity-50 transition-colors"
+              className="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2 border border-stone-200/80 text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
             >
               {isDraftPending ? (
                 <>
@@ -203,7 +202,7 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
               type="button"
               onClick={handleOpenSubmitModal}
               disabled={isDraftPending || isSubmitPending}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 shadow-2xs disabled:opacity-50 transition-colors"
+              className="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2 border border-transparent text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
             >
               {isSubmitPending ? 'Submitting...' : 'Submit Assessment'}
             </button>
@@ -249,9 +248,7 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
         </div>
       )}
 
-      {/* Two-Pane Wireframe Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Left Pane: Competency Checklist Navigation */}
         <div className="hidden lg:block lg:col-span-1 sticky top-36 space-y-4">
           <div className="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-xs">
             <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-3">
@@ -318,7 +315,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
           </div>
         </div>
 
-        {/* Right Pane: Main Competency Cards */}
         <div className="lg:col-span-3 space-y-6">
           <form onSubmit={handleSaveDraft} className="space-y-8">
             {technicalItems.length > 0 && (

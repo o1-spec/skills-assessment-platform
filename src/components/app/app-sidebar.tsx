@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserRole } from '@prisma/client';
+import { ConfirmDialog } from './confirm-dialog';
 
 export interface NavItem {
   label: string;
@@ -44,6 +45,9 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const roleConfig = ROLE_LABELS[role] || { label: role, badgeBg: 'bg-stone-100', badgeText: 'text-stone-800' };
+
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const logoutFormRef = useRef<HTMLFormElement>(null);
 
   const initials = user.name
     ? user.name
@@ -168,11 +172,12 @@ export function AppSidebar({
                 </div>
               </div>
 
-              <form action="/api/auth/logout" method="POST" className="shrink-0">
+              <form ref={logoutFormRef} action="/api/auth/logout" method="POST" className="shrink-0">
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={() => setIsLogoutModalOpen(true)}
                   title="Sign out"
-                  className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -188,6 +193,20 @@ export function AppSidebar({
           </div>
         </div>
       </aside>
+
+      <ConfirmDialog
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={() => {
+          setIsLogoutModalOpen(false);
+          logoutFormRef.current?.submit();
+        }}
+        title="Sign Out of SkillsIQ"
+        description="Are you sure you want to end your current session? Any unsaved changes in active forms will not be retained."
+        confirmLabel="Sign Out"
+        cancelLabel="Stay Signed In"
+        variant="danger"
+      />
     </>
   );
 }

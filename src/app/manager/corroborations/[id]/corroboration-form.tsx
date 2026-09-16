@@ -132,10 +132,10 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap w-full sm:w-auto">
             <Link
               href="/manager/corroborations"
-              className="inline-flex items-center px-3.5 py-2 border border-stone-200/80 text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 shadow-2xs transition-colors"
+              className="w-full sm:w-auto justify-center inline-flex items-center px-3.5 py-2 border border-stone-200/80 text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 shadow-2xs transition-colors"
             >
               Cancel
             </Link>
@@ -144,7 +144,7 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
               type="button"
               onClick={handleOpenConfirmModal}
               disabled={isPending}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 shadow-2xs disabled:opacity-50 transition-colors"
+              className="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2 border border-transparent text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
             >
               {isPending ? 'Completing Review...' : 'Complete Review'}
             </button>
@@ -333,7 +333,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         </div>
 
-        {/* Staff Submission Zone */}
         <div className="bg-stone-50/70 rounded-xl p-4 border border-stone-200/70 space-y-3">
           <div>
             <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1">
@@ -371,7 +370,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         </div>
 
-        {/* Manager Corroboration Selection */}
         <div className="space-y-2.5 pt-2 border-t border-stone-100">
           <div className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wider">
             Corroborated Manager Rating:
@@ -416,7 +414,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         </div>
 
-        {/* Manager Justification Area */}
         <div className="space-y-2 pt-2 border-t border-stone-100">
           <label className="block text-xs font-semibold text-neutral-800 uppercase tracking-wider">
             Manager Justification / Comments
