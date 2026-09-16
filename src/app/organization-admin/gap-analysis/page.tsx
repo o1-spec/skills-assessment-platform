@@ -40,40 +40,40 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Skill Gap Analysis</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Skill Gap Analysis</h1>
+        <p className="mt-1 text-xs text-neutral-500">
           Compare verified staff capability ratings against target role profiles to identify organizational, team, and individual capability gaps.
         </p>
       </div>
 
-      <div className="border-b border-gray-200">
+      <div className="border-b border-stone-200/80">
         <nav className="-mb-px flex space-x-8" aria-label="Gap Analysis Views">
           <Link
             href="/organization-admin/gap-analysis?tab=individual"
-            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`whitespace-nowrap py-3 px-1 border-b-2 text-xs transition-colors ${
               activeTab === 'individual'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-bold'
+                : 'border-transparent text-neutral-500 hover:text-neutral-800 font-medium'
             }`}
           >
             Individual Assessments ({assessments.length})
           </Link>
           <Link
             href="/organization-admin/gap-analysis?tab=team"
-            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`whitespace-nowrap py-3 px-1 border-b-2 text-xs transition-colors ${
               activeTab === 'team'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-bold'
+                : 'border-transparent text-neutral-500 hover:text-neutral-800 font-medium'
             }`}
           >
             Team Capability Gaps ({teams.length} Teams)
           </Link>
           <Link
             href="/organization-admin/gap-analysis?tab=organization"
-            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`whitespace-nowrap py-3 px-1 border-b-2 text-xs transition-colors ${
               activeTab === 'organization'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-bold'
+                : 'border-transparent text-neutral-500 hover:text-neutral-800 font-medium'
             }`}
           >
             Organization-Wide Gaps ({orgAnalysis.competencies.length} Competencies)
@@ -83,17 +83,17 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
 
       {activeTab === 'individual' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="bg-white overflow-hidden shadow-xs rounded-2xl border border-stone-200/80 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                     Evaluations Analyzed
                   </div>
-                  <div className="mt-1 text-3xl font-extrabold text-gray-900">{totalAnalyzed}</div>
+                  <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">{totalAnalyzed}</div>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="h-10 w-10 rounded-xl bg-stone-100 text-neutral-700 flex items-center justify-center">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -103,23 +103,23 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                   </svg>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
+              <div className="mt-3 pt-3 border-t border-stone-100 text-[11px] text-neutral-500">
                 Completed assessments with role profile targets
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
+            <div className="bg-white overflow-hidden shadow-xs rounded-2xl border border-stone-200/80 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                     Total Identified Gaps
                   </div>
-                  <div className="mt-1 text-3xl font-extrabold text-amber-600">
+                  <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">
                     {totalGapsIdentified}
                   </div>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="h-10 w-10 rounded-xl bg-stone-100 text-neutral-700 flex items-center justify-center">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -129,21 +129,21 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                   </svg>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
+              <div className="mt-3 pt-3 border-t border-stone-100 text-[11px] text-neutral-500">
                 Cumulative level gaps below target benchmarks
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
+            <div className="bg-white overflow-hidden shadow-xs rounded-2xl border border-stone-200/80 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                     Staff With Gaps
                   </div>
-                  <div className="mt-1 text-3xl font-extrabold text-gray-900">{assessmentsWithGaps}</div>
+                  <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">{assessmentsWithGaps}</div>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="h-10 w-10 rounded-xl bg-stone-100 text-neutral-700 flex items-center justify-center">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -153,28 +153,28 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                   </svg>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
+              <div className="mt-3 pt-3 border-t border-stone-100 text-[11px] text-neutral-500">
                 Staff evaluations possessing at least 1 deficiency
               </div>
             </div>
           </div>
 
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">Completed Assessments</h2>
-              <span className="text-xs text-gray-500">
+          <div className="bg-white shadow-xs rounded-2xl border border-stone-200/80 overflow-hidden">
+            <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-neutral-900 tracking-tight">Completed Assessments</h2>
+              <span className="text-xs text-neutral-500">
                 {assessments.length} {assessments.length === 1 ? 'record' : 'records'}
               </span>
             </div>
 
             {assessments.length === 0 ? (
-              <div className="p-8 text-center text-sm text-gray-500">
+              <div className="p-8 text-center text-xs text-neutral-400 italic">
                 No completed assessments with target role profiles found for this tenant.
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <table className="min-w-full divide-y divide-stone-100 text-xs">
+                  <thead className="bg-stone-50/70 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left">Staff Member</th>
                       <th scope="col" className="px-6 py-3 text-left">Campaign</th>
@@ -185,47 +185,47 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                       <th scope="col" className="px-6 py-3 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-stone-100">
                     {assessments.map((item) => (
-                      <tr key={item.assessmentId} className="hover:bg-gray-50 transition-colors">
+                      <tr key={item.assessmentId} className="hover:bg-stone-50/50 transition-colors">
                         <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900">{item.user.name}</div>
-                          <div className="text-xs text-gray-500">{item.user.email}</div>
+                          <div className="font-semibold text-neutral-900">{item.user.name}</div>
+                          <div className="text-[11px] text-neutral-500">{item.user.email}</div>
                         </td>
-                        <td className="px-6 py-4 text-gray-700">{item.campaign.name}</td>
+                        <td className="px-6 py-4 text-neutral-700">{item.campaign.name}</td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
                             {item.roleProfile.name}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center">
                           {item.belowTargetCount > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-800 border border-stone-200/80">
                               {item.belowTargetCount} {item.belowTargetCount === 1 ? 'gap' : 'gaps'}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                               0 gaps
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
                           {item.totalGapPoints > 0 ? (
-                            <span className="font-semibold text-amber-600">
+                            <span className="font-semibold text-neutral-900">
                               -{item.totalGapPoints} levels
                             </span>
                           ) : (
-                            <span className="text-gray-400">0</span>
+                            <span className="text-neutral-400">0</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center text-xs text-gray-500">
+                        <td className="px-6 py-4 text-center text-[11px] text-neutral-500">
                           {item.completedAt ? formatDate(item.completedAt) : '—'}
                         </td>
                         <td className="px-6 py-4 text-right space-x-3">
                           <a
                             href={`/api/reports/gap-analysis/individual/${item.assessmentId}`}
                             download
-                            className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                            className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
                             title="Export CSV"
                           >
                             Export CSV
@@ -233,14 +233,14 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                           <a
                             href={`/api/reports/gap-analysis/individual/${item.assessmentId}/excel`}
                             download
-                            className="text-xs font-semibold text-emerald-600 hover:text-emerald-800"
+                            className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
                             title="Export Excel (.xlsx)"
                           >
                             Export Excel
                           </a>
                           <Link
                             href={`/organization-admin/gap-analysis/${item.assessmentId}`}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+                            className="text-xs font-semibold text-neutral-900 hover:underline"
                           >
                             View Breakdown &rarr;
                           </Link>
@@ -257,18 +257,18 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
 
       {activeTab === 'team' && (
         <div className="space-y-6">
-          <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <label htmlFor="team-select" className="block text-xs font-bold uppercase text-gray-500 mb-1">
+              <label htmlFor="team-select" className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
                 Select Team
               </label>
-              <form method="GET" action="/organization-admin/gap-analysis">
+              <form method="GET" action="/organization-admin/gap-analysis" className="flex items-center">
                 <input type="hidden" name="tab" value="team" />
                 <select
                   id="team-select"
                   name="teamId"
                   defaultValue={selectedTeamId ?? ''}
-                  className="rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-8"
+                  className="rounded-xl border border-stone-300 text-xs bg-white text-neutral-900 px-3 py-2 shadow-2xs focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 pr-8"
                 >
                   {teams.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -278,7 +278,7 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                 </select>
                 <button
                   type="submit"
-                  className="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md bg-white hover:bg-gray-50 text-gray-700"
+                  className="ml-2 inline-flex items-center px-3.5 py-2 border border-stone-200/80 text-xs font-semibold rounded-xl bg-white hover:bg-stone-50 text-neutral-700 shadow-2xs transition-colors cursor-pointer"
                 >
                   Filter
                 </button>
@@ -286,23 +286,23 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
             </div>
 
             {teamAnalysis && (
-              <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+              <div className="flex flex-wrap gap-4 text-xs text-neutral-500">
                 <div>
-                  <span className="block text-gray-400">Department</span>
-                  <span className="font-semibold text-gray-900">{teamAnalysis.team.departmentName ?? '—'}</span>
+                  <span className="block text-neutral-400 text-[11px] font-medium">Department</span>
+                  <span className="font-semibold text-neutral-900">{teamAnalysis.team.departmentName ?? '—'}</span>
                 </div>
                 <div>
-                  <span className="block text-gray-400">Team Manager</span>
-                  <span className="font-semibold text-gray-900">{teamAnalysis.team.managerName ?? '—'}</span>
+                  <span className="block text-neutral-400 text-[11px] font-medium">Team Manager</span>
+                  <span className="font-semibold text-neutral-900">{teamAnalysis.team.managerName ?? '—'}</span>
                 </div>
                 <div>
-                  <span className="block text-gray-400">Active Staff</span>
-                  <span className="font-semibold text-gray-900">{teamAnalysis.activeStaffCount}</span>
+                  <span className="block text-neutral-400 text-[11px] font-medium">Active Staff</span>
+                  <span className="font-semibold text-neutral-900">{teamAnalysis.activeStaffCount}</span>
                 </div>
                 {teamAnalysis.staffWithoutRoleProfileCount > 0 && (
                   <div>
-                    <span className="block text-amber-600 font-medium">Unassigned Role</span>
-                    <span className="font-semibold text-amber-700">{teamAnalysis.staffWithoutRoleProfileCount}</span>
+                    <span className="block text-neutral-400 text-[11px] font-medium">Unassigned Role</span>
+                    <span className="font-semibold text-neutral-900">{teamAnalysis.staffWithoutRoleProfileCount}</span>
                   </div>
                 )}
               </div>
@@ -310,21 +310,21 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
           </div>
 
           {!teamAnalysis ? (
-            <div className="bg-white p-8 rounded-lg border border-gray-200 text-center text-sm text-gray-500">
+            <div className="bg-white p-8 rounded-2xl border border-stone-200/80 text-center text-xs text-neutral-400 italic shadow-xs">
               Please select a team to view competency gap analysis.
             </div>
           ) : teamAnalysis.competencies.length === 0 ? (
-            <div className="bg-white p-8 rounded-lg border border-gray-200 text-center text-sm text-gray-500">
+            <div className="bg-white p-8 rounded-2xl border border-stone-200/80 text-center text-xs text-neutral-400 italic shadow-xs">
               No required competencies mapped for active staff members in this team.
             </div>
           ) : (
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="bg-white shadow-xs rounded-2xl border border-stone-200/80 overflow-hidden">
+              <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900">
+                  <h2 className="text-sm font-bold text-neutral-900 tracking-tight">
                     {teamAnalysis.team.name} Competency Capability Gaps
                   </h2>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-neutral-500 mt-0.5">
                     {teamAnalysis.competencies.length} Competencies Evaluated
                   </span>
                 </div>
@@ -332,29 +332,23 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                   <a
                     href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}`}
                     download
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
                   >
-                    <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
                     Export CSV
                   </a>
                   <a
                     href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}/excel`}
                     download
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-emerald-300 shadow-sm text-xs font-medium rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
                   >
-                    <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
                     Export Excel (.xlsx)
                   </a>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <table className="min-w-full divide-y divide-stone-100 text-xs">
+                  <thead className="bg-stone-50/70 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left">Competency</th>
                       <th scope="col" className="px-6 py-3 text-left">Type</th>
@@ -366,47 +360,43 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                       <th scope="col" className="px-6 py-3 text-center">Not Assessed</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-stone-100">
                     {teamAnalysis.competencies.map((comp) => (
-                      <tr key={comp.competencyId} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900">{comp.competencyName}</td>
+                      <tr key={comp.competencyId} className="hover:bg-stone-50/50 transition-colors">
+                        <td className="px-6 py-4 font-semibold text-neutral-900">{comp.competencyName}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              comp.competencyType === CompetencyType.TECHNICAL
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'bg-purple-50 text-purple-700'
-                            }`}
+                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-stone-100 text-stone-700 border border-stone-200/80"
                           >
                             {comp.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center font-bold text-gray-900">
+                        <td className="px-6 py-4 text-center font-bold text-neutral-900">
                           {comp.employeesRequiringCount}
                         </td>
-                        <td className="px-6 py-4 text-center font-medium text-blue-600">
+                        <td className="px-6 py-4 text-center font-medium text-neutral-900">
                           {comp.assessedCount}
                         </td>
                         <td className="px-6 py-4 text-center">
                           {comp.averageVerifiedLevel !== null ? (
-                            <span className="font-bold text-gray-900">L{comp.averageVerifiedLevel}</span>
+                            <span className="font-bold text-neutral-900">L{comp.averageVerifiedLevel}</span>
                           ) : (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-neutral-400">—</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
                           {comp.belowTargetCount > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-800 border border-stone-200/80">
                               {comp.belowTargetCount}
                             </span>
                           ) : (
-                            <span className="text-emerald-600 font-semibold">0</span>
+                            <span className="text-emerald-700 font-semibold">0</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center font-semibold text-emerald-600">
+                        <td className="px-6 py-4 text-center font-semibold text-emerald-700">
                           {comp.meetsTargetCount + comp.exceedsTargetCount}
                         </td>
-                        <td className="px-6 py-4 text-center text-gray-400">
+                        <td className="px-6 py-4 text-center text-neutral-400">
                           {comp.notAssessedCount}
                         </td>
                       </tr>
@@ -421,51 +411,51 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
 
       {activeTab === 'organization' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="bg-white overflow-hidden shadow-xs rounded-2xl border border-stone-200/80 p-5">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                 Total Active Staff
               </div>
-              <div className="mt-1 text-3xl font-extrabold text-gray-900">
+              <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">
                 {orgAnalysis.totalActiveStaffCount}
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
+              <div className="mt-3 pt-3 border-t border-stone-100 text-[11px] text-neutral-500">
                 Staff workforce assessed across organization
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div className="bg-white overflow-hidden shadow-xs rounded-2xl border border-stone-200/80 p-5">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                 Staff With Role Profiles
               </div>
-              <div className="mt-1 text-3xl font-extrabold text-blue-600">
+              <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">
                 {orgAnalysis.staffWithRoleProfileCount}
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
+              <div className="mt-3 pt-3 border-t border-stone-100 text-[11px] text-neutral-500">
                 Staff assigned defined competency targets
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div className="bg-white overflow-hidden shadow-xs rounded-2xl border border-stone-200/80 p-5">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                 Staff Without Assigned Role
               </div>
-              <div className="mt-1 text-3xl font-extrabold text-amber-600">
+              <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">
                 {orgAnalysis.staffWithoutRoleProfileCount}
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
+              <div className="mt-3 pt-3 border-t border-stone-100 text-[11px] text-neutral-500">
                 Tracked separately without fabricated targets
               </div>
             </div>
           </div>
 
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white shadow-xs rounded-2xl border border-stone-200/80 overflow-hidden">
+            <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
               <div>
-                <h2 className="text-base font-semibold text-gray-900">
+                <h2 className="text-sm font-bold text-neutral-900 tracking-tight">
                   Organization-Wide Competency Capability Distribution
                 </h2>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-neutral-500 mt-0.5">
                   {orgAnalysis.competencies.length} Required Competencies
                 </span>
               </div>
@@ -473,34 +463,28 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                 <a
                   href="/api/reports/gap-analysis/organization"
                   download
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
                 >
-                  <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
                   Export CSV
                 </a>
                 <a
                   href="/api/reports/gap-analysis/organization/excel"
                   download
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-emerald-300 shadow-sm text-xs font-medium rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
                 >
-                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
                   Export Excel (.xlsx)
                 </a>
               </div>
             </div>
 
             {orgAnalysis.competencies.length === 0 ? (
-              <div className="p-8 text-center text-sm text-gray-500">
+              <div className="p-8 text-center text-xs text-neutral-400 italic">
                 No role requirements found across active staff members in this organization.
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <table className="min-w-full divide-y divide-stone-100 text-xs">
+                  <thead className="bg-stone-50/70 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left">Competency</th>
                       <th scope="col" className="px-6 py-3 text-left">Type</th>
@@ -512,54 +496,50 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                       <th scope="col" className="px-6 py-3 text-center">Not Assessed</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-stone-100">
                     {orgAnalysis.competencies.map((comp) => (
-                      <tr key={comp.competencyId} className="hover:bg-gray-50 transition-colors">
+                      <tr key={comp.competencyId} className="hover:bg-stone-50/50 transition-colors">
                         <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900">{comp.competencyName}</div>
+                          <div className="font-semibold text-neutral-900">{comp.competencyName}</div>
                           {comp.competencyDescription && (
-                            <div className="text-xs text-gray-400 mt-0.5 max-w-md line-clamp-1">
+                            <div className="text-[11px] text-neutral-500 mt-0.5 max-w-md line-clamp-1">
                               {comp.competencyDescription}
                             </div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              comp.competencyType === CompetencyType.TECHNICAL
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'bg-purple-50 text-purple-700'
-                            }`}
+                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-stone-100 text-stone-700 border border-stone-200/80"
                           >
                             {comp.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center font-bold text-gray-900">
+                        <td className="px-6 py-4 text-center font-bold text-neutral-900">
                           {comp.employeesRequiringCount}
                         </td>
-                        <td className="px-6 py-4 text-center font-medium text-blue-600">
+                        <td className="px-6 py-4 text-center font-medium text-neutral-900">
                           {comp.assessedCount}
                         </td>
                         <td className="px-6 py-4 text-center">
                           {comp.averageVerifiedLevel !== null ? (
-                            <span className="font-bold text-gray-900">L{comp.averageVerifiedLevel}</span>
+                            <span className="font-bold text-neutral-900">L{comp.averageVerifiedLevel}</span>
                           ) : (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-neutral-400">—</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
                           {comp.belowTargetCount > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-800 border border-stone-200/80">
                               {comp.belowTargetCount}
                             </span>
                           ) : (
-                            <span className="text-emerald-600 font-semibold">0</span>
+                            <span className="text-emerald-700 font-semibold">0</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center font-semibold text-emerald-600">
+                        <td className="px-6 py-4 text-center font-semibold text-emerald-700">
                           {comp.meetsTargetCount + comp.exceedsTargetCount}
                         </td>
-                        <td className="px-6 py-4 text-center text-gray-400">
+                        <td className="px-6 py-4 text-center text-neutral-400">
                           {comp.notAssessedCount}
                         </td>
                       </tr>

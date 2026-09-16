@@ -20,16 +20,16 @@ export default async function ManagerCorroborationsQueuePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Corroboration Queue</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Corroboration Queue</h1>
+        <p className="mt-1 text-xs text-neutral-500">
           Review submitted self-assessments for your direct reports, verify evidence, and confirm final competency ratings.
         </p>
       </div>
 
       {pendingAssessments.length === 0 ? (
-        <div className="text-center bg-white rounded-lg border border-dashed border-gray-300 p-12">
+        <div className="text-center bg-white rounded-2xl border border-dashed border-stone-300 p-12 shadow-xs">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-stone-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -41,44 +41,44 @@ export default async function ManagerCorroborationsQueuePage() {
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No pending corroborations</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-3 text-sm font-bold text-neutral-900">No pending corroborations</h3>
+          <p className="mt-1 text-xs text-neutral-500">
             All submitted self-assessments from your direct reports have been reviewed.
           </p>
         </div>
       ) : (
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white shadow-xs rounded-2xl border border-stone-200/80 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-stone-100">
+              <thead className="bg-stone-50/70">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider"
                   >
                     Employee
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider"
                   >
                     Campaign
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider"
                   >
                     Submitted On
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider"
                   >
                     Competencies
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider"
                   >
                     Deadline
                   </th>
@@ -87,31 +87,31 @@ export default async function ManagerCorroborationsQueuePage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-stone-100">
                 {pendingAssessments.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={item.id} className="hover:bg-stone-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900">{item.user.name}</div>
-                      <div className="text-xs text-gray-500">{item.user.email}</div>
+                      <div className="text-xs font-semibold text-neutral-900">{item.user.name}</div>
+                      <div className="text-[11px] text-neutral-500">{item.user.email}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-neutral-800 font-semibold">
                       {item.campaign.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-neutral-500">
                       {formatDate(item.submittedAt)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-800">
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-neutral-600">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
                         {item._count.items} competencies
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-neutral-500">
                       {formatDate(item.campaign.deadline)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
                       <Link
                         href={`/manager/corroborations/${item.id}`}
-                        className="inline-flex items-center px-3.5 py-1.5 border border-transparent text-xs font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                        className="inline-flex items-center px-3.5 py-2 border border-transparent text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 shadow-2xs transition-colors cursor-pointer"
                       >
                         Review Assessment &rarr;
                       </Link>

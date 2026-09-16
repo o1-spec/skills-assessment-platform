@@ -59,29 +59,29 @@ export default function DepartmentDetailView({ department }: { department: Depar
       <div className="mb-6">
         <Link
           href="/organization-admin/organization"
-          className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+          className="text-xs font-semibold text-stone-500 hover:text-neutral-900 transition-colors flex items-center gap-1.5"
         >
-          ← Organization
+          &larr; Back to Organization
         </Link>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-white border border-stone-200/80 rounded-2xl shadow-xs overflow-hidden">
+        <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span
-              className={`w-3 h-3 rounded-full ${department.isActive ? 'bg-green-500' : 'bg-gray-300'}`}
+              className={`w-2.5 h-2.5 rounded-full ${department.isActive ? 'bg-emerald-500' : 'bg-stone-300'}`}
             />
             {editMode ? (
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="text-xl font-bold text-gray-900 border-b border-blue-500 focus:outline-none bg-transparent"
+                className="text-xl font-bold text-neutral-900 border-b border-neutral-900 focus:outline-none bg-transparent"
               />
             ) : (
-              <h1 className="text-xl font-bold text-gray-900">{department.name}</h1>
+              <h1 className="text-xl font-bold text-neutral-900 tracking-tight">{department.name}</h1>
             )}
             {!department.isActive && (
-              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full border border-stone-200/80">
                 Inactive
               </span>
             )}
@@ -90,7 +90,7 @@ export default function DepartmentDetailView({ department }: { department: Depar
             {!editMode && (
               <button
                 onClick={() => setEditMode(true)}
-                className="text-sm border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                className="text-xs font-semibold border border-stone-200/80 text-neutral-700 px-3.5 py-1.5 rounded-xl hover:bg-stone-50 shadow-2xs transition-colors cursor-pointer"
               >
                 Edit
               </button>
@@ -100,13 +100,13 @@ export default function DepartmentDetailView({ department }: { department: Depar
                 <button
                   onClick={handleSave}
                   disabled={isPending}
-                  className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-60"
+                  className="text-xs font-semibold bg-neutral-900 text-white px-3.5 py-1.5 rounded-xl hover:bg-neutral-800 disabled:opacity-60 shadow-2xs transition-colors cursor-pointer"
                 >
                   {isPending ? 'Saving…' : 'Save'}
                 </button>
                 <button
                   onClick={() => { setEditMode(false); setError(''); }}
-                  className="text-sm border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                  className="text-xs font-semibold border border-stone-200/80 text-neutral-700 px-3.5 py-1.5 rounded-xl hover:bg-stone-50 shadow-2xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -115,11 +115,7 @@ export default function DepartmentDetailView({ department }: { department: Depar
             <button
               onClick={handleToggleActive}
               disabled={isPending}
-              className={`text-sm px-3 py-1.5 rounded-lg border ${
-                department.isActive
-                  ? 'border-red-300 text-red-600 hover:bg-red-50'
-                  : 'border-green-300 text-green-700 hover:bg-green-50'
-              }`}
+              className="text-xs font-semibold px-3.5 py-1.5 rounded-xl border border-stone-200/80 text-stone-500 hover:text-rose-600 transition-colors cursor-pointer shadow-2xs"
             >
               {department.isActive ? 'Deactivate' : 'Reactivate'}
             </button>
@@ -128,7 +124,7 @@ export default function DepartmentDetailView({ department }: { department: Depar
 
         <div className="px-6 py-5">
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+            <div className="mb-4 bg-rose-50 border border-rose-200/80 text-rose-800 rounded-xl px-4 py-3 text-xs font-semibold">
               {error}
             </div>
           )}
@@ -137,41 +133,41 @@ export default function DepartmentDetailView({ department }: { department: Depar
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 resize-none transition-colors"
               placeholder="Optional description…"
             />
           ) : (
-            <p className="text-sm text-gray-600">
-              {department.description || <span className="italic text-gray-400">No description.</span>}
+            <p className="text-xs text-stone-600 leading-relaxed">
+              {department.description || <span className="italic text-stone-400">No description provided.</span>}
             </p>
           )}
         </div>
 
-        <div className="px-6 pb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Teams</h2>
+        <div className="px-6 pb-6 pt-2 border-t border-stone-100">
+          <div className="flex items-center justify-between mb-3.5">
+            <h2 className="text-xs font-bold text-neutral-700 uppercase tracking-wider">Teams</h2>
             <Link
               href={`/organization-admin/organization/teams/new?departmentId=${department.id}`}
-              className="text-xs text-blue-600 hover:underline"
+              className="text-xs font-semibold text-neutral-700 hover:text-neutral-900 hover:underline transition-colors"
             >
               + New team in this department
             </Link>
           </div>
           {department.teams.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No teams in this department.</p>
+            <p className="text-xs text-stone-400 italic">No teams in this department.</p>
           ) : (
             <div className="space-y-2">
               {department.teams.map((team) => (
                 <Link
                   key={team.id}
                   href={`/organization-admin/organization/teams/${team.id}`}
-                  className="flex items-center justify-between border border-gray-100 rounded-xl px-4 py-3 hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
+                  className="flex items-center justify-between border border-stone-200/80 rounded-xl px-4 py-3 hover:border-stone-400 hover:bg-stone-50/50 transition-all group"
                 >
-                  <span className="text-sm font-medium text-gray-800 group-hover:text-blue-700">
+                  <span className="text-xs font-semibold text-neutral-800 group-hover:text-neutral-900">
                     {team.name}
                   </span>
                   <svg
-                    className="w-4 h-4 text-gray-400 group-hover:text-blue-500"
+                    className="w-4 h-4 text-stone-400 group-hover:text-neutral-900 transition-colors"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

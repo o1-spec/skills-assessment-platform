@@ -146,7 +146,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+        className="relative p-2 text-neutral-500 hover:text-neutral-900 hover:bg-stone-100 rounded-full focus:outline-hidden transition-colors cursor-pointer"
         aria-expanded={isOpen}
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
         id="notification-bell-button"
@@ -169,7 +169,7 @@ export function NotificationBell() {
         {unreadCount > 0 && (
           <span
             id="notification-unread-badge"
-            className="absolute top-1 right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 text-[11px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs ring-2 ring-white"
+            className="absolute top-1 right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 text-[10px] font-bold leading-none text-white bg-neutral-900 rounded-full shadow-2xs ring-2 ring-white"
           >
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
@@ -179,15 +179,15 @@ export function NotificationBell() {
       {isOpen && (
         <div
           id="notification-popover"
-          className="origin-top-right absolute right-0 mt-2 w-80 sm:w-96 rounded-xl shadow-xl bg-white ring-1 ring-black/5 focus:outline-hidden z-50 overflow-hidden"
+          className="origin-top-right absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl shadow-xl bg-white border border-stone-200/80 focus:outline-hidden z-50 overflow-hidden"
           role="region"
           aria-label="Notifications"
         >
-          <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between">
+          <div className="px-4 py-3 bg-stone-50/70 border-b border-stone-100 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-gray-900 text-sm">Notifications</span>
+              <span className="font-bold text-neutral-900 text-xs tracking-tight">Notifications</span>
               {unreadCount > 0 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
                   {unreadCount} new
                 </span>
               )}
@@ -198,18 +198,18 @@ export function NotificationBell() {
                 onClick={handleMarkAllAsRead}
                 disabled={isLoading}
                 id="mark-all-read-button"
-                className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors"
+                className="text-xs font-semibold text-neutral-700 hover:text-neutral-900 disabled:opacity-50 transition-colors cursor-pointer"
               >
                 Mark all as read
               </button>
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto divide-y divide-gray-100">
+          <div className="max-h-80 overflow-y-auto divide-y divide-stone-100">
             {notifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-6 text-center text-neutral-500">
                 <svg
-                  className="mx-auto h-8 w-8 text-gray-300 mb-2"
+                  className="mx-auto h-8 w-8 text-stone-300 mb-2"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -221,7 +221,7 @@ export function NotificationBell() {
                     d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                   />
                 </svg>
-                <p className="text-xs">No notifications yet</p>
+                <p className="text-xs text-neutral-400">No notifications yet</p>
               </div>
             ) : (
               notifications.map((item) => {
@@ -230,12 +230,13 @@ export function NotificationBell() {
                   <div
                     key={item.id}
                     onClick={() => handleNotificationClick(item)}
-                    className={`p-3.5 hover:bg-gray-50/80 cursor-pointer transition-colors relative flex items-start space-x-3 ${isUnread ? 'bg-blue-50/30' : ''
-                      }`}
+                    className={`p-3.5 hover:bg-stone-50/80 cursor-pointer transition-colors relative flex items-start space-x-3 ${
+                      isUnread ? 'bg-stone-50/50' : ''
+                    }`}
                   >
                     <div className="pt-1 shrink-0">
                       {isUnread ? (
-                        <span className="block h-2 w-2 rounded-full bg-blue-600 ring-2 ring-blue-100" />
+                        <span className="block h-2 w-2 rounded-full bg-neutral-900 ring-2 ring-stone-200" />
                       ) : (
                         <span className="block h-2 w-2 rounded-full bg-transparent" />
                       )}
@@ -244,16 +245,17 @@ export function NotificationBell() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p
-                          className={`text-xs truncate ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'
-                            }`}
+                          className={`text-xs truncate ${
+                            isUnread ? 'font-bold text-neutral-900' : 'font-semibold text-neutral-700'
+                          }`}
                         >
                           {item.title}
                         </p>
-                        <span className="text-[10px] text-gray-400 shrink-0 ml-2">
+                        <span className="text-[10px] text-neutral-400 shrink-0 ml-2">
                           {formatRelativeTime(item.createdAt)}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 mt-0.5 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-neutral-600 mt-0.5 line-clamp-2 leading-relaxed">
                         {item.message}
                       </p>
                     </div>
@@ -263,7 +265,7 @@ export function NotificationBell() {
                         type="button"
                         onClick={(e) => handleMarkAsRead(item.id, e)}
                         title="Mark as read"
-                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-600 p-1 transition-opacity shrink-0"
+                        className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-neutral-900 p-1 transition-opacity shrink-0 cursor-pointer"
                       >
                         <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
                           <path
@@ -280,12 +282,12 @@ export function NotificationBell() {
             )}
           </div>
 
-          <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 text-center">
+          <div className="px-4 py-2.5 bg-stone-50/70 border-t border-stone-100 text-center">
             <Link
               href="/notifications"
               onClick={() => setIsOpen(false)}
               id="view-all-notifications-link"
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              className="text-xs font-semibold text-neutral-900 hover:underline transition-colors"
             >
               View all notifications &rarr;
             </Link>

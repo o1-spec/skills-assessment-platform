@@ -118,34 +118,34 @@ export default function TeamDetailView({
       <div className="mb-6">
         <Link
           href="/organization-admin/organization"
-          className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+          className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors inline-flex items-center gap-1.5"
         >
-          ← Organization
+          ← Back to Organization
         </Link>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-8">
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-white border border-stone-200/80 rounded-2xl shadow-xs overflow-hidden mb-8">
+        <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className={`w-3 h-3 rounded-full ${team.isActive ? 'bg-green-500' : 'bg-gray-300'}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${team.isActive ? 'bg-emerald-500' : 'bg-stone-300'}`} />
             {editMode ? (
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="text-xl font-bold text-gray-900 border-b border-blue-500 focus:outline-none bg-transparent"
+                className="text-xl font-bold text-neutral-900 border-b border-neutral-900 focus:outline-none bg-transparent"
               />
             ) : (
-              <h1 className="text-xl font-bold text-gray-900">{team.name}</h1>
+              <h1 className="text-xl font-bold text-neutral-900 tracking-tight">{team.name}</h1>
             )}
             {!team.isActive && (
-              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactive</span>
+              <span className="text-[11px] font-semibold bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-full border border-stone-200/60">Inactive</span>
             )}
           </div>
           <div className="flex gap-2">
             {!editMode && (
               <button
                 onClick={() => setEditMode(true)}
-                className="text-sm border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                className="text-xs font-semibold border border-stone-200/80 text-neutral-700 px-3.5 py-2 rounded-xl hover:bg-stone-50 shadow-2xs transition-colors cursor-pointer"
               >
                 Edit Team
               </button>
@@ -155,7 +155,7 @@ export default function TeamDetailView({
                 <button
                   onClick={handleSave}
                   disabled={isPending}
-                  className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-60"
+                  className="text-xs font-semibold bg-neutral-900 text-white px-3.5 py-2 rounded-xl hover:bg-neutral-800 disabled:opacity-50 shadow-2xs transition-colors cursor-pointer"
                 >
                   {isPending ? 'Saving…' : 'Save'}
                 </button>
@@ -168,7 +168,7 @@ export default function TeamDetailView({
                     setDepartmentId(team.department?.id || '');
                     setManagerId(team.manager?.id || '');
                   }}
-                  className="text-sm border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                  className="text-xs font-semibold border border-stone-200/80 text-neutral-700 px-3.5 py-2 rounded-xl hover:bg-stone-50 shadow-2xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -177,10 +177,10 @@ export default function TeamDetailView({
             <button
               onClick={handleToggleActive}
               disabled={isPending}
-              className={`text-sm px-3 py-1.5 rounded-lg border ${
+              className={`text-xs font-semibold px-3.5 py-2 rounded-xl border shadow-2xs transition-colors cursor-pointer ${
                 team.isActive
-                  ? 'border-red-300 text-red-600 hover:bg-red-50'
-                  : 'border-green-300 text-green-700 hover:bg-green-50'
+                  ? 'border-red-200/80 text-red-700 bg-white hover:bg-red-50'
+                  : 'border-emerald-200/80 text-emerald-700 bg-white hover:bg-emerald-50'
               }`}
             >
               {team.isActive ? 'Deactivate' : 'Reactivate'}
@@ -190,7 +190,7 @@ export default function TeamDetailView({
 
         <div className="px-6 py-5 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+            <div className="bg-red-50 border border-red-200/80 text-red-700 rounded-xl px-4 py-3 text-xs font-medium">
               {error}
             </div>
           )}
@@ -198,27 +198,27 @@ export default function TeamDetailView({
           {editMode ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Description
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors resize-none"
                   placeholder="Optional description…"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                     Department
                   </label>
                   <select
                     value={departmentId}
                     onChange={(e) => setDepartmentId(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
                   >
                     <option value="">No Department</option>
                     {departments.map((dept) => (
@@ -230,13 +230,13 @@ export default function TeamDetailView({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                     Team Manager
                   </label>
                   <select
                     value={managerId}
                     onChange={(e) => setManagerId(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
                   >
                     <option value="">No Assigned Manager</option>
                     {managers.map((mgr) => (
@@ -249,38 +249,38 @@ export default function TeamDetailView({
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">
-                {team.description || <span className="italic text-gray-400">No description.</span>}
+            <div className="space-y-4">
+              <p className="text-sm text-neutral-600 leading-relaxed">
+                {team.description || <span className="italic text-neutral-400">No description.</span>}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-stone-100">
                 <div>
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Department:</span>
-                  <div className="text-sm font-medium text-gray-800 mt-0.5">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Department:</span>
+                  <div className="text-sm font-semibold text-neutral-900 mt-1">
                     {team.department ? (
                       <Link
                         href={`/organization-admin/organization/departments/${team.department.id}`}
-                        className="text-blue-600 hover:underline"
+                        className="hover:underline"
                       >
                         {team.department.name}
                       </Link>
                     ) : (
-                      <span className="text-gray-400 italic">None</span>
+                      <span className="text-neutral-400 font-normal italic">None</span>
                     )}
                   </div>
                 </div>
                 <div>
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Team Manager:</span>
-                  <div className="text-sm font-medium text-gray-800 mt-0.5">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Team Manager:</span>
+                  <div className="text-sm font-semibold text-neutral-900 mt-1">
                     {team.manager ? (
                       <Link
                         href={`/organization-admin/users/${team.manager.id}`}
-                        className="text-blue-600 hover:underline"
+                        className="hover:underline"
                       >
-                        {team.manager.name} ({team.manager.email})
+                        {team.manager.name} <span className="text-neutral-500 font-normal">({team.manager.email})</span>
                       </Link>
                     ) : (
-                      <span className="text-gray-400 italic">None</span>
+                      <span className="text-neutral-400 font-normal italic">None</span>
                     )}
                   </div>
                 </div>
@@ -290,13 +290,13 @@ export default function TeamDetailView({
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white border border-stone-200/80 rounded-2xl shadow-xs overflow-hidden">
+        <div className="px-6 py-5 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-neutral-900 tracking-tight">
               Team Members ({team.memberships.length})
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-neutral-500 mt-0.5">
               Employees assigned to this team
             </p>
           </div>
@@ -306,7 +306,7 @@ export default function TeamDetailView({
               <select
                 value={selectedNewUserId}
                 onChange={(e) => setSelectedNewUserId(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-stone-300 rounded-xl px-3 py-2 text-xs bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
               >
                 <option value="">Select an employee…</option>
                 {availableUsers.map((u) => (
@@ -318,7 +318,7 @@ export default function TeamDetailView({
               <button
                 onClick={handleAddMember}
                 disabled={!selectedNewUserId || isPending}
-                className="bg-blue-600 text-white text-sm px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-60 whitespace-nowrap"
+                className="bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold px-3.5 py-2 rounded-xl shadow-2xs transition-colors disabled:opacity-50 whitespace-nowrap cursor-pointer"
               >
                 Add Member
               </button>
@@ -327,35 +327,35 @@ export default function TeamDetailView({
         </div>
 
         {memberError && (
-          <div className="m-6 mb-0 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+          <div className="m-6 mb-0 bg-red-50 border border-red-200/80 text-red-700 rounded-xl px-4 py-3 text-xs font-medium">
             {memberError}
           </div>
         )}
 
         <div className="p-6">
           {team.memberships.length === 0 ? (
-            <p className="text-sm text-gray-500 italic py-4 text-center">
+            <p className="text-xs text-neutral-500 italic py-4 text-center">
               No members currently assigned to this team.
             </p>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-stone-100">
               {team.memberships.map(({ user }) => (
                 <div key={user.id} className="py-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-xs">
+                    <div className="w-8 h-8 rounded-full bg-neutral-900 text-white font-bold flex items-center justify-center text-xs">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <Link
                         href={`/organization-admin/users/${user.id}`}
-                        className="text-sm font-medium text-gray-900 hover:text-blue-600"
+                        className="text-sm font-semibold text-neutral-900 hover:underline"
                       >
                         {user.name}
                       </Link>
-                      <div className="text-xs text-gray-500">
-                        {user.email} · <span className="font-medium">{user.role}</span>
+                      <div className="text-xs text-neutral-500">
+                        {user.email} · <span className="font-semibold text-neutral-700">{user.role}</span>
                         {!user.isActive && (
-                          <span className="ml-1.5 text-red-600 font-medium">(Inactive)</span>
+                          <span className="ml-1.5 text-red-600 font-semibold">(Inactive)</span>
                         )}
                       </div>
                     </div>
@@ -364,7 +364,7 @@ export default function TeamDetailView({
                     <button
                       onClick={() => handleRemoveMember(user.id, user.name)}
                       disabled={isPending}
-                      className="text-xs text-red-600 hover:text-red-800 border border-red-200 hover:bg-red-50 px-2.5 py-1 rounded-md"
+                      className="text-xs font-semibold text-red-600 hover:text-red-700 border border-red-200/80 hover:bg-red-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                     >
                       Remove
                     </button>

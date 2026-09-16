@@ -86,38 +86,38 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Scheduled Capability Reports</h2>
-          <p className="text-xs text-gray-500">
+          <h2 className="text-sm font-bold text-neutral-900 tracking-tight">Scheduled Capability Reports</h2>
+          <p className="text-xs text-neutral-500 mt-0.5">
             Automatically generate and deliver capability gap Excel reports to designated stakeholders.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setIsCreateOpen(!isCreateOpen)}
-          className="inline-flex items-center px-3.5 py-2 border border-transparent text-xs font-semibold rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-semibold shadow-2xs text-white bg-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
         >
           {isCreateOpen ? 'Cancel' : '+ New Schedule'}
         </button>
       </div>
 
       {isCreateOpen && (
-        <div className="bg-white rounded-lg border border-blue-200 shadow-sm p-6 space-y-5">
-          <div className="border-b border-gray-100 pb-3">
-            <h3 className="text-sm font-bold text-gray-900">Create Report Schedule</h3>
-            <p className="text-xs text-gray-500">
+        <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs p-6 space-y-5">
+          <div className="border-b border-stone-100 pb-3">
+            <h3 className="text-sm font-bold text-neutral-900">Create Report Schedule</h3>
+            <p className="text-xs text-neutral-500 mt-0.5">
               Set up automated capability reporting with verified role gap benchmarks.
             </p>
           </div>
 
           {formState.error && (
-            <div className="rounded-md bg-red-50 p-3 text-xs text-red-700 border border-red-200">
+            <div className="rounded-xl bg-red-50 p-3.5 text-xs text-red-700 border border-red-200/80">
               {formState.error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                 Schedule Name *
               </label>
               <input
@@ -126,13 +126,13 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                 type="text"
                 required
                 placeholder="e.g. Weekly Executive Capability Report"
-                className="w-full text-xs rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+                className="w-full text-sm rounded-xl border border-stone-300 shadow-2xs px-3.5 py-2.5 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="scopeType" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="scopeType" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Report Scope *
                 </label>
                 <select
@@ -148,7 +148,7 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                         : ReportType.ORGANIZATION_GAP
                     );
                   }}
-                  className="w-full text-xs rounded-md border-gray-300 shadow-sm p-2 border bg-white"
+                  className="w-full text-sm rounded-xl border border-stone-300 shadow-2xs px-3.5 py-2.5 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
                 >
                   <option value={ScheduleScopeType.ORGANIZATION}>Organization-wide</option>
                   <option value={ScheduleScopeType.TEAM}>Team Capability</option>
@@ -158,14 +158,14 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
 
               {scopeType === ScheduleScopeType.TEAM && (
                 <div>
-                  <label htmlFor="scopeId" className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="scopeId" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                     Select Team *
                   </label>
                   <select
                     id="scopeId"
                     name="scopeId"
                     required
-                    className="w-full text-xs rounded-md border-gray-300 shadow-sm p-2 border bg-white"
+                    className="w-full text-sm rounded-xl border border-stone-300 shadow-2xs px-3.5 py-2.5 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
                   >
                     {teams.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -177,7 +177,7 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
               )}
 
               <div>
-                <label htmlFor="frequency" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="frequency" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Recurrence Frequency *
                 </label>
                 <select
@@ -185,7 +185,7 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                   name="frequency"
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value as ScheduleFrequency)}
-                  className="w-full text-xs rounded-md border-gray-300 shadow-sm p-2 border bg-white"
+                  className="w-full text-sm rounded-xl border border-stone-300 shadow-2xs px-3.5 py-2.5 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
                 >
                   <option value={ScheduleFrequency.DAILY}>Daily</option>
                   <option value={ScheduleFrequency.WEEKLY}>Weekly</option>
@@ -194,7 +194,7 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
               </div>
 
               <div>
-                <label htmlFor="nextRunAt" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="nextRunAt" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                   First Run Date (UTC)
                 </label>
                 <input
@@ -203,20 +203,20 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                   type="date"
                   value={nextRunDate}
                   onChange={(e) => setNextRunDate(e.target.value)}
-                  className="w-full text-xs rounded-md border-gray-300 shadow-sm p-2 border"
+                  className="w-full text-sm rounded-xl border border-stone-300 shadow-2xs px-3.5 py-2.5 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
                 Recipients (Active Organization Members) *
               </label>
-              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1 bg-gray-50">
+              <div className="max-h-40 overflow-y-auto border border-stone-200/80 rounded-xl p-2.5 space-y-1 bg-stone-50/50">
                 {users.map((u) => (
                   <label
                     key={u.id}
-                    className="flex items-center gap-2 p-1 hover:bg-white rounded cursor-pointer text-xs"
+                    className="flex items-center gap-2.5 p-1.5 hover:bg-white rounded-lg cursor-pointer text-xs transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -224,31 +224,31 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                       value={u.id}
                       checked={selectedRecipients.includes(u.id)}
                       onChange={() => handleRecipientToggle(u.id)}
-                      className="rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                      className="rounded text-neutral-900 focus:ring-neutral-900 border-stone-300 accent-neutral-900 h-3.5 w-3.5"
                     />
-                    <span className="font-medium text-gray-900">{u.name}</span>
-                    <span className="text-gray-400">({u.email})</span>
-                    <span className="ml-auto text-[10px] text-gray-400 capitalize">{u.role.toLowerCase()}</span>
+                    <span className="font-semibold text-neutral-900">{u.name}</span>
+                    <span className="text-neutral-400">({u.email})</span>
+                    <span className="ml-auto text-[10px] text-neutral-500 uppercase font-bold">{u.role}</span>
                   </label>
                 ))}
               </div>
-              <div className="text-[11px] text-gray-400 mt-1">
+              <div className="text-[11px] text-neutral-400 mt-1.5">
                 Selected {selectedRecipients.length} recipient(s)
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-stone-100">
               <button
                 type="button"
                 onClick={() => setIsCreateOpen(false)}
-                className="px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 hover:bg-gray-50"
+                className="px-3.5 py-2 border border-stone-200/80 text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isPending || selectedRecipients.length === 0}
-                className="px-4 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 py-2 bg-neutral-900 text-white text-xs font-semibold rounded-xl hover:bg-neutral-800 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer"
               >
                 {isPending ? 'Saving...' : 'Create Schedule'}
               </button>
@@ -258,13 +258,13 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
       )}
 
       {schedules.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500 text-sm">
+        <div className="bg-white rounded-2xl border border-stone-200/80 p-8 text-center text-xs text-neutral-400 italic shadow-xs">
           No automated report schedules configured yet. Click <strong>+ New Schedule</strong> to set up scheduled capability reports.
         </div>
       ) : (
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 text-xs">
-            <thead className="bg-gray-50 text-gray-500 font-medium uppercase">
+        <div className="bg-white shadow-xs rounded-2xl border border-stone-200/80 overflow-hidden">
+          <table className="min-w-full divide-y divide-stone-100 text-xs">
+            <thead className="bg-stone-50/70 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left">Schedule</th>
                 <th scope="col" className="px-6 py-3 text-left">Scope</th>
@@ -276,7 +276,7 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                 <th scope="col" className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
+            <tbody className="divide-y divide-stone-100 bg-white">
               {schedules.map((schedule) => {
                 const team = teams.find((t) => t.id === schedule.scopeId);
                 const scopeLabel =
@@ -285,28 +285,28 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                     : 'Organization-wide';
 
                 return (
-                  <tr key={schedule.id} className="hover:bg-gray-50">
+                  <tr key={schedule.id} className="hover:bg-stone-50/50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-900">{schedule.name}</div>
-                      <div className="text-[11px] text-gray-400">Created by {schedule.createdBy.name}</div>
+                      <div className="font-semibold text-neutral-900">{schedule.name}</div>
+                      <div className="text-[11px] text-neutral-400">Created by {schedule.createdBy.name}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-neutral-600">
                       {scopeLabel}
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
                         {schedule.frequency}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-neutral-700">
                       {formatDate(schedule.nextRunAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {schedule.lastRunAt ? (
                         <div>
-                          <div className="text-gray-900">{formatDate(schedule.lastRunAt)}</div>
+                          <div className="text-neutral-900 font-medium">{formatDate(schedule.lastRunAt)}</div>
                           <span
-                            className={`inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium ${
+                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
                               schedule.lastRunStatus === 'SUCCESS'
                                 ? 'text-emerald-700 bg-emerald-50'
                                 : 'text-red-700 bg-red-50'
@@ -316,12 +316,12 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                           </span>
                         </div>
                       ) : (
-                        <span className="text-gray-400 italic">Never run</span>
+                        <span className="text-neutral-400 italic">Never run</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       <span
-                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80"
                         title={schedule.recipients.map((r) => r.user.name).join(', ')}
                       >
                         {schedule.recipients.length} user(s)
@@ -329,10 +329,10 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                           schedule.isActive
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-gray-100 text-gray-500'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                            : 'bg-stone-100 text-stone-600 border border-stone-200/80'
                         }`}
                       >
                         {schedule.isActive ? 'Active' : 'Paused'}
@@ -343,11 +343,7 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
                         type="button"
                         disabled={isPending}
                         onClick={() => handleToggleActive(schedule.id, schedule.isActive)}
-                        className={`text-xs font-semibold ${
-                          schedule.isActive
-                            ? 'text-amber-600 hover:text-amber-800'
-                            : 'text-emerald-600 hover:text-emerald-800'
-                        }`}
+                        className="text-xs font-semibold text-neutral-900 hover:underline cursor-pointer"
                       >
                         {schedule.isActive ? 'Pause' : 'Activate'}
                       </button>

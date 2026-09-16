@@ -111,17 +111,17 @@ export function CreateCustomSkillForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-stone-200/80 p-6 sm:p-8 shadow-xs space-y-6">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-700">
+        <div className="p-4 bg-rose-50 border border-rose-200/80 rounded-xl text-xs font-semibold text-rose-800">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="name" className="block text-xs font-semibold text-gray-900 uppercase tracking-wider">
-            Competency Name <span className="text-red-500">*</span>
+          <label htmlFor="name" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
+            Competency Name <span className="text-rose-500">*</span>
           </label>
           <input
             id="name"
@@ -130,19 +130,19 @@ export function CreateCustomSkillForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. AWS Infrastructure, Product Discovery"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+            className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm bg-white text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
           />
         </div>
 
         <div>
-          <label htmlFor="type" className="block text-xs font-semibold text-gray-900 uppercase tracking-wider">
-            Competency Type <span className="text-red-500">*</span>
+          <label htmlFor="type" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
+            Competency Type <span className="text-rose-500">*</span>
           </label>
           <select
             id="type"
             value={type}
             onChange={(e) => setType(e.target.value as CompetencyType)}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+            className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
           >
             <option value={CompetencyType.TECHNICAL}>Technical Competency</option>
             <option value={CompetencyType.BEHAVIORAL}>Behavioral / Business Competency</option>
@@ -151,7 +151,7 @@ export function CreateCustomSkillForm() {
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-xs font-semibold text-gray-900 uppercase tracking-wider">
+        <label htmlFor="description" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
           Description (Optional)
         </label>
         <textarea
@@ -160,24 +160,24 @@ export function CreateCustomSkillForm() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Detailed scope, behavioral benchmarks, and context for this skill..."
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+          className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm bg-white text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
         />
       </div>
 
-      <div className="pt-4 border-t border-gray-200 space-y-4">
+      <div className="pt-4 border-t border-stone-100 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-gray-900">
+            <h3 className="text-sm font-bold text-neutral-900">
               Responsibility / Capability Levels ({levels.length})
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-stone-500 mt-0.5">
               Define the progression ladder for this skill. Any variable number of levels ($1..N$) is supported.
             </p>
           </div>
           <button
             type="button"
             onClick={handleAddLevel}
-            className="text-xs px-3 py-1.5 bg-gray-900 text-white rounded-md hover:bg-gray-800 font-medium"
+            className="text-xs px-3.5 py-2 bg-neutral-900 text-white rounded-xl hover:bg-neutral-800 font-semibold shadow-2xs transition-colors cursor-pointer"
           >
             + Add Level
           </button>
@@ -187,21 +187,21 @@ export function CreateCustomSkillForm() {
           {levels.map((lvl, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg border border-gray-200 bg-gray-50/50 space-y-3 relative"
+              className="p-4 rounded-xl border border-stone-200/80 bg-stone-50/50 space-y-3 relative"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="inline-flex items-center justify-center h-6 w-6 rounded bg-gray-900 text-white text-xs font-bold">
+                  <span className="inline-flex items-center justify-center h-6 w-6 rounded-lg bg-neutral-900 text-white text-xs font-bold">
                     {lvl.level}
                   </span>
-                  <span className="text-xs font-bold text-gray-700">Level {lvl.level} Descriptor</span>
+                  <span className="text-xs font-bold text-neutral-800">Level {lvl.level} Descriptor</span>
                 </div>
 
                 {levels.length > 1 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveLevel(index)}
-                    className="text-xs text-red-500 hover:text-red-700 font-medium"
+                    className="text-xs text-stone-400 hover:text-rose-600 font-semibold transition-colors cursor-pointer"
                   >
                     Remove Level
                   </button>
@@ -210,7 +210,7 @@ export function CreateCustomSkillForm() {
 
               <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
                 <div className="sm:col-span-1">
-                  <label className="block text-[11px] font-semibold text-gray-600">
+                  <label className="block text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1">
                     Level #
                   </label>
                   <input
@@ -221,13 +221,13 @@ export function CreateCustomSkillForm() {
                     onChange={(e) =>
                       handleLevelChange(index, 'level', parseInt(e.target.value, 10) || 1)
                     }
-                    className="mt-1 w-full rounded border border-gray-300 p-1.5 text-xs focus:border-blue-600 focus:outline-none"
+                    className="w-full rounded-lg border border-stone-300 p-2 text-xs bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900"
                   />
                 </div>
 
                 <div className="sm:col-span-5">
-                  <label className="block text-[11px] font-semibold text-gray-600">
-                    Description <span className="text-red-500">*</span>
+                  <label className="block text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1">
+                    Description <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     rows={2}
@@ -235,13 +235,13 @@ export function CreateCustomSkillForm() {
                     value={lvl.description}
                     onChange={(e) => handleLevelChange(index, 'description', e.target.value)}
                     placeholder="Observable capability and behavior expected at this level..."
-                    className="mt-1 w-full rounded border border-gray-300 p-1.5 text-xs focus:border-blue-600 focus:outline-none"
+                    className="w-full rounded-lg border border-stone-300 p-2 text-xs bg-white text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-gray-600">
+                <label className="block text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1">
                   Evidence Prompt (Optional)
                 </label>
                 <input
@@ -249,7 +249,7 @@ export function CreateCustomSkillForm() {
                   value={lvl.evidencePrompt}
                   onChange={(e) => handleLevelChange(index, 'evidencePrompt', e.target.value)}
                   placeholder="e.g. Describe a production incident or system design demonstrating this capability..."
-                  className="mt-1 w-full rounded border border-gray-300 p-1.5 text-xs focus:border-blue-600 focus:outline-none"
+                  className="w-full rounded-lg border border-stone-300 p-2 text-xs bg-white text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900"
                 />
               </div>
             </div>
@@ -257,17 +257,17 @@ export function CreateCustomSkillForm() {
         </div>
       </div>
 
-      <div className="pt-4 border-t border-gray-200 flex items-center justify-end space-x-3">
+      <div className="pt-4 border-t border-stone-100 flex items-center justify-end space-x-3">
         <Link
           href="/organization-admin/skills"
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          className="px-4 py-2.5 border border-stone-200/80 rounded-xl shadow-2xs text-xs font-semibold text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
         >
           Cancel
         </Link>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="px-5 py-2.5 border border-transparent rounded-xl shadow-2xs text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 transition-colors cursor-pointer"
         >
           {isSubmitting ? 'Saving Competency...' : 'Save & Add to Library'}
         </button>

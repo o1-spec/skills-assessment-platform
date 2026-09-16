@@ -83,8 +83,8 @@ export function SkillsLibraryView({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Organization Skill Library (OA-02)</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Organization Skill Library (OA-02)</h1>
+          <p className="mt-1 text-sm text-stone-500">
             Manage your organization&apos;s operational competencies, adopt published platform frameworks, and define custom skills.
           </p>
         </div>
@@ -94,53 +94,53 @@ export function SkillsLibraryView({
               setAdoptError(null);
               setShowAdoptModal(true);
             }}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center px-4 py-2.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
           >
             Adopt Framework Version
           </button>
           <Link
             href="/organization-admin/skills/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-4 py-2.5 border border-transparent shadow-2xs text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             + Create Custom Competency
           </Link>
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-start space-x-3.5">
-          <div className="h-10 w-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+      <div className="bg-white border border-stone-200/80 rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start space-x-4">
+          <div className="h-10 w-10 rounded-xl bg-neutral-900 text-white flex items-center justify-center shrink-0 shadow-2xs">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
           <div>
             <div className="flex items-center space-x-2.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-400">
                 Active Adopted Framework
               </span>
               {activeAdoption && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                   ACTIVE
                 </span>
               )}
             </div>
             {activeAdoption ? (
-              <div className="mt-0.5">
-                <span className="text-base font-bold text-gray-900">
+              <div className="mt-1">
+                <span className="text-base font-bold text-neutral-900">
                   Canonical Framework Version {activeAdoption.frameworkVersion.version}
                 </span>
-                <span className="text-xs text-gray-500 ml-2">
+                <span className="text-xs text-stone-500 ml-2">
                   (Adopted on {new Date(activeAdoption.adoptedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })})
                 </span>
                 {activeAdoption.frameworkVersion.description && (
-                  <p className="text-xs text-gray-600 mt-1 max-w-2xl">
+                  <p className="text-xs text-stone-500 mt-1 max-w-2xl leading-relaxed">
                     {activeAdoption.frameworkVersion.description}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-xs text-gray-600 mt-0.5">
+              <p className="text-xs text-stone-500 mt-1">
                 No canonical platform framework has been adopted yet. Adopt a published framework or define custom competencies.
               </p>
             )}
@@ -152,30 +152,30 @@ export function SkillsLibraryView({
             setAdoptError(null);
             setShowAdoptModal(true);
           }}
-          className="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0"
+          className="text-xs font-semibold text-neutral-700 hover:text-neutral-900 shrink-0 hover:underline transition-colors cursor-pointer"
         >
           Change Framework Version &rarr;
         </button>
       </div>
 
       {toggleError && (
-        <div className="p-3 bg-red-50 border border-red-200 text-xs text-red-700 rounded-md">
+        <div className="p-4 bg-rose-50 border border-rose-200/80 text-xs font-semibold text-rose-800 rounded-xl">
           {toggleError}
         </div>
       )}
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between border-b pb-2">
-          <h2 className="text-base font-bold text-gray-900">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
+          <h2 className="text-base font-bold text-neutral-900">
             Technical Competencies ({technicalSkills.length})
           </h2>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs font-medium text-stone-500">
             {technicalSkills.filter((s) => s.isActive).length} active for new role profiles
           </span>
         </div>
 
         {technicalSkills.length === 0 ? (
-          <div className="bg-white rounded-lg border border-dashed border-gray-300 p-8 text-center text-xs text-gray-400">
+          <div className="bg-white rounded-2xl border border-dashed border-stone-300 p-8 text-center text-xs text-stone-400">
             No technical competencies in library. Adopt a framework or add a custom skill.
           </div>
         ) : (
@@ -192,18 +192,18 @@ export function SkillsLibraryView({
         )}
       </div>
 
-      <div className="space-y-3 pt-4">
-        <div className="flex items-center justify-between border-b pb-2">
-          <h2 className="text-base font-bold text-gray-900">
+      <div className="space-y-4 pt-4">
+        <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
+          <h2 className="text-base font-bold text-neutral-900">
             Behavioral &amp; Professional Competencies ({behavioralSkills.length})
           </h2>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs font-medium text-stone-500">
             {behavioralSkills.filter((s) => s.isActive).length} active for new role profiles
           </span>
         </div>
 
         {behavioralSkills.length === 0 ? (
-          <div className="bg-white rounded-lg border border-dashed border-gray-300 p-8 text-center text-xs text-gray-400">
+          <div className="bg-white rounded-2xl border border-dashed border-stone-300 p-8 text-center text-xs text-stone-400">
             No behavioral competencies in library. Adopt a framework or add a custom skill.
           </div>
         ) : (
@@ -221,39 +221,39 @@ export function SkillsLibraryView({
       </div>
 
       {showAdoptModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-bold text-gray-900">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-neutral-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 sm:p-8 space-y-5 border border-stone-200/80">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3.5">
+              <h3 className="text-base font-bold text-neutral-900">
                 Adopt Canonical Framework Version
               </h3>
               <button
                 onClick={() => setShowAdoptModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-lg"
+                className="text-stone-400 hover:text-neutral-700 text-lg font-bold cursor-pointer"
               >
                 &times;
               </button>
             </div>
 
-            <p className="text-xs text-gray-600 leading-relaxed">
+            <p className="text-xs text-stone-600 leading-relaxed">
               Adopting a new published framework creates updated operational competency snapshots for your organization.
               <br />
-              <strong className="text-gray-900">Historical Integrity Guarantee:</strong> Existing role profiles, historical campaigns, and past assessments will continue referencing their exact historical snapshots without distortion.
+              <strong className="text-neutral-900">Historical Integrity Guarantee:</strong> Existing role profiles, historical campaigns, and past assessments will continue referencing their exact historical snapshots without distortion.
             </p>
 
             <form onSubmit={handleAdoptSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Select Published Framework Version <span className="text-red-500">*</span>
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                  Select Published Framework Version <span className="text-rose-500">*</span>
                 </label>
-                <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-2">
+                <div className="space-y-2 max-h-60 overflow-y-auto border border-stone-200 rounded-xl p-2.5">
                   {availableFrameworks.map((fw) => (
                     <label
                       key={fw.id}
-                      className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-start space-x-3 p-3 rounded-xl border cursor-pointer transition-colors ${
                         selectedFrameworkId === fw.id
-                          ? 'border-blue-500 bg-blue-50/50'
-                          : 'border-gray-200 hover:bg-gray-50'
+                          ? 'border-neutral-900 bg-stone-50'
+                          : 'border-stone-200/70 hover:bg-stone-50/60'
                       }`}
                     >
                       <input
@@ -262,21 +262,21 @@ export function SkillsLibraryView({
                         value={fw.id}
                         checked={selectedFrameworkId === fw.id}
                         onChange={() => setSelectedFrameworkId(fw.id)}
-                        className="mt-1 text-blue-600 focus:ring-blue-500"
+                        className="mt-1 text-neutral-900 accent-neutral-900 focus:ring-neutral-900"
                       />
                       <div className="flex-1 text-xs">
                         <div className="flex items-center space-x-2">
-                          <span className="font-bold text-gray-900">Version {fw.version}</span>
+                          <span className="font-bold text-neutral-900">Version {fw.version}</span>
                           {fw.isActiveForTenant && (
-                            <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                               Currently Active
                             </span>
                           )}
                         </div>
                         {fw.description && (
-                          <p className="text-gray-600 mt-0.5 line-clamp-2">{fw.description}</p>
+                          <p className="text-stone-500 mt-0.5 line-clamp-2">{fw.description}</p>
                         )}
-                        <div className="text-gray-400 mt-1">
+                        <div className="text-stone-400 mt-1 text-[11px]">
                           {fw.competencyCount} Canonical Competencies &bull; Published {fw.publishedAt ? new Date(fw.publishedAt).toLocaleDateString() : ''}
                         </div>
                       </div>
@@ -286,23 +286,23 @@ export function SkillsLibraryView({
               </div>
 
               {adoptError && (
-                <div className="text-xs text-red-700 bg-red-50 border border-red-200 p-2.5 rounded-md">
+                <div className="text-xs text-rose-800 bg-rose-50 border border-rose-200/80 p-3 rounded-xl font-semibold">
                   {adoptError}
                 </div>
               )}
 
-              <div className="flex justify-end space-x-3 pt-3 border-t">
+              <div className="flex justify-end space-x-3 pt-3 border-t border-stone-100">
                 <button
                   type="button"
                   onClick={() => setShowAdoptModal(false)}
-                  className="px-3.5 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-xs font-semibold text-stone-700 bg-white border border-stone-200/80 rounded-xl hover:bg-stone-50 shadow-2xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isAdopting || !selectedFrameworkId}
-                  className="px-4 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isAdopting ? 'Adopting Framework...' : 'Confirm & Adopt Framework'}
                 </button>
@@ -331,49 +331,49 @@ function CompetencyLibraryCard({
 
   return (
     <div
-      className={`bg-white rounded-lg border p-4 shadow-2xs space-y-3 transition-colors ${
-        competency.isActive ? 'border-gray-200' : 'border-gray-200 bg-gray-50/60 opacity-80'
+      className={`bg-white rounded-2xl border p-5 shadow-xs space-y-3.5 transition-all ${
+        competency.isActive ? 'border-stone-200/80' : 'border-stone-200 bg-stone-50/60 opacity-80'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1 flex-1">
           <div className="flex items-center space-x-2">
-            <h4 className="text-sm font-bold text-gray-900">{competency.name}</h4>
+            <h4 className="text-sm font-bold text-neutral-900">{competency.name}</h4>
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
                 competency.isActive
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-gray-200 text-gray-600'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                  : 'bg-stone-100 text-stone-600 border border-stone-200/80'
               }`}
             >
               {competency.isActive ? 'ACTIVE' : 'INACTIVE'}
             </span>
           </div>
-          <div className="text-[11px] font-medium text-gray-500 flex items-center space-x-2">
-            <span className={isCanonical ? 'text-indigo-600' : 'text-amber-700'}>
+          <div className="text-[11px] font-medium text-stone-500 flex items-center space-x-2">
+            <span className={isCanonical ? 'text-stone-600 font-semibold' : 'text-stone-700 font-semibold'}>
               {sourceLabel}
             </span>
             <span>&bull;</span>
             <span>{competency.levels.length} Levels</span>
             <span>&bull;</span>
-            <span className="font-semibold text-gray-700">Weight: {competency.weight ?? 100}%</span>
+            <span className="font-semibold text-neutral-800">Weight: {competency.weight ?? 100}%</span>
           </div>
         </div>
 
         <div className="flex items-center space-x-2 shrink-0">
           <Link
             href={`/organization-admin/skills/${competency.id}`}
-            className="text-xs px-2.5 py-1 bg-white border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
+            className="text-xs px-3 py-1.5 bg-white border border-stone-200/80 rounded-xl text-neutral-700 hover:bg-stone-50 font-semibold shadow-2xs transition-colors"
           >
             {isCanonical ? 'View Levels' : 'View / Edit'}
           </Link>
           <button
             onClick={onToggleActive}
             disabled={isToggling}
-            className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${
+            className={`text-xs px-3 py-1.5 rounded-xl font-semibold transition-colors cursor-pointer ${
               competency.isActive
-                ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
-                : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                ? 'text-stone-400 hover:text-rose-600'
+                : 'text-emerald-600 hover:text-emerald-700'
             }`}
           >
             {isToggling ? 'Updating...' : competency.isActive ? 'Deactivate' : 'Activate'}
@@ -382,7 +382,7 @@ function CompetencyLibraryCard({
       </div>
 
       {competency.description && (
-        <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+        <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">
           {competency.description}
         </p>
       )}

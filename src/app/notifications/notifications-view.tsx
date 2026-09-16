@@ -115,29 +115,29 @@ export function NotificationsView({
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'CAMPAIGN_ASSIGNED':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Campaign</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">Campaign</span>;
       case 'ASSESSMENT_DUE_REMINDER':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">Due Reminder</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">Due Reminder</span>;
       case 'ASSESSMENT_SUBMITTED_FOR_REVIEW':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">Review Request</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">Review Request</span>;
       case 'CORROBORATION_OVERDUE':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Overdue</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200/80">Overdue</span>;
       case 'CORROBORATION_COMPLETED':
       case 'ASSESSMENT_COMPLETED':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">Completed</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">Completed</span>;
       default:
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">Notification</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">Notification</span>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-[#faf9f6] flex flex-col">
+      <header className="bg-white border-b border-stone-200/80">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <Link
               href={dashboardHref}
-              className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+              className="inline-flex items-center text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
               id="back-to-dashboard-link"
             >
               <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,28 +145,28 @@ export function NotificationsView({
               </svg>
               Dashboard
             </Link>
-            <span className="text-gray-300">|</span>
-            <h1 className="text-lg font-bold text-gray-900">Notification Center</h1>
+            <span className="text-stone-300">|</span>
+            <h1 className="text-sm font-bold text-neutral-900 tracking-tight">Notification Center</h1>
           </div>
 
-          <div className="text-sm text-gray-600 font-medium">
+          <div className="text-xs text-neutral-600 font-semibold">
             {userName}
           </div>
         </div>
       </header>
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
-        <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50">
+        <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 overflow-hidden">
+          <div className="px-6 py-4 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-50/50">
             <div className="flex space-x-2" role="tablist">
               <button
                 type="button"
                 onClick={() => handleFilterChange('all')}
                 id="filter-all-button"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                   filter === 'all'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-neutral-900 text-white shadow-2xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-stone-100'
                 }`}
               >
                 All Notifications
@@ -175,19 +175,19 @@ export function NotificationsView({
                 type="button"
                 onClick={() => handleFilterChange('unread')}
                 id="filter-unread-button"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors inline-flex items-center space-x-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors inline-flex items-center space-x-1.5 cursor-pointer ${
                   filter === 'unread'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-neutral-900 text-white shadow-2xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-stone-100'
                 }`}
               >
                 <span>Unread</span>
                 {unreadCount > 0 && (
                   <span
-                    className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                    className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                       filter === 'unread'
-                        ? 'bg-blue-800 text-white'
-                        : 'bg-blue-100 text-blue-800'
+                        ? 'bg-neutral-800 text-white'
+                        : 'bg-stone-200 text-neutral-800'
                     }`}
                   >
                     {unreadCount}
@@ -202,9 +202,9 @@ export function NotificationsView({
                 onClick={handleMarkAllAsRead}
                 disabled={isLoading}
                 id="page-mark-all-read-button"
-                className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors"
+                className="inline-flex items-center text-xs font-semibold text-neutral-700 hover:text-neutral-900 disabled:opacity-50 transition-colors cursor-pointer"
               >
-                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-3.5 w-3.5 mr-1 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
                 Mark all as read
@@ -213,13 +213,13 @@ export function NotificationsView({
           </div>
 
           {isLoading && notifications.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3" />
-              <p className="text-sm">Loading notifications...</p>
+            <div className="p-12 text-center text-neutral-500">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto mb-3" />
+              <p className="text-xs">Loading notifications...</p>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="p-16 text-center text-gray-500">
-              <div className="h-12 w-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-3">
+            <div className="p-16 text-center text-neutral-500">
+              <div className="h-12 w-12 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto mb-3">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
@@ -229,30 +229,30 @@ export function NotificationsView({
                   />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-gray-900">No notifications found</p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm font-bold text-neutral-900">No notifications found</p>
+              <p className="text-xs text-neutral-500 mt-1">
                 {filter === 'unread'
                   ? "You don't have any unread notifications."
                   : 'You have no notifications in your history.'}
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100" id="notifications-list">
+            <div className="divide-y divide-stone-100" id="notifications-list">
               {notifications.map((item) => {
                 const isUnread = !item.readAt;
                 return (
                   <div
                     key={item.id}
                     onClick={() => handleItemClick(item)}
-                    className={`p-5 hover:bg-gray-50/80 cursor-pointer transition-colors flex items-start space-x-4 ${
-                      isUnread ? 'bg-blue-50/30' : ''
+                    className={`p-5 hover:bg-stone-50/80 cursor-pointer transition-colors flex items-start space-x-4 ${
+                      isUnread ? 'bg-stone-50/50' : ''
                     }`}
                   >
                     <div className="pt-1.5 shrink-0">
                       {isUnread ? (
-                        <span className="block h-2.5 w-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100" />
+                        <span className="block h-2 w-2 rounded-full bg-neutral-900 ring-2 ring-stone-200" />
                       ) : (
-                        <span className="block h-2.5 w-2.5 rounded-full bg-transparent" />
+                        <span className="block h-2 w-2 rounded-full bg-transparent" />
                       )}
                     </div>
 
@@ -260,13 +260,13 @@ export function NotificationsView({
                       <div className="flex items-center space-x-2 mb-1 flex-wrap gap-y-1">
                         {getTypeBadge(item.type)}
                         <h2
-                          className={`text-sm ${
-                            isUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-800'
+                          className={`text-xs ${
+                            isUnread ? 'font-bold text-neutral-900' : 'font-semibold text-neutral-800'
                           }`}
                         >
                           {item.title}
                         </h2>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-[11px] text-neutral-400">
                           &bull; {new Date(item.createdAt).toLocaleString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -275,14 +275,14 @@ export function NotificationsView({
                           })}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p className="text-xs text-neutral-600 leading-relaxed">
                         {item.message}
                       </p>
                     </div>
 
                     <div className="shrink-0 flex items-center space-x-2 pt-1">
                       {item.href && (
-                        <span className="text-xs font-semibold text-blue-600 group-hover:underline">
+                        <span className="text-xs font-semibold text-neutral-900 hover:underline">
                           Open &rarr;
                         </span>
                       )}
@@ -290,8 +290,8 @@ export function NotificationsView({
                         <button
                           type="button"
                           onClick={(e) => handleMarkAsRead(item.id, e)}
-                          className="text-xs text-gray-400 hover:text-blue-600 p-1 transition-colors"
                           title="Mark as read"
+                          className="text-xs text-neutral-400 hover:text-neutral-900 p-1 transition-colors cursor-pointer"
                         >
                           <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                             <path

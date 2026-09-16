@@ -74,12 +74,12 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
   return (
     <div className="space-y-3">
       {error && (
-        <div className="p-3 text-xs rounded-md bg-red-50 border border-red-200 text-red-700 flex items-center justify-between">
+        <div className="p-3 text-xs rounded-xl bg-rose-50 border border-rose-200/80 text-rose-800 flex items-center justify-between font-semibold">
           <span>{error}</span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="text-red-500 hover:text-red-700 font-bold ml-2"
+            className="text-rose-500 hover:text-rose-700 font-bold ml-2 cursor-pointer"
           >
             ×
           </button>
@@ -90,9 +90,9 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
         {isDraft && !isArchived && (
           <Link
             href={`/organization-admin/roles/${roleProfile.id}/edit`}
-            className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="inline-flex items-center px-4 py-2.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
           >
-            <svg className="-ml-0.5 mr-1.5 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="-ml-0.5 mr-1.5 h-4 w-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             Edit Role Profile
@@ -104,7 +104,7 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
             type="button"
             onClick={handlePublish}
             disabled={isPending}
-            className="inline-flex items-center px-3.5 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center px-4 py-2.5 border border-transparent shadow-2xs text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 transition-colors cursor-pointer"
           >
             <svg className="-ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -118,9 +118,9 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
             type="button"
             onClick={() => setShowArchiveConfirm(true)}
             disabled={isPending}
-            className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-red-50 hover:text-red-700 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center px-4 py-2.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-stone-600 bg-white hover:bg-stone-50 hover:text-rose-600 transition-colors cursor-pointer"
           >
-            <svg className="-ml-0.5 mr-1.5 h-4 w-4 text-gray-400 group-hover:text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="-ml-0.5 mr-1.5 h-4 w-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
             </svg>
             Archive Role
@@ -132,9 +132,9 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
             type="button"
             onClick={handleUnarchive}
             disabled={isPending}
-            className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center px-4 py-2.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
           >
-            <svg className="-ml-0.5 mr-1.5 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="-ml-0.5 mr-1.5 h-4 w-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             {isPending ? 'Restoring...' : 'Unarchive Role'}
@@ -143,27 +143,27 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
       </div>
 
       {showArchiveConfirm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500/75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 space-y-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-neutral-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 sm:p-8 space-y-4 border border-stone-200/80">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 shrink-0">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-base font-bold text-gray-900">Archive Role Profile</h3>
-                <p className="text-xs text-gray-500">Safe retirement of role benchmark</p>
+                <h3 className="text-base font-bold text-neutral-900">Archive Role Profile</h3>
+                <p className="text-xs text-stone-500">Safe retirement of role benchmark</p>
               </div>
             </div>
 
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className="text-xs text-stone-600 space-y-2 leading-relaxed">
               <p>
-                Are you sure you want to archive <strong className="text-gray-900">{roleProfile.name}</strong>?
+                Are you sure you want to archive <strong className="text-neutral-900">{roleProfile.name}</strong>?
               </p>
-              <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-800 space-y-1">
-                <p className="font-semibold">What happens when archived:</p>
-                <ul className="list-disc list-inside space-y-0.5">
+              <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-3.5 space-y-1 text-stone-700">
+                <p className="font-semibold text-neutral-900">What happens when archived:</p>
+                <ul className="list-disc list-inside space-y-0.5 text-stone-600">
                   <li>Existing users and historical assessments retain their association.</li>
                   <li>This role will no longer be available for new user assignments or new campaigns.</li>
                   <li>You can unarchive this role profile at any time.</li>
@@ -171,12 +171,12 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-3 border-t border-gray-100">
+            <div className="flex justify-end space-x-3 pt-3 border-t border-stone-100">
               <button
                 type="button"
                 onClick={() => setShowArchiveConfirm(false)}
                 disabled={isPending}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="px-4 py-2 border border-stone-200/80 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-stone-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -184,7 +184,7 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
                 type="button"
                 onClick={handleArchive}
                 disabled={isPending}
-                className="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                className="px-4 py-2 bg-rose-600 border border-transparent rounded-xl text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50 shadow-2xs cursor-pointer"
               >
                 {isPending ? 'Archiving...' : 'Confirm Archive'}
               </button>

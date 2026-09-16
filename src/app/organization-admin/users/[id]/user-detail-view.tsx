@@ -392,25 +392,25 @@ export function UserDetailView({
         <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
           <Link
             href="/organization-admin/users"
-            className="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-xs font-semibold transition-colors"
+            className="px-4 py-2.5 border border-stone-200/80 text-stone-700 bg-white hover:bg-stone-50 rounded-xl text-xs font-semibold transition-colors shadow-2xs"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 border border-transparent text-white bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 border border-transparent text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </form>
 
-      <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center justify-between">
+      <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 overflow-hidden">
+        <div className="px-6 py-4 border-b border-stone-100 bg-stone-50/50 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">Team Memberships</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h2 className="text-sm font-bold text-neutral-900">Team Memberships</h2>
+            <p className="text-xs text-stone-500 mt-0.5">
               Assign this employee to one or more functional teams.
             </p>
           </div>
@@ -418,7 +418,7 @@ export function UserDetailView({
             type="button"
             onClick={handleSaveTeams}
             disabled={isSavingTeams}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-semibold shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
           >
             {isSavingTeams ? 'Saving…' : 'Save Teams'}
           </button>

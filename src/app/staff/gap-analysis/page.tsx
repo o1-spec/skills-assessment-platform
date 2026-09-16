@@ -48,19 +48,19 @@ export default async function StaffPersonalGapAnalysisPage({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Personal Gap Analysis</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Personal Gap Analysis</h1>
+          <p className="mt-1 text-xs text-neutral-500">
             Compare your verified capability ratings against assigned role expectations or an aspirational target role.
           </p>
         </div>
 
-        <div className="inline-flex rounded-lg bg-gray-100 p-1 border border-gray-200">
+        <div className="inline-flex rounded-xl bg-stone-100 p-1 border border-stone-200/80">
           <Link
             href="/staff/gap-analysis?target=current"
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
               !isAspirational
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-neutral-900 shadow-2xs font-bold'
+                : 'text-neutral-500 hover:text-neutral-900 font-medium'
             }`}
           >
             Current Assigned Role
@@ -69,10 +69,10 @@ export default async function StaffPersonalGapAnalysisPage({
             href={`/staff/gap-analysis?target=aspirational${
               selectedAspirationalRoleId ? `&roleId=${selectedAspirationalRoleId}` : ''
             }`}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
               isAspirational
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-neutral-900 shadow-2xs font-bold'
+                : 'text-neutral-500 hover:text-neutral-900 font-medium'
             }`}
           >
             Aspirational Role
@@ -81,23 +81,23 @@ export default async function StaffPersonalGapAnalysisPage({
       </div>
 
       {isAspirational && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="h-9 w-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <div className="h-9 w-9 rounded-xl bg-neutral-900 text-white flex items-center justify-center font-bold text-xs">
               ★
             </div>
             <div>
-              <div className="text-xs font-medium text-blue-800 uppercase tracking-wide">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                 Exploratory Career Comparison
               </div>
-              <div className="text-sm text-blue-900 font-semibold">
+              <div className="text-xs text-neutral-700 font-medium mt-0.5">
                 Comparing your verified skills against an aspirational role. This does not change your official role assignment.
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <label htmlFor="aspirational-role-select" className="text-xs font-medium text-blue-900 whitespace-nowrap">
+            <label htmlFor="aspirational-role-select" className="text-xs font-bold text-neutral-700 uppercase tracking-wider whitespace-nowrap">
               Target Role:
             </label>
             <form action="/staff/gap-analysis" method="GET" className="flex items-center gap-2">
@@ -106,7 +106,7 @@ export default async function StaffPersonalGapAnalysisPage({
                 id="aspirational-role-select"
                 name="roleId"
                 defaultValue={selectedAspirationalRoleId}
-                className="bg-white border border-blue-300 text-gray-900 text-xs rounded-md px-2.5 py-1.5 focus:ring-blue-500 focus:border-blue-500 font-medium"
+                className="bg-white border border-stone-300 text-neutral-900 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 font-medium shadow-2xs"
               >
                 {aspirationalRoles.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -116,7 +116,7 @@ export default async function StaffPersonalGapAnalysisPage({
               </select>
               <button
                 type="submit"
-                className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700"
+                className="px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold rounded-xl shadow-2xs transition-colors cursor-pointer"
               >
                 Compare
               </button>
@@ -126,8 +126,8 @@ export default async function StaffPersonalGapAnalysisPage({
       )}
 
       {!isAspirational && (!analysis || !analysis.hasRoleProfile || !analysis.roleProfile) && (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center max-w-lg mx-auto">
-          <div className="h-12 w-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3">
+        <div className="bg-white rounded-2xl border border-stone-200/80 p-8 text-center max-w-lg mx-auto shadow-xs">
+          <div className="h-12 w-12 rounded-full bg-stone-100 text-neutral-700 flex items-center justify-center mx-auto mb-3">
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -137,14 +137,14 @@ export default async function StaffPersonalGapAnalysisPage({
               />
             </svg>
           </div>
-          <h2 className="text-base font-semibold text-gray-900">No Role Profile Assigned</h2>
-          <p className="mt-2 text-sm text-gray-500">
+          <h2 className="text-base font-bold text-neutral-900">No Role Profile Assigned</h2>
+          <p className="mt-2 text-xs text-neutral-500">
             No role profile has been assigned yet. You can still explore role expectations by selecting an{' '}
             <Link
               href={`/staff/gap-analysis?target=aspirational${
                 selectedAspirationalRoleId ? `&roleId=${selectedAspirationalRoleId}` : ''
               }`}
-              className="text-blue-600 font-medium underline"
+              className="text-neutral-900 font-semibold underline"
             >
               Aspirational Role
             </Link>
@@ -154,8 +154,8 @@ export default async function StaffPersonalGapAnalysisPage({
       )}
 
       {isAspirational && aspirationalRoles.length === 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center max-w-lg mx-auto">
-          <p className="text-gray-500">
+        <div className="bg-white rounded-2xl border border-stone-200/80 p-8 text-center max-w-lg mx-auto shadow-xs">
+          <p className="text-xs text-neutral-400 italic">
             No published role profiles are currently available for aspirational comparison.
           </p>
         </div>
@@ -164,65 +164,65 @@ export default async function StaffPersonalGapAnalysisPage({
       {analysis && analysis.roleProfile && (
         <>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-xs font-medium text-gray-500 uppercase">Requirements</div>
-              <div className="mt-1 text-2xl font-extrabold text-gray-900">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Requirements</div>
+              <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">
                 {analysis.metrics.totalRequirements}
               </div>
-              <div className="mt-1 text-[11px] text-gray-400">Total role targets</div>
+              <div className="mt-1 text-[11px] text-neutral-500">Total role targets</div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-xs font-medium text-gray-500 uppercase">Assessed</div>
-              <div className="mt-1 text-2xl font-extrabold text-blue-600">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Assessed</div>
+              <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">
                 {analysis.metrics.assessedRequirementsCount}
               </div>
-              <div className="mt-1 text-[11px] text-gray-400">With verified rating</div>
+              <div className="mt-1 text-[11px] text-neutral-500">With verified rating</div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-xs font-medium text-gray-500 uppercase">Below Target</div>
-              <div className="mt-1 text-2xl font-extrabold text-amber-600">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Below Target</div>
+              <div className="mt-1 text-2xl font-bold text-neutral-900 tracking-tight">
                 {analysis.metrics.belowTargetCount}
               </div>
-              <div className="mt-1 text-[11px] text-amber-700">Development gaps</div>
+              <div className="mt-1 text-[11px] text-neutral-500">Development gaps</div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-xs font-medium text-gray-500 uppercase">Meets Target</div>
-              <div className="mt-1 text-2xl font-extrabold text-emerald-600">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Meets Target</div>
+              <div className="mt-1 text-2xl font-bold text-emerald-700 tracking-tight">
                 {analysis.metrics.meetsTargetCount}
               </div>
-              <div className="mt-1 text-[11px] text-emerald-700">At expected level</div>
+              <div className="mt-1 text-[11px] text-emerald-600">At expected level</div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-xs font-medium text-gray-500 uppercase">Exceeds Target</div>
-              <div className="mt-1 text-2xl font-extrabold text-purple-600">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Exceeds Target</div>
+              <div className="mt-1 text-2xl font-bold text-emerald-700 tracking-tight">
                 {analysis.metrics.exceedsTargetCount}
               </div>
-              <div className="mt-1 text-[11px] text-purple-700">Advanced mastery</div>
+              <div className="mt-1 text-[11px] text-emerald-600">Advanced mastery</div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-xs font-medium text-gray-500 uppercase">Not Assessed</div>
-              <div className="mt-1 text-2xl font-extrabold text-gray-500">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs">
+              <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Not Assessed</div>
+              <div className="mt-1 text-2xl font-bold text-neutral-500 tracking-tight">
                 {analysis.metrics.notAssessedCount}
               </div>
-              <div className="mt-1 text-[11px] text-gray-400">Pending evaluation</div>
+              <div className="mt-1 text-[11px] text-neutral-400">Pending evaluation</div>
             </div>
           </div>
 
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">
+          <div className="bg-white shadow-xs rounded-2xl border border-stone-200/80 overflow-hidden">
+            <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-neutral-900 tracking-tight">
                 Competency Gap Breakdown
               </h2>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-neutral-500">
                 Target Role:{' '}
-                <strong className="text-gray-900">{analysis.roleProfile.name}</strong>
+                <strong className="text-neutral-900">{analysis.roleProfile.name}</strong>
                 {isAspirational && (
-                  <span className="ml-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800">
+                  <span className="ml-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
                     Aspirational Target
                   </span>
                 )}
@@ -230,8 +230,8 @@ export default async function StaffPersonalGapAnalysisPage({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <table className="min-w-full divide-y divide-stone-100 text-xs">
+                <thead className="bg-stone-50/70 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left">Role Profile</th>
                     <th scope="col" className="px-6 py-3 text-left">Competency</th>
@@ -242,54 +242,50 @@ export default async function StaffPersonalGapAnalysisPage({
                     <th scope="col" className="px-6 py-3 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-stone-100">
                   {analysis.requirements.map((req) => (
-                    <tr key={req.competencyId} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-xs font-medium text-gray-500">
+                    <tr key={req.competencyId} className="hover:bg-stone-50/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-xs font-semibold text-neutral-500">
                         {analysis?.roleProfile?.name}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{req.competencyName}</div>
+                        <div className="font-semibold text-neutral-900">{req.competencyName}</div>
                         {req.targetLevelDescription && (
-                          <div className="text-xs text-gray-400 mt-0.5 max-w-md line-clamp-1">
+                          <div className="text-[11px] text-neutral-500 mt-0.5 max-w-md line-clamp-1 leading-relaxed">
                             Target L{req.targetLevel}: {req.targetLevelDescription}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            req.competencyType === CompetencyType.TECHNICAL
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'bg-purple-50 text-purple-700'
-                          }`}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-stone-100 text-stone-700 border border-stone-200/80"
                         >
                           {req.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         {req.currentLevel !== null ? (
-                          <span className="font-bold text-gray-900">Level {req.currentLevel}</span>
+                          <span className="font-bold text-neutral-900">Level {req.currentLevel}</span>
                         ) : (
-                          <span className="text-xs text-gray-400 italic">Not Assessed</span>
+                          <span className="text-xs text-neutral-400 italic">Not Assessed</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center whitespace-nowrap font-semibold text-gray-700">
+                      <td className="px-6 py-4 text-center whitespace-nowrap font-semibold text-neutral-700">
                         Level {req.targetLevel}
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         {req.gap !== null ? (
                           req.gap > 0 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-800 border border-stone-200/80">
                               -{req.gap} {req.gap === 1 ? 'level' : 'levels'}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                               0
                             </span>
                           )
                         ) : (
-                          <span className="text-gray-300">—</span>
+                          <span className="text-neutral-400">—</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
@@ -311,26 +307,26 @@ function StatusBadge({ status }: { status: CapabilityGapStatus }) {
   switch (status) {
     case 'BELOW_TARGET':
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-800 border border-stone-200/80">
           Below Target
         </span>
       );
     case 'MEETS_TARGET':
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
           Meets Target
         </span>
       );
     case 'EXCEEDS_TARGET':
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
           Exceeds Target
         </span>
       );
     case 'NOT_ASSESSED':
     default:
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-50 text-stone-500 border border-stone-200/60">
           Not Assessed
         </span>
       );

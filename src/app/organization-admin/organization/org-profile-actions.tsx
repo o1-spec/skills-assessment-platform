@@ -76,10 +76,10 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-10">
-      <div className="border-b border-gray-100 pb-5 mb-6">
-        <h2 className="text-xl font-bold text-gray-900 tracking-tight">Organization Profile & Template</h2>
-        <p className="text-sm text-gray-500 mt-1">
+    <div className="bg-white border border-stone-200/80 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
+      <div className="border-b border-stone-100 pb-5 mb-6">
+        <h2 className="text-xl font-bold text-neutral-900 tracking-tight">Organization Profile & Template</h2>
+        <p className="text-sm text-stone-500 mt-1">
           Configure your organization brand details and industry competency framework preference.
         </p>
       </div>
@@ -87,10 +87,10 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
       <form onSubmit={handleUpdateProfile} className="space-y-6">
         {profileMessage && (
           <div
-            className={`p-4 rounded-xl text-sm font-medium border ${
+            className={`p-4 rounded-xl text-xs font-semibold border ${
               profileMessage.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                : 'bg-red-50 text-red-800 border-red-200'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200/80'
+                : 'bg-rose-50 text-rose-800 border-rose-200/80'
             }`}
           >
             {profileMessage.text}
@@ -99,8 +99,8 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="org-name" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-              Organization Name <span className="text-red-500">*</span>
+            <label htmlFor="org-name" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+              Organization Name <span className="text-rose-500">*</span>
             </label>
             <input
               id="org-name"
@@ -109,14 +109,14 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
               maxLength={100}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
               placeholder="e.g. Acme Corporation"
             />
           </div>
 
           <div>
-            <label htmlFor="org-logo" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-              Logo URL <span className="text-gray-400 font-normal">(HTTPS only)</span>
+            <label htmlFor="org-logo" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+              Logo URL <span className="text-stone-400 font-normal">(HTTPS only)</span>
             </label>
             <div className="flex gap-3 items-center">
               <input
@@ -124,12 +124,11 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
                 type="url"
                 value={logoUrl}
                 onChange={(e) => setLogoUrl(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                className="flex-1 px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
                 placeholder="https://example.com/logo.png"
               />
               {logoUrl && logoUrl.startsWith('https://') && (
-                <div className="w-10 h-10 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                <div className="w-10 h-10 rounded-xl border border-stone-200/80 bg-stone-50 flex items-center justify-center overflow-hidden shrink-0">
                   <img
                     src={logoUrl}
                     alt="Logo preview"
@@ -141,19 +140,19 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1.5">Only secure HTTPS links are permitted.</p>
+            <p className="text-xs text-stone-400 mt-1.5">Only secure HTTPS links are permitted.</p>
           </div>
         </div>
 
         <div>
-          <label htmlFor="industry-template" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+          <label htmlFor="industry-template" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
             Industry Template
           </label>
           <select
             id="industry-template"
             value={selectedTemplateId}
             onChange={(e) => setSelectedTemplateId(e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
           >
             <option value="">None / Custom Organization</option>
             {templates.map((tpl) => (
@@ -162,7 +161,7 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500 mt-1.5">
+          <p className="text-xs text-stone-500 mt-1.5">
             Associating a template records your industry alignment preference without modifying your active competency library.
           </p>
         </div>
@@ -171,7 +170,7 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
           <button
             type="submit"
             disabled={profilePending}
-            className="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold rounded-xl shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             {profilePending ? 'Saving Profile...' : 'Save Profile Changes'}
           </button>
@@ -179,20 +178,20 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
       </form>
 
       {selectedTemplateId && currentTemplate && (
-        <div className="mt-8 pt-8 border-t border-gray-100">
-          <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-5 sm:p-6">
+        <div className="mt-8 pt-8 border-t border-stone-100">
+          <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-5 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                  <h3 className="text-sm font-bold text-blue-950">
+                  <span className="w-2 h-2 rounded-full bg-neutral-900"></span>
+                  <h3 className="text-sm font-bold text-neutral-900">
                     Industry Template: {currentTemplate.name}
                   </h3>
                 </div>
                 {currentTemplate.description && (
-                  <p className="text-xs text-blue-800/80 mt-1">{currentTemplate.description}</p>
+                  <p className="text-xs text-stone-600 mt-1">{currentTemplate.description}</p>
                 )}
-                <p className="text-xs text-blue-700 mt-2 font-medium">
+                <p className="text-xs text-stone-500 mt-2 font-medium">
                   Missing competencies from this template can be imported into your skills library with one click.
                   Existing competencies are never overwritten or deleted.
                 </p>
@@ -201,7 +200,7 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
                 type="button"
                 onClick={handleApplyCompetencies}
                 disabled={applyPending}
-                className="shrink-0 inline-flex items-center justify-center px-4 py-2.5 bg-white border border-blue-300 text-blue-700 hover:bg-blue-50 text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50"
+                className="shrink-0 inline-flex items-center justify-center px-4 py-2.5 bg-white border border-stone-200/90 text-neutral-800 hover:bg-stone-50 text-xs font-semibold rounded-xl shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 {applyPending ? 'Applying Competencies...' : 'Apply Missing Competencies'}
               </button>
@@ -209,10 +208,10 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
 
             {applyMessage && (
               <div
-                className={`mt-4 p-3 rounded-lg text-xs font-semibold border ${
+                className={`mt-4 p-3 rounded-xl text-xs font-semibold border ${
                   applyMessage.type === 'success'
-                    ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
-                    : 'bg-red-50 text-red-900 border-red-200'
+                    ? 'bg-emerald-50 text-emerald-900 border-emerald-200/80'
+                    : 'bg-rose-50 text-rose-900 border-rose-200/80'
                 }`}
               >
                 {applyMessage.text}
