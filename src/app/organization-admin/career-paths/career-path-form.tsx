@@ -132,20 +132,20 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+        <div className="rounded-xl bg-rose-50 border border-rose-200/80 p-4 text-xs font-semibold text-rose-800">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6 shadow-2xs">
-        <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
+      <div className="bg-white rounded-2xl border border-stone-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
+        <h2 className="text-base font-bold text-neutral-900 border-b border-stone-100 pb-3">
           1. General Information
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label htmlFor="path-name" className="block text-sm font-semibold text-gray-700 mb-1">
-              Path Name <span className="text-red-500">*</span>
+            <label htmlFor="path-name" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+              Path Name <span className="text-rose-500">*</span>
             </label>
             <input
               id="path-name"
@@ -154,13 +154,13 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Software Engineering Progression"
-              className="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
             />
           </div>
 
           <div>
-            <label htmlFor="path-description" className="block text-sm font-semibold text-gray-700 mb-1">
-              Description <span className="text-xs text-gray-400 font-normal">(Optional)</span>
+            <label htmlFor="path-description" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+              Description <span className="text-xs text-stone-400 font-normal">(Optional)</span>
             </label>
             <textarea
               id="path-description"
@@ -168,25 +168,25 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of the expected career growth track and expectations..."
-              className="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm text-neutral-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-colors"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6 shadow-2xs">
+      <div className="bg-white rounded-2xl border border-stone-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
         <div>
-          <h2 className="text-base font-bold text-gray-900">
+          <h2 className="text-base font-bold text-neutral-900">
             2. Progression Steps (Minimum 2 Roles)
           </h2>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-stone-500 mt-1">
             Specify the sequence of published roles from junior/entry to senior/leadership.
           </p>
         </div>
 
         <div className="space-y-3">
           {selectedRoleIds.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-xs text-gray-500">
+            <div className="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-xs text-stone-400">
               No roles added yet. Select a role below to begin designing the progression track.
             </div>
           ) : (
@@ -195,18 +195,18 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
               return (
                 <div
                   key={roleId}
-                  className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100/70 transition-colors"
+                  className="flex items-center justify-between p-4 bg-stone-50/50 border border-stone-200/80 rounded-xl hover:bg-stone-50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold shrink-0">
+                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-stone-200 text-stone-800 text-xs font-bold shrink-0">
                       {idx + 1}
                     </span>
                     <div>
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-neutral-900">
                         {role?.name || 'Unknown Role'}
                       </span>
                       {role?.description && (
-                        <p className="text-xs text-gray-500 line-clamp-1">{role.description}</p>
+                        <p className="text-xs text-stone-500 line-clamp-1">{role.description}</p>
                       )}
                     </div>
                   </div>
@@ -216,10 +216,10 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
                       type="button"
                       onClick={() => handleMoveUp(idx)}
                       disabled={idx === 0}
-                      className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 disabled:opacity-30 cursor-pointer"
                       title="Move Up"
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
                       </svg>
                     </button>
@@ -227,18 +227,18 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
                       type="button"
                       onClick={() => handleMoveDown(idx)}
                       disabled={idx === selectedRoleIds.length - 1}
-                      className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 disabled:opacity-30 cursor-pointer"
                       title="Move Down"
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
-                    <span className="text-gray-300">|</span>
+                    <span className="text-stone-300">|</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveRole(idx)}
-                      className="text-xs font-semibold text-red-600 hover:text-red-800"
+                      className="text-xs font-semibold text-rose-600 hover:text-rose-800 p-1.5 cursor-pointer"
                     >
                       Remove
                     </button>
@@ -249,12 +249,12 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
           )}
         </div>
 
-        <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center gap-3">
           <select
             value={selectedToAdd}
             onChange={(e) => setSelectedToAdd(e.target.value)}
             disabled={availableToAdd.length === 0}
-            className="flex-1 px-3.5 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+            className="flex-1 px-3.5 py-2.5 text-sm bg-white border border-stone-300 rounded-xl text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 disabled:bg-stone-100 transition-colors"
           >
             <option value="">
               {availableToAdd.length === 0
@@ -272,24 +272,24 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
             type="button"
             onClick={handleAddRole}
             disabled={!selectedToAdd}
-            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center px-4 py-2.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-800 bg-white hover:bg-stone-50 transition-colors disabled:opacity-50 cursor-pointer"
           >
             + Add Role Step
           </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-end space-x-3 pt-4 border-t border-stone-100">
         <Link
           href={isEditing && initialData ? `/organization-admin/career-paths/${initialData.id}` : '/organization-admin/career-paths'}
-          className="px-4 py-2 border border-gray-300 shadow-2xs text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          className="px-4 py-2.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
         >
           Cancel
         </Link>
         <button
           type="submit"
           disabled={isSubmitting || selectedRoleIds.length < 2}
-          className="px-5 py-2 border border-transparent shadow-xs text-sm font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          className="px-5 py-2.5 border border-transparent shadow-2xs text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 transition-colors disabled:opacity-50 cursor-pointer"
         >
           {isSubmitting ? 'Saving Path...' : isEditing ? 'Save Changes' : 'Save Draft Career Path'}
         </button>
