@@ -1,16 +1,20 @@
 import Link from 'next/link';
 import { requireRole } from '@/lib/auth/guards';
 import { getDepartmentsForTenant, getTeamsForTenant } from '@/services/organization-structure';
+import { getOrganizationProfile, getIndustryTemplatesForOrgAdmin } from '@/services/tenants';
+import { OrgProfileActions } from './org-profile-actions';
 
-export const metadata = { title: 'Organization Structure' };
+export const metadata = { title: 'Organization Management | Skills Assessment Platform' };
 
 export default async function OrganizationPage() {
   const user = await requireRole(['ORGANIZATION_ADMIN']);
   const tenantId = user.tenantId!;
 
-  const [departments, teams] = await Promise.all([
+  const [departments, teams, profile, templates] = await Promise.all([
     getDepartmentsForTenant(tenantId),
     getTeamsForTenant(tenantId),
+    getOrganizationProfile(tenantId),
+    getIndustryTemplatesForOrgAdmin(),
   ]);
 
   const activeDepts = departments.filter((d) => d.isActive);
@@ -20,6 +24,13 @@ export default async function OrganizationPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Profile & Industry Template Settings */}
+      {profile && (
+        <OrgProfileActions
+          initialProfile={profile}
+          templates={templates}
+        />
+      )}
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>

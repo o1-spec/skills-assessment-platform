@@ -23,3 +23,4 @@ export * from './career-paths';
 export * from './learning-resources';
 export * from './interview-questions';
 export * from './report-schedules';
+export * from './platform-users';

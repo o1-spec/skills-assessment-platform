@@ -80,6 +80,7 @@ enum NotificationType {
   CORROBORATION_OVERDUE
   CORROBORATION_COMPLETED
   ASSESSMENT_COMPLETED
+  FRAMEWORK_VERSION_AVAILABLE
   SYSTEM
 }
 
@@ -143,6 +144,12 @@ enum AuditAction {
   REPORT_SCHEDULE_ACTIVATE
   REPORT_SCHEDULE_DEACTIVATE
   REPORT_SCHEDULE_RUN
+  PLATFORM_USER_INVITE
+  PLATFORM_USER_ROLE_CHANGE
+  PLATFORM_USER_DEACTIVATE
+  PLATFORM_USER_REACTIVATE
+  ORGANIZATION_PROFILE_UPDATE
+  ORGANIZATION_TEMPLATE_CHANGE
 }
 
 enum ReportType {
@@ -165,7 +172,6 @@ enum ScheduleRunStatus {
   SUCCESS
   FAILED
 }
-
 
 enum LearningResourceType {
   COURSE
@@ -208,26 +214,29 @@ model Tenant {
   domain              String?
   primaryContactName  String?
   primaryContactEmail String?
+  industryTemplateId  String?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
-  plan               SubscriptionPlan?         @relation(fields: [planId], references: [id], onDelete: SetNull)
-  users              User[]
-  competencies       Competency[]
-  roleProfiles       RoleProfile[]
-  careerPaths        CareerPath[]
-  campaigns          AssessmentCampaign[]
-  frameworkAdoptions TenantFrameworkAdoption[]
-  invitations        TenantInvitation[]
-  departments        Department[]
-  teams              Team[]
-  notifications      Notification[]
-  auditLogs          AuditLog[]
-  learningResources  LearningResource[]
+  plan                  SubscriptionPlan?         @relation(fields: [planId], references: [id], onDelete: SetNull)
+  industryTemplate      IndustryTemplate?         @relation(fields: [industryTemplateId], references: [id], onDelete: SetNull)
+  users                 User[]
+  competencies          Competency[]
+  roleProfiles          RoleProfile[]
+  careerPaths           CareerPath[]
+  campaigns             AssessmentCampaign[]
+  frameworkAdoptions    TenantFrameworkAdoption[]
+  invitations           TenantInvitation[]
+  departments           Department[]
+  teams                 Team[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  learningResources     LearningResource[]
   interviewQuestionSets InterviewQuestionSet[]
-  reportSchedules    ReportSchedule[]
+  reportSchedules       ReportSchedule[]
 
   @@index([planId])
+  @@index([industryTemplateId])
 }
 
 // ------------------------------------------------------
@@ -249,10 +258,10 @@ model TenantInvitation {
   createdById   String?
   createdAt     DateTime  @default(now())
 
-  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdBy   User?        @relation("InvitationCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  manager     User?        @relation("InvitationManager", fields: [managerId], references: [id], onDelete: SetNull)
-  roleProfile RoleProfile? @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy   User?                  @relation("InvitationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  manager     User?                  @relation("InvitationManager", fields: [managerId], references: [id], onDelete: SetNull)
+  roleProfile RoleProfile?           @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
   teams       TenantInvitationTeam[]
 
   @@index([tenantId])
@@ -345,6 +354,7 @@ model IndustryTemplate {
   frameworkVersion FrameworkVersion             @relation(fields: [frameworkVersionId], references: [id], onDelete: Restrict)
   competencies     IndustryTemplateCompetency[]
   roleProfiles     TemplateRoleProfile[]
+  tenants          Tenant[]
 
   @@index([frameworkVersionId])
 }
@@ -435,18 +445,19 @@ model User {
   manager       User?  @relation("ManagerReports", fields: [managerId], references: [id], onDelete: SetNull)
   directReports User[] @relation("ManagerReports")
 
-  campaignParticipations CampaignParticipant[]
-  assessments            Assessment[]
-  corroborations         Corroboration[]
-  createdInvitations     TenantInvitation[]    @relation("InvitationCreator")
-  managedInvitations     TenantInvitation[]    @relation("InvitationManager")
-  teamMemberships        TeamMembership[]
-  managedTeams           Team[]                @relation("TeamManager")
-  notifications          Notification[]        @relation("UserNotifications")
-  auditLogs              AuditLog[]
-  interviewQuestionSets  InterviewQuestionSet[]
-  createdReportSchedules ReportSchedule[]      @relation("ReportScheduleCreator")
-  reportScheduleRecipients ReportScheduleRecipient[]
+  campaignParticipations     CampaignParticipant[]
+  assessments                Assessment[]
+  corroborations             Corroboration[]
+  createdInvitations         TenantInvitation[]        @relation("InvitationCreator")
+  managedInvitations         TenantInvitation[]        @relation("InvitationManager")
+  teamMemberships            TeamMembership[]
+  managedTeams               Team[]                    @relation("TeamManager")
+  notifications              Notification[]            @relation("UserNotifications")
+  auditLogs                  AuditLog[]
+  interviewQuestionSets      InterviewQuestionSet[]
+  createdReportSchedules     ReportSchedule[]          @relation("ReportScheduleCreator")
+  reportScheduleRecipients   ReportScheduleRecipient[]
+  createdPlatformInvitations PlatformInvitation[]      @relation("PlatformInvitationCreator")
 
   @@index([tenantId])
   @@index([managerId])
@@ -458,24 +469,24 @@ model User {
 // ------------------------------------------------------
 
 model Competency {
-  id                    String               @id @default(cuid())
+  id                    String         @id @default(cuid())
   tenantId              String
   name                  String
   description           String?
   type                  CompetencyType
   frameworkCompetencyId String?
-  isCustom              Boolean              @default(true)
-  isActive              Boolean              @default(true)
-  weight                Int                  @default(100)
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  isCustom              Boolean        @default(true)
+  isActive              Boolean        @default(true)
+  weight                Int            @default(100)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 
-  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  frameworkCompetency  FrameworkCompetency?  @relation(fields: [frameworkCompetencyId], references: [id], onDelete: SetNull)
-  levels               CompetencyLevel[]
-  roleRequirements     RoleRequirement[]
-  campaignCompetencies CampaignCompetency[]
-  assessmentItems      AssessmentItem[]
+  tenant                   Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  frameworkCompetency      FrameworkCompetency?         @relation(fields: [frameworkCompetencyId], references: [id], onDelete: SetNull)
+  levels                   CompetencyLevel[]
+  roleRequirements         RoleRequirement[]
+  campaignCompetencies     CampaignCompetency[]
+  assessmentItems          AssessmentItem[]
   learningResourceMappings CompetencyLearningResource[]
   interviewQuestions       InterviewQuestion[]
 
@@ -511,12 +522,12 @@ model RoleProfile {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  requirements RoleRequirement[]
-  campaigns    AssessmentCampaign[]
-  users        User[]
-  invitations  TenantInvitation[]
-  careerPathSteps CareerPathStep[]
+  tenant                Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requirements          RoleRequirement[]
+  campaigns             AssessmentCampaign[]
+  users                 User[]
+  invitations           TenantInvitation[]
+  careerPathSteps       CareerPathStep[]
   interviewQuestionSets InterviewQuestionSet[]
 
   @@index([tenantId])
@@ -575,7 +586,7 @@ model CareerPathStep {
 // ------------------------------------------------------
 
 model AssessmentCampaign {
-  id                    String            @id @default(cuid())
+  id                    String         @id @default(cuid())
   tenantId              String
   name                  String
   description           String?
@@ -583,11 +594,11 @@ model AssessmentCampaign {
   frameworkVersionId    String?
   startDate             DateTime?
   deadline              DateTime
-  requiresCorroboration Boolean           @default(false)
-  status                CampaignStatus    @default(DRAFT)
-  scope                 CampaignScope     @default(INDIVIDUAL)
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  requiresCorroboration Boolean        @default(false)
+  status                CampaignStatus @default(DRAFT)
+  scope                 CampaignScope  @default(INDIVIDUAL)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 
   tenant           Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   roleProfile      RoleProfile?          @relation(fields: [roleProfileId], references: [id], onDelete: SetNull)
@@ -679,15 +690,15 @@ model AssessmentItem {
 }
 
 model EvidenceAttachment {
-  id               String         @id @default(cuid())
+  id               String   @id @default(cuid())
   assessmentItemId String
   storagePath      String
   fileName         String
   mimeType         String
   fileSize         Int
-  createdAt        DateTime       @default(now())
+  createdAt        DateTime @default(now())
 
-  assessmentItem   AssessmentItem @relation(fields: [assessmentItemId], references: [id], onDelete: Cascade)
+  assessmentItem AssessmentItem @relation(fields: [assessmentItemId], references: [id], onDelete: Cascade)
 
   @@index([assessmentItemId])
 }
@@ -736,9 +747,9 @@ model Team {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  tenant          Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  department      Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  manager         User?                @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department      Department?            @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  manager         User?                  @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
   memberships     TeamMembership[]
   invitationTeams TenantInvitationTeam[]
   campaignTeams   CampaignTeam[]
@@ -916,25 +927,25 @@ model InterviewQuestion {
 // ------------------------------------------------------
 
 model ReportSchedule {
-  id             String            @id @default(cuid())
-  tenantId       String
-  createdById    String
-  name           String
-  reportType     ReportType
-  scopeType      ScheduleScopeType
-  scopeId        String?
-  frequency      ScheduleFrequency
-  nextRunAt      DateTime
-  lastRunAt      DateTime?
-  lastRunStatus  ScheduleRunStatus?
-  lastRunError   String?
-  isActive       Boolean           @default(true)
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  id            String             @id @default(cuid())
+  tenantId      String
+  createdById   String
+  name          String
+  reportType    ReportType
+  scopeType     ScheduleScopeType
+  scopeId       String?
+  frequency     ScheduleFrequency
+  nextRunAt     DateTime
+  lastRunAt     DateTime?
+  lastRunStatus ScheduleRunStatus?
+  lastRunError  String?
+  isActive      Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
-  tenant         Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdBy      User              @relation("ReportScheduleCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  recipients     ReportScheduleRecipient[]
+  tenant     Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy  User                      @relation("ReportScheduleCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  recipients ReportScheduleRecipient[]
 
   @@index([tenantId])
   @@index([nextRunAt, isActive])
@@ -942,16 +953,37 @@ model ReportSchedule {
 }
 
 model ReportScheduleRecipient {
-  id         String         @id @default(cuid())
+  id         String   @id @default(cuid())
   scheduleId String
   userId     String
-  createdAt  DateTime       @default(now())
+  createdAt  DateTime @default(now())
 
-  schedule   ReportSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedule ReportSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([scheduleId, userId])
   @@index([userId])
 }
 
+// ------------------------------------------------------
+// PLATFORM INVITATION (no tenant — PLATFORM_ADMIN / SUPPORT only)
+// ------------------------------------------------------
 
+model PlatformInvitation {
+  id          String    @id @default(cuid())
+  email       String
+  name        String
+  role        UserRole // Service-enforced: only PLATFORM_ADMIN or SUPPORT
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  cancelledAt DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+
+  createdBy User? @relation("PlatformInvitationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([expiresAt])
+  @@index([createdById])
+}

@@ -13,7 +13,7 @@ export function getRoleDashboardPath(role: UserRole): string {
     case UserRole.STAFF:
       return '/staff';
     case UserRole.SUPPORT:
-      return '/login';
+      return '/support';
     default:
       return '/login';
   }

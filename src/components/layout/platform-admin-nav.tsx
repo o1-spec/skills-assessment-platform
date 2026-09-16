@@ -58,6 +58,13 @@ export function PlatformAdminNav() {
       active: pathname?.startsWith('/platform-admin/audit'),
       enabled: true,
     },
+    {
+      name: 'Platform Users',
+      href: '/platform-admin/users',
+      exact: false,
+      active: pathname?.startsWith('/platform-admin/users'),
+      enabled: true,
+    },
   ];
 
   return (

@@ -456,3 +456,271 @@ export async function archiveTenant(
 ): Promise<Tenant> {
   return updateTenantStatus(tenantId, TenantStatus.ARCHIVED, actor);
 }
+
+// ---------------------------------------------------------------------------
+// ORGANIZATION PROFILE SETTINGS
+// ---------------------------------------------------------------------------
+
+export type OrganizationProfileWithTemplate = Tenant & {
+  industryTemplate: {
+    id: string;
+    name: string;
+    description: string | null;
+    frameworkVersionId: string;
+  } | null;
+};
+
+/**
+ * Returns the organization profile with industry template details.
+ */
+export async function getOrganizationProfile(
+  tenantId: string
+): Promise<OrganizationProfileWithTemplate | null> {
+  if (!tenantId) return null;
+
+  return prisma.tenant.findUnique({
+    where: { id: tenantId },
+    include: {
+      industryTemplate: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          frameworkVersionId: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Returns all active IndustryTemplates for org admin template selection.
+ */
+export async function getIndustryTemplatesForOrgAdmin() {
+  return prisma.industryTemplate.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      frameworkVersionId: true,
+    },
+    orderBy: { name: 'asc' },
+  });
+}
+
+/**
+ * Validates a logo URL: must be https:// or empty/null.
+ * Rejects http://, data:, javascript:, file://, protocol-relative (//).
+ */
+function validateLogoUrl(logoUrl: string | null | undefined): string | null {
+  if (!logoUrl || !logoUrl.trim()) return null;
+  const trimmed = logoUrl.trim();
+
+  if (!trimmed.startsWith('https://')) {
+    throw new Error(
+      'Logo URL must use HTTPS (https://...). HTTP, data URIs, and other schemes are not permitted.'
+    );
+  }
+  return trimmed;
+}
+
+/**
+ * Updates the organization's profile fields: name, logoUrl, industryTemplateId.
+ * Does NOT modify competencies, role profiles, campaigns, or assessments.
+ * Template change = context preference only (Correction 7).
+ */
+export async function updateOrganizationProfile(
+  tenantId: string,
+  actorId: string,
+  data: {
+    name?: string;
+    logoUrl?: string | null;
+    industryTemplateId?: string | null;
+  },
+  actorContext?: { ipAddress?: string | null; userAgent?: string | null }
+): Promise<Tenant> {
+  if (!tenantId) throw new Error('Tenant ID is required.');
+
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+  if (!tenant) throw new Error('Organization not found.');
+
+  const updateData: {
+    name?: string;
+    logoUrl?: string | null;
+    industryTemplateId?: string | null;
+  } = {};
+
+  // Validate name
+  if (data.name !== undefined) {
+    const trimmedName = data.name.trim();
+    if (trimmedName.length === 0) throw new Error('Organization name cannot be empty.');
+    if (trimmedName.length > 100) throw new Error('Organization name cannot exceed 100 characters.');
+    updateData.name = trimmedName;
+  }
+
+  // Validate logo URL
+  if (data.logoUrl !== undefined) {
+    updateData.logoUrl = validateLogoUrl(data.logoUrl);
+  }
+
+  // Validate industry template
+  if (data.industryTemplateId !== undefined) {
+    if (data.industryTemplateId !== null) {
+      const template = await prisma.industryTemplate.findFirst({
+        where: { id: data.industryTemplateId, isActive: true },
+      });
+      if (!template) {
+        throw new Error('Selected industry template was not found or is inactive.');
+      }
+    }
+    updateData.industryTemplateId = data.industryTemplateId;
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.tenant.update({
+      where: { id: tenantId },
+      data: updateData,
+    });
+
+    await logAuditEvent({
+      tx,
+      tenantId,
+      actorId,
+      actorRole: UserRole.ORGANIZATION_ADMIN,
+      action: AuditAction.ORGANIZATION_PROFILE_UPDATE,
+      resourceType: 'Tenant',
+      resourceId: tenantId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        changedFields: Object.keys(updateData),
+        previousName: tenant.name,
+        newName: updateData.name,
+        previousLogoUrl: tenant.logoUrl,
+        previousIndustryTemplateId: tenant.industryTemplateId,
+        newIndustryTemplateId: updateData.industryTemplateId,
+      },
+    });
+
+    return updated;
+  });
+}
+
+/**
+ * Applies missing competencies from the selected industry template to the tenant.
+ * This is an EXPLICIT, separate action — changing industryTemplateId alone does nothing.
+ *
+ * Safety guarantees (Correction 7):
+ * - Only adds competencies that do NOT already exist (matched by frameworkCompetencyId)
+ * - Preserves existing tenant competency weights and customizations
+ * - Does NOT delete, deactivate, or overwrite existing competencies
+ * - Does NOT modify RoleProfiles, campaigns, or assessments
+ * - Deduplicates by frameworkCompetencyId, NOT display name
+ */
+export async function applyIndustryTemplateCompetencies(
+  tenantId: string,
+  industryTemplateId: string,
+  actorId: string,
+  actorContext?: { ipAddress?: string | null; userAgent?: string | null }
+): Promise<{ added: number; skipped: number }> {
+  if (!tenantId) throw new Error('Tenant ID is required.');
+
+  const template = await prisma.industryTemplate.findFirst({
+    where: { id: industryTemplateId, isActive: true },
+    include: {
+      competencies: {
+        include: {
+          frameworkCompetency: {
+            include: {
+              category: true,
+              levels: { orderBy: { level: 'asc' } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!template) {
+    throw new Error('Industry template not found or inactive.');
+  }
+
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+  if (!tenant) throw new Error('Organization not found.');
+
+  // Fetch existing tenant competencies keyed by frameworkCompetencyId
+  const existingCompetencies = await prisma.competency.findMany({
+    where: {
+      tenantId,
+      frameworkCompetencyId: { not: null },
+    },
+    select: { frameworkCompetencyId: true },
+  });
+  const existingFrameworkIds = new Set(
+    existingCompetencies.map((c) => c.frameworkCompetencyId!).filter(Boolean)
+  );
+
+  let added = 0;
+  let skipped = 0;
+
+  for (const templateComp of template.competencies) {
+    const fwComp = templateComp.frameworkCompetency;
+
+    // Skip if tenant already has this competency (deduplicate by frameworkCompetencyId)
+    if (existingFrameworkIds.has(fwComp.id)) {
+      skipped++;
+      continue;
+    }
+
+    // Create the competency with the template's weight
+    const newComp = await prisma.competency.create({
+      data: {
+        tenantId,
+        name: fwComp.name,
+        description: fwComp.description,
+        type: fwComp.category.type,
+        frameworkCompetencyId: fwComp.id,
+        isCustom: false,
+        isActive: true,
+        weight: templateComp.weight,
+      },
+    });
+
+    // Copy competency levels
+    for (const lvl of fwComp.levels) {
+      await prisma.competencyLevel.create({
+        data: {
+          competencyId: newComp.id,
+          level: lvl.level,
+          description: lvl.description,
+          evidencePrompt: lvl.evidencePrompt,
+        },
+      });
+    }
+
+    // Track the new frameworkCompetencyId to avoid duplicates within this batch
+    existingFrameworkIds.add(fwComp.id);
+    added++;
+  }
+
+  // Audit the template application
+  await logAuditEvent({
+    tenantId,
+    actorId,
+    actorRole: UserRole.ORGANIZATION_ADMIN,
+    action: AuditAction.ORGANIZATION_TEMPLATE_CHANGE,
+    resourceType: 'Tenant',
+    resourceId: tenantId,
+    ipAddress: actorContext?.ipAddress,
+    userAgent: actorContext?.userAgent,
+    details: {
+      industryTemplateId,
+      industryTemplateName: template.name,
+      competenciesAdded: added,
+      competenciesSkipped: skipped,
+    },
+  });
+
+  return { added, skipped };
+}

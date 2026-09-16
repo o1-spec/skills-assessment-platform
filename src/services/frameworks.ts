@@ -605,8 +605,8 @@ export async function publishFrameworkVersion(
     }
   }
 
-  return prisma.$transaction(async (tx) => {
-    const published = await tx.frameworkVersion.update({
+  const published = await prisma.$transaction(async (tx) => {
+    const pub = await tx.frameworkVersion.update({
       where: { id },
       data: {
         status: FrameworkStatus.PUBLISHED,
@@ -621,17 +621,35 @@ export async function publishFrameworkVersion(
       actorRole: actor?.actorRole || UserRole.PLATFORM_ADMIN,
       action: AuditAction.FRAMEWORK_PUBLISH,
       resourceType: 'FrameworkVersion',
-      resourceId: published.id,
+      resourceId: pub.id,
       details: {
-        version: published.version,
+        version: pub.version,
         competencyCount: allCompetencies.length,
       },
       ipAddress: actor?.ipAddress,
       userAgent: actor?.userAgent,
     });
 
-    return published;
+    return pub;
   });
+
+  // Post-commit: notify affected tenants — outside transaction, non-blocking (Correction 8)
+  try {
+    await notifyTenantsOfNewFrameworkVersion(
+      published.id,
+      published.version,
+      published.publishedAt!
+    );
+  } catch (notifErr: unknown) {
+    const msg = notifErr instanceof Error ? notifErr.message : String(notifErr);
+    console.error(
+      '[NotificationEngine:Framework] Version notification dispatch failed:',
+      msg
+    );
+    // Publication is already committed — do NOT rethrow
+  }
+
+  return published;
 }
 
 /**
@@ -767,4 +785,89 @@ export async function createDraftFromPublishedVersion(
     timeout: 30000,
     maxWait: 10000,
   });
+}
+
+// ---------------------------------------------------------------------------
+// FRAMEWORK VERSION NOTIFICATION HELPER (private)
+// ---------------------------------------------------------------------------
+
+import { createAndDispatchNotification } from './notifications';
+import { NotificationType, TenantStatus } from '@prisma/client';
+
+/**
+ * Notifies active ORGANIZATION_ADMIN users of tenants that are on an older
+ * framework version when a new version is published.
+ *
+ * Targeting logic (Correction 2):
+ * - Active adoption where frameworkVersionId ≠ publishedVersionId
+ * - Adopted version's publishedAt < new version's publishedAt (timestamp ordering)
+ * - Tenant is ACTIVE
+ *
+ * Deduplication (Correction 9):
+ * - dedupeKey: framework-version-available:{tenantId}:{publishedVersionId}:{userId}
+ *
+ * Failure isolation (Correction 8):
+ * - Per-recipient errors are caught and logged; batch continues
+ */
+async function notifyTenantsOfNewFrameworkVersion(
+  publishedVersionId: string,
+  publishedVersion: string,
+  publishedAt: Date
+): Promise<void> {
+  // Find all tenants actively using an older version (by publishedAt timestamp)
+  const affectedAdoptions = await prisma.tenantFrameworkAdoption.findMany({
+    where: {
+      isActive: true,
+      frameworkVersionId: { not: publishedVersionId },
+      frameworkVersion: {
+        publishedAt: { lt: publishedAt }, // genuinely older (Correction 2)
+      },
+      tenant: {
+        status: TenantStatus.ACTIVE,
+      },
+    },
+    include: {
+      tenant: {
+        select: {
+          id: true,
+          status: true,
+          users: {
+            where: {
+              role: UserRole.ORGANIZATION_ADMIN,
+              isActive: true,
+            },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+
+  for (const adoption of affectedAdoptions) {
+    const { tenant } = adoption;
+
+    for (const recipient of tenant.users) {
+      // Per-recipient isolation (Correction 8)
+      try {
+        await createAndDispatchNotification({
+          tenantId: tenant.id,
+          recipientId: recipient.id,
+          type: NotificationType.FRAMEWORK_VERSION_AVAILABLE,
+          title: 'New Framework Version Available',
+          message: `Framework version ${publishedVersion} has been published. Review and adopt it to keep your skills library current.`,
+          href: '/organization-admin/skills', // Correction 4 — verified route
+          resourceType: 'FrameworkVersion',
+          resourceId: publishedVersionId,
+          // Deterministic deduplication (Correction 9)
+          dedupeKey: `framework-version-available:${tenant.id}:${publishedVersionId}:${recipient.id}`,
+        });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[NotificationEngine:Framework] Failed to notify recipient ${recipient.id} in tenant ${tenant.id}:`,
+          msg
+        );
+      }
+    }
+  }
 }

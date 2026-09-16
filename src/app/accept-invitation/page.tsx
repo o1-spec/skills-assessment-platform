@@ -1,9 +1,11 @@
 import { getInvitationByRawToken } from '@/services/invitations';
+import { getPlatformInvitationByRawToken } from '@/services/platform-users';
 import { AcceptInvitationForm } from './accept-invitation-form';
+import { AcceptPlatformInvitationForm } from './accept-platform-form';
 import Link from 'next/link';
 
 interface AcceptInvitationPageProps {
-  searchParams: Promise<{ token?: string }>;
+  searchParams: Promise<{ token?: string; type?: string }>;
 }
 
 export const metadata = {
@@ -12,8 +14,111 @@ export const metadata = {
 };
 
 export default async function AcceptInvitationPage({ searchParams }: AcceptInvitationPageProps) {
-  const { token } = await searchParams;
+  const { token, type } = await searchParams;
+  const isPlatform = type === 'platform';
 
+  // Route platform invitations through the platform invitation service
+  if (isPlatform) {
+    if (!token) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">Missing Invitation Link</h2>
+              <p className="text-sm text-gray-500">
+                No platform invitation token was provided. Please use the complete invitation URL from your email.
+              </p>
+              <div className="pt-2">
+                <Link href="/login" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                  Return to Login →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const platformInvitation = await getPlatformInvitationByRawToken(token);
+
+    if (!platformInvitation) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">Invalid Platform Invitation</h2>
+              <p className="text-sm text-gray-500">
+                This platform invitation link is invalid or does not exist. Contact a Platform Administrator.
+              </p>
+              <div className="pt-2">
+                <Link href="/login" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                  Return to Login →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (platformInvitation.acceptedAt) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">Invitation Already Accepted</h2>
+              <p className="text-sm text-gray-500">
+                This platform invitation for <strong>{platformInvitation.email}</strong> was already accepted on{' '}
+                {new Date(platformInvitation.acceptedAt).toLocaleDateString()}.
+              </p>
+              <div className="pt-2">
+                <Link href="/login" className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-xs">
+                  Sign In →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (new Date(platformInvitation.expiresAt) < new Date()) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">Invitation Expired</h2>
+              <p className="text-sm text-gray-500">
+                This platform invitation expired on {new Date(platformInvitation.expiresAt).toLocaleDateString()}.
+                Contact a Platform Administrator for a new invitation.
+              </p>
+              <div className="pt-2">
+                <Link href="/login" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                  Return to Login →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Skills Assessment Platform</h1>
+          <p className="text-sm text-gray-500 mt-1">Activate your platform account</p>
+        </div>
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 sm:px-10 space-y-6">
+            <AcceptPlatformInvitationForm token={token} invitation={platformInvitation} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Standard tenant invitation flow (unchanged) ──────────────────────────
   if (!token) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
