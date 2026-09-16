@@ -53,10 +53,16 @@ export async function getSubscriptionPlanById(id: string): Promise<SubscriptionP
   });
 }
 
+import { logAuditEvent, AuditAction, AuditActorContext } from './audit';
+import { UserRole } from '@prisma/client';
+
 /**
  * Creates a new subscription plan with uniqueness check.
  */
-export async function createSubscriptionPlan(input: CreateSubscriptionPlanInput): Promise<SubscriptionPlan> {
+export async function createSubscriptionPlan(
+  input: CreateSubscriptionPlanInput,
+  actor?: AuditActorContext
+): Promise<SubscriptionPlan> {
   const existing = await prisma.subscriptionPlan.findUnique({
     where: { name: input.name.trim() },
   });
@@ -69,13 +75,34 @@ export async function createSubscriptionPlan(input: CreateSubscriptionPlanInput)
     throw new Error('Default seat limit must be greater than zero.');
   }
 
-  return prisma.subscriptionPlan.create({
-    data: {
-      name: input.name.trim(),
-      description: input.description?.trim() || null,
-      defaultSeatLimit: input.defaultSeatLimit,
-      isActive: input.isActive ?? true,
-    },
+  return prisma.$transaction(async (tx) => {
+    const plan = await tx.subscriptionPlan.create({
+      data: {
+        name: input.name.trim(),
+        description: input.description?.trim() || null,
+        defaultSeatLimit: input.defaultSeatLimit,
+        isActive: input.isActive ?? true,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      tenantId: null,
+      actorId: actor?.actorId || null,
+      actorRole: actor?.actorRole || UserRole.PLATFORM_ADMIN,
+      action: AuditAction.PLAN_CREATE,
+      resourceType: 'SubscriptionPlan',
+      resourceId: plan.id,
+      details: {
+        name: plan.name,
+        defaultSeatLimit: plan.defaultSeatLimit,
+        isActive: plan.isActive,
+      },
+      ipAddress: actor?.ipAddress,
+      userAgent: actor?.userAgent,
+    });
+
+    return plan;
   });
 }
 
@@ -84,7 +111,8 @@ export async function createSubscriptionPlan(input: CreateSubscriptionPlanInput)
  */
 export async function updateSubscriptionPlan(
   id: string,
-  input: UpdateSubscriptionPlanInput
+  input: UpdateSubscriptionPlanInput,
+  actor?: AuditActorContext
 ): Promise<SubscriptionPlan> {
   const plan = await prisma.subscriptionPlan.findUnique({
     where: { id },
@@ -108,14 +136,36 @@ export async function updateSubscriptionPlan(
     throw new Error('Default seat limit must be greater than zero.');
   }
 
-  return prisma.subscriptionPlan.update({
-    where: { id },
-    data: {
-      name: input.name?.trim(),
-      description: input.description !== undefined ? input.description.trim() || null : undefined,
-      defaultSeatLimit: input.defaultSeatLimit,
-      isActive: input.isActive,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.subscriptionPlan.update({
+      where: { id },
+      data: {
+        name: input.name?.trim(),
+        description: input.description !== undefined ? input.description.trim() || null : undefined,
+        defaultSeatLimit: input.defaultSeatLimit,
+        isActive: input.isActive,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      tenantId: null,
+      actorId: actor?.actorId || null,
+      actorRole: actor?.actorRole || UserRole.PLATFORM_ADMIN,
+      action: AuditAction.PLAN_UPDATE,
+      resourceType: 'SubscriptionPlan',
+      resourceId: updated.id,
+      details: {
+        name: updated.name,
+        defaultSeatLimit: updated.defaultSeatLimit,
+        isActive: updated.isActive,
+        previousName: plan.name,
+      },
+      ipAddress: actor?.ipAddress,
+      userAgent: actor?.userAgent,
+    });
+
+    return updated;
   });
 }
 

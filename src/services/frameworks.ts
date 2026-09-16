@@ -110,13 +110,19 @@ export async function getFrameworkVersionById(id: string): Promise<FullFramework
   };
 }
 
+import { logAuditEvent, AuditAction, AuditActorContext } from './audit';
+import { UserRole } from '@prisma/client';
+
 /**
  * Creates a new framework version draft.
  */
-export async function createFrameworkDraft(data: {
-  version: string;
-  description?: string;
-}): Promise<FrameworkVersion> {
+export async function createFrameworkDraft(
+  data: {
+    version: string;
+    description?: string;
+  },
+  actor?: AuditActorContext
+): Promise<FrameworkVersion> {
   const existing = await prisma.frameworkVersion.findUnique({
     where: { version: data.version.trim() },
   });
@@ -125,13 +131,33 @@ export async function createFrameworkDraft(data: {
     throw new Error(`Framework version '${data.version.trim()}' already exists.`);
   }
 
-  return prisma.frameworkVersion.create({
-    data: {
-      version: data.version.trim(),
-      description: data.description?.trim() || null,
-      status: FrameworkStatus.DRAFT,
-      publishedAt: null,
-    },
+  return prisma.$transaction(async (tx) => {
+    const framework = await tx.frameworkVersion.create({
+      data: {
+        version: data.version.trim(),
+        description: data.description?.trim() || null,
+        status: FrameworkStatus.DRAFT,
+        publishedAt: null,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      tenantId: null,
+      actorId: actor?.actorId || null,
+      actorRole: actor?.actorRole || UserRole.PLATFORM_ADMIN,
+      action: AuditAction.FRAMEWORK_CREATE,
+      resourceType: 'FrameworkVersion',
+      resourceId: framework.id,
+      details: {
+        version: framework.version,
+        description: framework.description,
+      },
+      ipAddress: actor?.ipAddress,
+      userAgent: actor?.userAgent,
+    });
+
+    return framework;
   });
 }
 
@@ -530,7 +556,10 @@ export async function deleteFrameworkLevel(id: string): Promise<FrameworkLevel> 
 /**
  * Atomically publishes a draft framework version after comprehensive validation.
  */
-export async function publishFrameworkVersion(id: string): Promise<FrameworkVersion> {
+export async function publishFrameworkVersion(
+  id: string,
+  actor?: AuditActorContext
+): Promise<FrameworkVersion> {
   const framework = await prisma.frameworkVersion.findUnique({
     where: { id },
     include: {
@@ -576,12 +605,32 @@ export async function publishFrameworkVersion(id: string): Promise<FrameworkVers
     }
   }
 
-  return prisma.frameworkVersion.update({
-    where: { id },
-    data: {
-      status: FrameworkStatus.PUBLISHED,
-      publishedAt: new Date(),
-    },
+  return prisma.$transaction(async (tx) => {
+    const published = await tx.frameworkVersion.update({
+      where: { id },
+      data: {
+        status: FrameworkStatus.PUBLISHED,
+        publishedAt: new Date(),
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      tenantId: null,
+      actorId: actor?.actorId || null,
+      actorRole: actor?.actorRole || UserRole.PLATFORM_ADMIN,
+      action: AuditAction.FRAMEWORK_PUBLISH,
+      resourceType: 'FrameworkVersion',
+      resourceId: published.id,
+      details: {
+        version: published.version,
+        competencyCount: allCompetencies.length,
+      },
+      ipAddress: actor?.ipAddress,
+      userAgent: actor?.userAgent,
+    });
+
+    return published;
   });
 }
 

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
-import { User, UserRole, RoleProfileStatus, TenantInvitation } from '@prisma/client';
+import { User, UserRole, RoleProfileStatus, TenantInvitation, AuditAction } from '@prisma/client';
 import { assertTenantHasAvailableSeat } from './tenants';
+import { logAuditEvent } from './audit';
 
 export type TenantUserWithRelations = User & {
   manager: {
@@ -253,7 +254,8 @@ export async function updateTenantUser(
     role?: UserRole;
     roleProfileId?: string | null;
     managerId?: string | null;
-  }
+  },
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<User> {
   // 1. Verify target user belongs to this tenant
   const targetUser = await prisma.user.findFirst({
@@ -339,14 +341,58 @@ export async function updateTenantUser(
     }
   }
 
-  return prisma.user.update({
-    where: { id: targetUserId },
-    data: {
-      name: data.name !== undefined ? data.name.trim() : undefined,
-      role: data.role || undefined,
-      roleProfileId: data.roleProfileId !== undefined ? data.roleProfileId : undefined,
-      managerId: data.managerId !== undefined ? data.managerId : undefined,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: targetUserId },
+      data: {
+        name: data.name !== undefined ? data.name.trim() : undefined,
+        role: data.role || undefined,
+        roleProfileId: data.roleProfileId !== undefined ? data.roleProfileId : undefined,
+        managerId: data.managerId !== undefined ? data.managerId : undefined,
+      },
+    });
+
+    const actorId = actorContext?.actorId || currentUserId;
+
+    if (data.role && data.role !== targetUser.role) {
+      await logAuditEvent({
+        tx,
+        action: AuditAction.USER_ROLE_CHANGE,
+        entityType: 'User',
+        entityId: targetUserId,
+        tenantId,
+        actorId,
+        ipAddress: actorContext?.ipAddress,
+        userAgent: actorContext?.userAgent,
+        details: {
+          targetUserId,
+          targetEmail: targetUser.email,
+          previousRole: targetUser.role,
+          newRole: data.role,
+        },
+      });
+    }
+
+    if (data.roleProfileId !== undefined && data.roleProfileId !== targetUser.roleProfileId) {
+      await logAuditEvent({
+        tx,
+        action: AuditAction.USER_ROLE_PROFILE_ASSIGN,
+        entityType: 'User',
+        entityId: targetUserId,
+        tenantId,
+        actorId,
+        ipAddress: actorContext?.ipAddress,
+        userAgent: actorContext?.userAgent,
+        details: {
+          targetUserId,
+          targetEmail: targetUser.email,
+          previousRoleProfileId: targetUser.roleProfileId,
+          newRoleProfileId: data.roleProfileId,
+        },
+      });
+    }
+
+    return updated;
   });
 }
 
@@ -356,7 +402,8 @@ export async function updateTenantUser(
 export async function deactivateTenantUser(
   tenantId: string,
   currentUserId: string,
-  targetUserId: string
+  targetUserId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<User> {
   const targetUser = await prisma.user.findFirst({
     where: {
@@ -390,12 +437,32 @@ export async function deactivateTenantUser(
     }
   }
 
-  return prisma.user.update({
-    where: { id: targetUserId },
-    data: {
-      isActive: false,
-      deactivatedAt: new Date(),
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: targetUserId },
+      data: {
+        isActive: false,
+        deactivatedAt: new Date(),
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.USER_DEACTIVATE,
+      entityType: 'User',
+      entityId: targetUserId,
+      tenantId,
+      actorId: actorContext?.actorId || currentUserId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        targetUserId,
+        targetEmail: targetUser.email,
+        targetName: targetUser.name,
+      },
+    });
+
+    return updated;
   });
 }
 
@@ -404,7 +471,8 @@ export async function deactivateTenantUser(
  */
 export async function reactivateTenantUser(
   tenantId: string,
-  targetUserId: string
+  targetUserId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<User> {
   const targetUser = await prisma.user.findFirst({
     where: {
@@ -424,12 +492,32 @@ export async function reactivateTenantUser(
   // Enforce seat limit before reactivation
   await assertTenantHasAvailableSeat(tenantId);
 
-  return prisma.user.update({
-    where: { id: targetUserId },
-    data: {
-      isActive: true,
-      deactivatedAt: null,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: targetUserId },
+      data: {
+        isActive: true,
+        deactivatedAt: null,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.USER_REACTIVATE,
+      entityType: 'User',
+      entityId: targetUserId,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        targetUserId,
+        targetEmail: targetUser.email,
+        targetName: targetUser.name,
+      },
+    });
+
+    return updated;
   });
 }
 

@@ -21,8 +21,10 @@ import {
   RoleProfileStatus,
   UserRole,
   NotificationType,
+  AuditAction,
 } from '@prisma/client';
 import { createAndDispatchNotification } from '@/services/notifications';
+import { logAuditEvent } from './audit';
 
 export type CampaignListItem = AssessmentCampaign & {
   roleProfile: {
@@ -420,7 +422,8 @@ export async function resolveCampaignParticipants(
  */
 export async function createAssessmentCampaign(
   tenantId: string,
-  rawInput: CreateCampaignInput
+  rawInput: CreateCampaignInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<AssessmentCampaign> {
   if (!tenantId) {
     throw new Error('Tenant ID is required to create a campaign.');
@@ -547,6 +550,43 @@ export async function createAssessmentCampaign(
       }
     }
 
+    await logAuditEvent({
+      tx,
+      action: AuditAction.CAMPAIGN_CREATE,
+      entityType: 'AssessmentCampaign',
+      entityId: campaign.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: campaign.name,
+        status: campaign.status,
+        scope: campaign.scope,
+        deadline: campaign.deadline.toISOString(),
+        competenciesCount: input.competencyIds.length,
+        participantsCount: resolvedParticipantIds.length,
+      },
+    });
+
+    if (isActive) {
+      await logAuditEvent({
+        tx,
+        action: AuditAction.CAMPAIGN_LAUNCH,
+        entityType: 'AssessmentCampaign',
+        entityId: campaign.id,
+        tenantId,
+        actorId: actorContext?.actorId,
+        ipAddress: actorContext?.ipAddress,
+        userAgent: actorContext?.userAgent,
+        details: {
+          name: campaign.name,
+          scope: campaign.scope,
+          participantsCount: resolvedParticipantIds.length,
+        },
+      });
+    }
+
     return campaign;
   });
 
@@ -564,7 +604,8 @@ export async function createAssessmentCampaign(
 export async function updateCampaignDraft(
   tenantId: string,
   campaignId: string,
-  rawInput: UpdateCampaignDraftInput
+  rawInput: UpdateCampaignDraftInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<AssessmentCampaign> {
   if (!tenantId || !campaignId) {
     throw new Error('Tenant ID and Campaign ID are required.');
@@ -641,6 +682,21 @@ export async function updateCampaignDraft(
       },
     });
 
+    await logAuditEvent({
+      tx,
+      action: AuditAction.CAMPAIGN_UPDATE,
+      entityType: 'AssessmentCampaign',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        changes: input,
+      },
+    });
+
     return updated;
   });
 }
@@ -652,7 +708,8 @@ export async function updateCampaignDraft(
  */
 export async function launchCampaign(
   tenantId: string,
-  campaignId: string
+  campaignId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<AssessmentCampaign> {
   if (!tenantId || !campaignId) {
     throw new Error('Tenant ID and Campaign ID are required.');
@@ -733,6 +790,22 @@ export async function launchCampaign(
       data: {
         status: CampaignStatus.ACTIVE,
         frameworkVersionId: activeAdoption?.frameworkVersionId || campaign.frameworkVersionId,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.CAMPAIGN_LAUNCH,
+      entityType: 'AssessmentCampaign',
+      entityId: launched.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: launched.name,
+        scope: launched.scope,
+        participantsCount: resolvedParticipantIds.length,
       },
     });
 

@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/db';
-import { UserRole } from '@prisma/client';
+import { UserRole, AuditAction } from '@prisma/client';
 import {
   CreateDepartmentInput,
   UpdateDepartmentInput,
   CreateTeamInput,
   UpdateTeamInput,
 } from '@/lib/validation/organization-structure';
+import { logAuditEvent } from './audit';
 
 // -------------------------------------------------------
 // DEPARTMENT
@@ -43,26 +44,50 @@ export async function getDepartmentByIdForTenant(tenantId: string, departmentId:
   return dept;
 }
 
-export async function createDepartment(tenantId: string, input: CreateDepartmentInput) {
+export async function createDepartment(
+  tenantId: string,
+  input: CreateDepartmentInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+) {
   const existing = await prisma.department.findUnique({
     where: { tenantId_name: { tenantId, name: input.name } },
   });
   if (existing) throw new Error(`A department named "${input.name}" already exists.`);
 
-  return prisma.department.create({
-    data: {
+  return prisma.$transaction(async (tx) => {
+    const dept = await tx.department.create({
+      data: {
+        tenantId,
+        name: input.name,
+        description: input.description || null,
+        isActive: true,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.DEPARTMENT_CREATE,
+      entityType: 'Department',
+      entityId: dept.id,
       tenantId,
-      name: input.name,
-      description: input.description || null,
-      isActive: true,
-    },
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: dept.name,
+        description: dept.description,
+      },
+    });
+
+    return dept;
   });
 }
 
 export async function updateDepartment(
   tenantId: string,
   departmentId: string,
-  input: UpdateDepartmentInput
+  input: UpdateDepartmentInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ) {
   const dept = await prisma.department.findUnique({ where: { id: departmentId } });
   if (!dept || dept.tenantId !== tenantId) throw new Error('Department not found.');
@@ -74,21 +99,64 @@ export async function updateDepartment(
     if (conflict) throw new Error(`A department named "${input.name}" already exists.`);
   }
 
-  return prisma.department.update({
-    where: { id: departmentId },
-    data: {
-      name: input.name ?? undefined,
-      description: input.description !== undefined ? input.description : undefined,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.department.update({
+      where: { id: departmentId },
+      data: {
+        name: input.name ?? undefined,
+        description: input.description !== undefined ? input.description : undefined,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.DEPARTMENT_UPDATE,
+      entityType: 'Department',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        changes: input,
+      },
+    });
+
+    return updated;
   });
 }
 
-export async function toggleDepartmentActive(tenantId: string, departmentId: string) {
+export async function toggleDepartmentActive(
+  tenantId: string,
+  departmentId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+) {
   const dept = await prisma.department.findUnique({ where: { id: departmentId } });
   if (!dept || dept.tenantId !== tenantId) throw new Error('Department not found.');
-  return prisma.department.update({
-    where: { id: departmentId },
-    data: { isActive: !dept.isActive },
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.department.update({
+      where: { id: departmentId },
+      data: { isActive: !dept.isActive },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.DEPARTMENT_UPDATE,
+      entityType: 'Department',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        isActive: updated.isActive,
+      },
+    });
+
+    return updated;
   });
 }
 
@@ -129,7 +197,11 @@ export async function getTeamByIdForTenant(tenantId: string, teamId: string) {
   return team;
 }
 
-export async function createTeam(tenantId: string, input: CreateTeamInput) {
+export async function createTeam(
+  tenantId: string,
+  input: CreateTeamInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+) {
   const existing = await prisma.team.findUnique({
     where: { tenantId_name: { tenantId, name: input.name } },
   });
@@ -156,19 +228,44 @@ export async function createTeam(tenantId: string, input: CreateTeamInput) {
     }
   }
 
-  return prisma.team.create({
-    data: {
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.create({
+      data: {
+        tenantId,
+        name: input.name,
+        description: input.description || null,
+        departmentId: input.departmentId || null,
+        managerId: input.managerId || null,
+        isActive: true,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.TEAM_CREATE,
+      entityType: 'Team',
+      entityId: team.id,
       tenantId,
-      name: input.name,
-      description: input.description || null,
-      departmentId: input.departmentId || null,
-      managerId: input.managerId || null,
-      isActive: true,
-    },
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: team.name,
+        departmentId: team.departmentId,
+        managerId: team.managerId,
+      },
+    });
+
+    return team;
   });
 }
 
-export async function updateTeam(tenantId: string, teamId: string, input: UpdateTeamInput) {
+export async function updateTeam(
+  tenantId: string,
+  teamId: string,
+  input: UpdateTeamInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+) {
   const team = await prisma.team.findUnique({ where: { id: teamId } });
   if (!team || team.tenantId !== tenantId) throw new Error('Team not found.');
 
@@ -197,23 +294,66 @@ export async function updateTeam(tenantId: string, teamId: string, input: Update
     }
   }
 
-  return prisma.team.update({
-    where: { id: teamId },
-    data: {
-      name: input.name ?? undefined,
-      description: input.description !== undefined ? input.description : undefined,
-      departmentId: input.departmentId !== undefined ? input.departmentId : undefined,
-      managerId: input.managerId !== undefined ? input.managerId : undefined,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.team.update({
+      where: { id: teamId },
+      data: {
+        name: input.name ?? undefined,
+        description: input.description !== undefined ? input.description : undefined,
+        departmentId: input.departmentId !== undefined ? input.departmentId : undefined,
+        managerId: input.managerId !== undefined ? input.managerId : undefined,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.TEAM_UPDATE,
+      entityType: 'Team',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        changes: input,
+      },
+    });
+
+    return updated;
   });
 }
 
-export async function toggleTeamActive(tenantId: string, teamId: string) {
+export async function toggleTeamActive(
+  tenantId: string,
+  teamId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+) {
   const team = await prisma.team.findUnique({ where: { id: teamId } });
   if (!team || team.tenantId !== tenantId) throw new Error('Team not found.');
-  return prisma.team.update({
-    where: { id: teamId },
-    data: { isActive: !team.isActive },
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.team.update({
+      where: { id: teamId },
+      data: { isActive: !team.isActive },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.TEAM_UPDATE,
+      entityType: 'Team',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        isActive: updated.isActive,
+      },
+    });
+
+    return updated;
   });
 }
 
@@ -221,7 +361,12 @@ export async function toggleTeamActive(tenantId: string, teamId: string) {
 // MEMBERSHIPS
 // -------------------------------------------------------
 
-export async function addTeamMember(tenantId: string, teamId: string, userId: string) {
+export async function addTeamMember(
+  tenantId: string,
+  teamId: string,
+  userId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+) {
   const team = await prisma.team.findUnique({ where: { id: teamId } });
   if (!team || team.tenantId !== tenantId) throw new Error('Team not found.');
   if (!team.isActive) throw new Error('Cannot add members to an inactive team.');
@@ -235,10 +380,37 @@ export async function addTeamMember(tenantId: string, teamId: string, userId: st
   });
   if (existing) throw new Error('User is already a member of this team.');
 
-  return prisma.teamMembership.create({ data: { teamId, userId } });
+  return prisma.$transaction(async (tx) => {
+    const membership = await tx.teamMembership.create({ data: { teamId, userId } });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.TEAM_MEMBERSHIP_CHANGE,
+      entityType: 'TeamMembership',
+      entityId: `${teamId}:${userId}`,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        changeType: 'ADD',
+        teamId,
+        teamName: team.name,
+        userId,
+        userName: user.name,
+      },
+    });
+
+    return membership;
+  });
 }
 
-export async function removeTeamMember(tenantId: string, teamId: string, userId: string) {
+export async function removeTeamMember(
+  tenantId: string,
+  teamId: string,
+  userId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+) {
   const team = await prisma.team.findUnique({ where: { id: teamId } });
   if (!team || team.tenantId !== tenantId) throw new Error('Team not found.');
 
@@ -247,7 +419,28 @@ export async function removeTeamMember(tenantId: string, teamId: string, userId:
   });
   if (!membership) throw new Error('User is not a member of this team.');
 
-  return prisma.teamMembership.delete({ where: { teamId_userId: { teamId, userId } } });
+  return prisma.$transaction(async (tx) => {
+    const deleted = await tx.teamMembership.delete({ where: { teamId_userId: { teamId, userId } } });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.TEAM_MEMBERSHIP_CHANGE,
+      entityType: 'TeamMembership',
+      entityId: `${teamId}:${userId}`,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        changeType: 'REMOVE',
+        teamId,
+        teamName: team.name,
+        userId,
+      },
+    });
+
+    return deleted;
+  });
 }
 
 export async function getUserTeamMemberships(tenantId: string, userId: string) {
@@ -272,7 +465,8 @@ export async function getUserTeamMemberships(tenantId: string, userId: string) {
 export async function setUserTeamMemberships(
   tenantId: string,
   userId: string,
-  teamIds: string[]
+  teamIds: string[],
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<void> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user || user.tenantId !== tenantId) throw new Error('User does not belong to this organization.');
@@ -301,5 +495,22 @@ export async function setUserTeamMemberships(
         skipDuplicates: true,
       });
     }
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.TEAM_MEMBERSHIP_CHANGE,
+      entityType: 'UserTeamMemberships',
+      entityId: userId,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        changeType: 'REPLACE',
+        userId,
+        userName: user.name,
+        teamIds,
+      },
+    });
   });
 }

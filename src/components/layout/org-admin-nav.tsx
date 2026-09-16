@@ -46,6 +46,11 @@ const navItems: NavItem[] = [
     href: '/organization-admin/gap-analysis',
     activePattern: (p) => p.startsWith('/organization-admin/gap-analysis'),
   },
+  {
+    name: 'Audit Trail',
+    href: '/organization-admin/audit',
+    activePattern: (p) => p.startsWith('/organization-admin/audit'),
+  },
 ];
 
 export function OrgAdminNav() {

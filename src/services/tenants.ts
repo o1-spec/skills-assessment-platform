@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { Tenant, TenantStatus, UserRole, SubscriptionPlan } from '@prisma/client';
 import { ProvisionTenantInput, UpdateTenantPlanInput } from '@/lib/validation/tenants';
 import { hashInvitationToken, GeneratedInvitation, sendInvitationEmail } from './invitations';
+import { logAuditEvent, AuditAction, AuditActorContext } from './audit';
 
 export type TenantWithStats = Tenant & {
   plan: SubscriptionPlan | null;
@@ -189,7 +190,8 @@ export async function getTenantByIdForPlatformAdmin(id: string): Promise<TenantW
  */
 export async function provisionTenant(
   input: ProvisionTenantInput,
-  createdById?: string
+  createdById?: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<{ tenant: Tenant; invitation: GeneratedInvitation }> {
   const slug = input.slug.toLowerCase().trim();
   const adminEmail = input.adminEmail.toLowerCase().trim();
@@ -238,13 +240,12 @@ export async function provisionTenant(
         data: {
           name: input.name.trim(),
           slug,
-          status: TenantStatus.PENDING_ONBOARDING,
-          isOnboarded: false,
-          planId: plan.id,
+          planId: input.planId,
           seatLimit: input.seatLimit,
-          domain: input.domain?.trim() || null,
-          primaryContactName: input.primaryContactName?.trim() || null,
-          primaryContactEmail: input.primaryContactEmail?.trim() || null,
+          domain: input.domain ? input.domain.trim() : null,
+          primaryContactName: input.primaryContactName ? input.primaryContactName.trim() : null,
+          primaryContactEmail: input.primaryContactEmail ? input.primaryContactEmail.toLowerCase().trim() : null,
+          status: TenantStatus.ACTIVE,
         },
       });
 
@@ -258,6 +259,46 @@ export async function provisionTenant(
           tokenHash,
           expiresAt,
           createdById: createdById || null,
+        },
+      });
+
+      // Audit Log: USER_INVITE
+      await logAuditEvent({
+        tx,
+        tenantId: tenant.id,
+        actorId: actorContext?.actorId || createdById || null,
+        actorRole: UserRole.PLATFORM_ADMIN,
+        action: AuditAction.USER_INVITE,
+        resourceType: 'TenantInvitation',
+        resourceId: invitation.id,
+        ipAddress: actorContext?.ipAddress,
+        userAgent: actorContext?.userAgent,
+        details: {
+          email: adminEmail,
+          name: input.adminName.trim(),
+          role: UserRole.ORGANIZATION_ADMIN,
+          expiresAt: invitation.expiresAt.toISOString(),
+        },
+      });
+
+      // Audit Log: TENANT_PROVISION
+      await logAuditEvent({
+        tx,
+        tenantId: tenant.id,
+        actorId: actorContext?.actorId || createdById || null,
+        actorRole: UserRole.PLATFORM_ADMIN,
+        action: AuditAction.TENANT_PROVISION,
+        resourceType: 'Tenant',
+        resourceId: tenant.id,
+        ipAddress: actorContext?.ipAddress,
+        userAgent: actorContext?.userAgent,
+        details: {
+          name: tenant.name,
+          slug: tenant.slug,
+          planId: plan.id,
+          planName: plan.name,
+          seatLimit: input.seatLimit,
+          adminEmail,
         },
       });
 
@@ -349,7 +390,11 @@ export async function updateTenantPlanAndSeatLimit(
 /**
  * Updates a tenant's status (ACTIVE, SUSPENDED, PENDING_ONBOARDING).
  */
-export async function updateTenantStatus(tenantId: string, status: TenantStatus): Promise<Tenant> {
+export async function updateTenantStatus(
+  tenantId: string,
+  status: TenantStatus,
+  actor?: AuditActorContext
+): Promise<Tenant> {
   const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },
   });
@@ -357,8 +402,40 @@ export async function updateTenantStatus(tenantId: string, status: TenantStatus)
     throw new Error('Tenant not found.');
   }
 
-  return prisma.tenant.update({
-    where: { id: tenantId },
-    data: { status },
+  const updated = await prisma.$transaction(async (tx) => {
+    const res = await tx.tenant.update({
+      where: { id: tenantId },
+      data: { status },
+    });
+
+    const action =
+      status === TenantStatus.SUSPENDED
+        ? AuditAction.TENANT_SUSPEND
+        : status === TenantStatus.ACTIVE
+        ? AuditAction.TENANT_REACTIVATE
+        : null;
+
+    if (action) {
+      await logAuditEvent({
+        tx,
+        tenantId,
+        actorId: actor?.actorId || null,
+        actorRole: actor?.actorRole || UserRole.PLATFORM_ADMIN,
+        action,
+        resourceType: 'Tenant',
+        resourceId: tenantId,
+        details: {
+          previousStatus: tenant.status,
+          newStatus: status,
+          tenantName: tenant.name,
+        },
+        ipAddress: actor?.ipAddress,
+        userAgent: actor?.userAgent,
+      });
+    }
+
+    return res;
   });
+
+  return updated;
 }

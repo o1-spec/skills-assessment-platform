@@ -3,10 +3,19 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+interface PlatformAdminNavItem {
+  name: string;
+  href: string;
+  exact: boolean;
+  active: boolean;
+  enabled: boolean;
+  badge?: string;
+}
+
 export function PlatformAdminNav() {
   const pathname = usePathname();
 
-  const navItems = [
+  const navItems: PlatformAdminNavItem[] = [
     {
       name: 'Overview',
       href: '/platform-admin',
@@ -43,12 +52,11 @@ export function PlatformAdminNav() {
       enabled: true,
     },
     {
-      name: 'Analytics & Audit',
-      href: '#',
+      name: 'Audit Logs',
+      href: '/platform-admin/audit',
       exact: false,
-      active: false,
-      enabled: false,
-      badge: 'Coming Soon',
+      active: pathname?.startsWith('/platform-admin/audit'),
+      enabled: true,
     },
   ];
 

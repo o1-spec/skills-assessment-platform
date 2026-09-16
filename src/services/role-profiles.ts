@@ -7,8 +7,10 @@ import {
   CompetencyLevel,
   RoleProfileStatus,
   CompetencyType,
+  AuditAction,
 } from '@prisma/client';
 import { getActiveFrameworkAdoptionForTenant } from './framework-adoption';
+import { logAuditEvent } from './audit';
 
 export type RoleProfileListItem = RoleProfile & {
   _count: {
@@ -466,7 +468,8 @@ async function validateRoleRequirements(
  */
 export async function createRoleProfile(
   tenantId: string,
-  input: CreateRoleProfileInput
+  input: CreateRoleProfileInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<RoleProfile & { requirements: RoleRequirement[] }> {
   if (!tenantId) {
     throw new Error('Tenant ID is required to create a role profile.');
@@ -478,22 +481,59 @@ export async function createRoleProfile(
 
   const validatedEntries = await validateRoleRequirements(tenantId, input.requirements);
 
-  return prisma.roleProfile.create({
-    data: {
-      tenantId,
-      name: input.name,
-      description: input.description || null,
-      status: input.status,
-      requirements: {
-        create: validatedEntries.map((r) => ({
-          competencyId: r.competencyId,
-          targetLevel: r.targetLevel,
-        })),
+  return prisma.$transaction(async (tx) => {
+    const created = await tx.roleProfile.create({
+      data: {
+        tenantId,
+        name: input.name,
+        description: input.description || null,
+        status: input.status,
+        requirements: {
+          create: validatedEntries.map((r) => ({
+            competencyId: r.competencyId,
+            targetLevel: r.targetLevel,
+          })),
+        },
       },
-    },
-    include: {
-      requirements: true,
-    },
+      include: {
+        requirements: true,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.ROLE_PROFILE_CREATE,
+      entityType: 'RoleProfile',
+      entityId: created.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: created.name,
+        status: created.status,
+        requirementsCount: created.requirements.length,
+      },
+    });
+
+    if (created.status === RoleProfileStatus.PUBLISHED) {
+      await logAuditEvent({
+        tx,
+        action: AuditAction.ROLE_PROFILE_PUBLISH,
+        entityType: 'RoleProfile',
+        entityId: created.id,
+        tenantId,
+        actorId: actorContext?.actorId,
+        ipAddress: actorContext?.ipAddress,
+        userAgent: actorContext?.userAgent,
+        details: {
+          name: created.name,
+          requirementsCount: created.requirements.length,
+        },
+      });
+    }
+
+    return created;
   });
 }
 
@@ -504,7 +544,8 @@ export async function createRoleProfile(
 export async function updateRoleProfile(
   tenantId: string,
   roleProfileId: string,
-  input: UpdateRoleProfileInput
+  input: UpdateRoleProfileInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<RoleProfile & { requirements: RoleRequirement[] }> {
   if (!tenantId || !roleProfileId) {
     throw new Error('Tenant ID and Role Profile ID are required.');
@@ -556,7 +597,7 @@ export async function updateRoleProfile(
       }
     }
 
-    return tx.roleProfile.update({
+    const updated = await tx.roleProfile.update({
       where: { id: roleProfileId },
       data: {
         name: input.name !== undefined ? input.name : undefined,
@@ -567,6 +608,40 @@ export async function updateRoleProfile(
         requirements: true,
       },
     });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.ROLE_PROFILE_UPDATE,
+      entityType: 'RoleProfile',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        changes: input,
+      },
+    });
+
+    if (role.status !== RoleProfileStatus.PUBLISHED && updated.status === RoleProfileStatus.PUBLISHED) {
+      await logAuditEvent({
+        tx,
+        action: AuditAction.ROLE_PROFILE_PUBLISH,
+        entityType: 'RoleProfile',
+        entityId: updated.id,
+        tenantId,
+        actorId: actorContext?.actorId,
+        ipAddress: actorContext?.ipAddress,
+        userAgent: actorContext?.userAgent,
+        details: {
+          name: updated.name,
+          requirementsCount: updated.requirements.length,
+        },
+      });
+    }
+
+    return updated;
   });
 }
 
@@ -575,7 +650,8 @@ export async function updateRoleProfile(
  */
 export async function publishRoleProfile(
   tenantId: string,
-  roleProfileId: string
+  roleProfileId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<RoleProfile> {
   if (!tenantId || !roleProfileId) {
     throw new Error('Tenant ID and Role Profile ID are required.');
@@ -602,11 +678,30 @@ export async function publishRoleProfile(
     throw new Error('Publishing a role profile requires at least one competency requirement.');
   }
 
-  return prisma.roleProfile.update({
-    where: { id: roleProfileId },
-    data: {
-      status: RoleProfileStatus.PUBLISHED,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.roleProfile.update({
+      where: { id: roleProfileId },
+      data: {
+        status: RoleProfileStatus.PUBLISHED,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.ROLE_PROFILE_PUBLISH,
+      entityType: 'RoleProfile',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        requirementsCount: role.requirements.length,
+      },
+    });
+
+    return updated;
   });
 }
 
@@ -616,7 +711,8 @@ export async function publishRoleProfile(
  */
 export async function archiveRoleProfile(
   tenantId: string,
-  roleProfileId: string
+  roleProfileId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<RoleProfile> {
   if (!tenantId || !roleProfileId) {
     throw new Error('Tenant ID and Role Profile ID are required.');
@@ -630,12 +726,30 @@ export async function archiveRoleProfile(
     throw new Error('Role profile not found or does not belong to your organization.');
   }
 
-  return prisma.roleProfile.update({
-    where: { id: roleProfileId },
-    data: {
-      isArchived: true,
-      archivedAt: new Date(),
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.roleProfile.update({
+      where: { id: roleProfileId },
+      data: {
+        isArchived: true,
+        archivedAt: new Date(),
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.ROLE_PROFILE_ARCHIVE,
+      entityType: 'RoleProfile',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+      },
+    });
+
+    return updated;
   });
 }
 
@@ -644,7 +758,8 @@ export async function archiveRoleProfile(
  */
 export async function unarchiveRoleProfile(
   tenantId: string,
-  roleProfileId: string
+  roleProfileId: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<RoleProfile> {
   if (!tenantId || !roleProfileId) {
     throw new Error('Tenant ID and Role Profile ID are required.');
@@ -658,11 +773,29 @@ export async function unarchiveRoleProfile(
     throw new Error('Role profile not found or does not belong to your organization.');
   }
 
-  return prisma.roleProfile.update({
-    where: { id: roleProfileId },
-    data: {
-      isArchived: false,
-      archivedAt: null,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.roleProfile.update({
+      where: { id: roleProfileId },
+      data: {
+        isArchived: false,
+        archivedAt: null,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.ROLE_PROFILE_UNARCHIVE,
+      entityType: 'RoleProfile',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+      },
+    });
+
+    return updated;
   });
 }

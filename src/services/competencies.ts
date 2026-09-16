@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
-import { Competency, CompetencyLevel } from '@prisma/client';
+import { Competency, CompetencyLevel, AuditAction } from '@prisma/client';
 import { CreateCustomCompetencyInput, UpdateCustomCompetencyInput } from '@/lib/validation/custom-competency';
+import { logAuditEvent } from './audit';
 
 export type CompetencyWithLevels = Competency & {
   levels: CompetencyLevel[];
@@ -159,7 +160,8 @@ export async function getTenantCompetencyById(
  */
 export async function createCustomCompetency(
   tenantId: string,
-  input: CreateCustomCompetencyInput
+  input: CreateCustomCompetencyInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<CompetencyWithLevels> {
   if (!tenantId) {
     throw new Error('Tenant ID is required.');
@@ -195,6 +197,22 @@ export async function createCustomCompetency(
       });
     }
 
+    await logAuditEvent({
+      tx,
+      action: AuditAction.COMPETENCY_CREATE,
+      entityType: 'Competency',
+      entityId: comp.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: comp.name,
+        type: comp.type,
+        levelsCount: input.levels.length,
+      },
+    });
+
     const created = await tx.competency.findUniqueOrThrow({
       where: { id: comp.id },
       include: {
@@ -215,7 +233,8 @@ export async function createCustomCompetency(
 export async function updateCustomCompetency(
   tenantId: string,
   id: string,
-  input: UpdateCustomCompetencyInput
+  input: UpdateCustomCompetencyInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<CompetencyWithLevels> {
   const comp = await prisma.competency.findFirst({
     where: { id, tenantId },
@@ -275,6 +294,22 @@ export async function updateCustomCompetency(
       });
     }
 
+    await logAuditEvent({
+      tx,
+      action: AuditAction.COMPETENCY_UPDATE,
+      entityType: 'Competency',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        type: updated.type,
+        levelsCount: input.levels.length,
+      },
+    });
+
     return tx.competency.findUniqueOrThrow({
       where: { id: updated.id },
       include: {
@@ -292,7 +327,8 @@ export async function updateCustomCompetency(
 export async function toggleCompetencyActive(
   tenantId: string,
   id: string,
-  isActive: boolean
+  isActive: boolean,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<Competency> {
   const comp = await prisma.competency.findFirst({
     where: { id, tenantId },
@@ -302,9 +338,28 @@ export async function toggleCompetencyActive(
     throw new Error('Competency not found.');
   }
 
-  return prisma.competency.update({
-    where: { id },
-    data: { isActive },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.competency.update({
+      where: { id },
+      data: { isActive },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: isActive ? AuditAction.COMPETENCY_ACTIVATE : AuditAction.COMPETENCY_DEACTIVATE,
+      entityType: 'Competency',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        isActive,
+      },
+    });
+
+    return updated;
   });
 }
 

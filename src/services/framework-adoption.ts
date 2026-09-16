@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
-import { FrameworkStatus, TenantFrameworkAdoption, FrameworkVersion } from '@prisma/client';
+import { FrameworkStatus, TenantFrameworkAdoption, FrameworkVersion, UserRole } from '@prisma/client';
+import { logAuditEvent, AuditAction, AuditActorContext } from './audit';
 
 export type ActiveTenantAdoptionWithVersion = TenantFrameworkAdoption & {
   frameworkVersion: FrameworkVersion & {
@@ -122,7 +123,8 @@ export async function getAvailablePublishedFrameworksForTenant(
  */
 export async function adoptFrameworkVersion(
   tenantId: string,
-  frameworkVersionId: string
+  frameworkVersionId: string,
+  actor?: AuditActorContext
 ): Promise<TenantFrameworkAdoption> {
   if (!tenantId) {
     throw new Error('Tenant ID is required.');
@@ -261,6 +263,23 @@ export async function adoptFrameworkVersion(
         });
       }
     }
+
+    await logAuditEvent({
+      tx,
+      tenantId,
+      actorId: actor?.actorId || null,
+      actorRole: actor?.actorRole || UserRole.ORGANIZATION_ADMIN,
+      action: AuditAction.FRAMEWORK_ADOPT,
+      resourceType: 'FrameworkVersion',
+      resourceId: frameworkVersionId,
+      details: {
+        frameworkVersionId,
+        version: framework.version,
+        competencyCount: allFrameworkCompetencies.length,
+      },
+      ipAddress: actor?.ipAddress,
+      userAgent: actor?.userAgent,
+    });
 
     return adoption;
   }, {

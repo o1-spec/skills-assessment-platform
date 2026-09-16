@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
-import { FrameworkStatus, IndustryTemplate, TemplateRoleProfile, TemplateRequirement } from '@prisma/client';
+import { FrameworkStatus, IndustryTemplate, TemplateRoleProfile, TemplateRequirement, AuditAction } from '@prisma/client';
+import { logAuditEvent } from './audit';
 
 export type IndustryTemplateWithStats = IndustryTemplate & {
   frameworkVersion: {
@@ -253,12 +254,15 @@ export async function getIndustryTemplateById(id: string): Promise<FullIndustryT
 /**
  * Creates a new Industry Template bound to a published framework version.
  */
-export async function createIndustryTemplate(data: {
-  name: string;
-  description?: string;
-  frameworkVersionId: string;
-  competencyIds: string[];
-}): Promise<IndustryTemplate> {
+export async function createIndustryTemplate(
+  data: {
+    name: string;
+    description?: string;
+    frameworkVersionId: string;
+    competencyIds: string[];
+  },
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+): Promise<IndustryTemplate> {
   const trimmedName = data.name.trim();
   if (!trimmedName) {
     throw new Error('Template name is required.');
@@ -324,6 +328,21 @@ export async function createIndustryTemplate(data: {
       });
     }
 
+    await logAuditEvent({
+      tx,
+      action: AuditAction.INDUSTRY_TEMPLATE_CREATE,
+      entityType: 'IndustryTemplate',
+      entityId: template.id,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: template.name,
+        frameworkVersionId: template.frameworkVersionId,
+        competencyCount: data.competencyIds.length,
+      },
+    });
+
     return template;
   });
 }
@@ -336,7 +355,8 @@ export async function updateIndustryTemplate(
   data: {
     name?: string;
     description?: string;
-  }
+  },
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<IndustryTemplate> {
   const template = await prisma.industryTemplate.findUnique({
     where: { id },
@@ -362,19 +382,40 @@ export async function updateIndustryTemplate(
     }
   }
 
-  return prisma.industryTemplate.update({
-    where: { id },
-    data: {
-      name: data.name !== undefined ? data.name.trim() : undefined,
-      description: data.description !== undefined ? data.description.trim() || null : undefined,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.industryTemplate.update({
+      where: { id },
+      data: {
+        name: data.name !== undefined ? data.name.trim() : undefined,
+        description: data.description !== undefined ? data.description.trim() || null : undefined,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.INDUSTRY_TEMPLATE_UPDATE,
+      entityType: 'IndustryTemplate',
+      entityId: updated.id,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        changes: data,
+      },
+    });
+
+    return updated;
   });
 }
 
 /**
  * Toggles an Industry Template's active status.
  */
-export async function toggleIndustryTemplateActive(id: string): Promise<IndustryTemplate> {
+export async function toggleIndustryTemplateActive(
+  id: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+): Promise<IndustryTemplate> {
   const template = await prisma.industryTemplate.findUnique({
     where: { id },
   });
@@ -383,11 +424,29 @@ export async function toggleIndustryTemplateActive(id: string): Promise<Industry
     throw new Error('Industry template not found.');
   }
 
-  return prisma.industryTemplate.update({
-    where: { id },
-    data: {
-      isActive: !template.isActive,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.industryTemplate.update({
+      where: { id },
+      data: {
+        isActive: !template.isActive,
+      },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.INDUSTRY_TEMPLATE_UPDATE,
+      entityType: 'IndustryTemplate',
+      entityId: updated.id,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        isActive: updated.isActive,
+      },
+    });
+
+    return updated;
   });
 }
 

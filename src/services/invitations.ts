@@ -1,9 +1,10 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
-import { TenantInvitation, Tenant, UserRole, TenantStatus, RoleProfileStatus } from '@prisma/client';
+import { TenantInvitation, Tenant, UserRole, TenantStatus, RoleProfileStatus, AuditAction } from '@prisma/client';
 import { AcceptInvitationInput } from '@/lib/validation/invitations';
 import { sendEmail } from '@/lib/email';
+import { logAuditEvent } from './audit';
 
 export interface GeneratedInvitation {
   id: string;
@@ -145,7 +146,8 @@ export async function createTenantAdminInvitation(
     name: string;
     email: string;
   },
-  createdById?: string
+  createdById?: string,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<GeneratedInvitation> {
   const email = input.email.toLowerCase().trim();
   const name = input.name.trim();
@@ -168,6 +170,22 @@ export async function createTenantAdminInvitation(
       tokenHash,
       expiresAt,
       createdById: createdById || null,
+    },
+  });
+
+  await logAuditEvent({
+    action: AuditAction.USER_INVITE,
+    entityType: 'TenantInvitation',
+    entityId: invitation.id,
+    tenantId,
+    actorId: actorContext?.actorId || createdById,
+    ipAddress: actorContext?.ipAddress,
+    userAgent: actorContext?.userAgent,
+    details: {
+      email,
+      name,
+      role: UserRole.ORGANIZATION_ADMIN,
+      expiresAt: invitation.expiresAt.toISOString(),
     },
   });
 
@@ -213,7 +231,8 @@ export async function createTenantUserInvitation(
     roleProfileId?: string | null;
     managerId?: string | null;
     teamIds?: string[] | null;
-  }
+  },
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<GeneratedInvitation> {
   const email = input.email.toLowerCase().trim();
   const name = input.name.trim();
@@ -305,6 +324,25 @@ export async function createTenantUserInvitation(
       skipDuplicates: true,
     });
   }
+
+  await logAuditEvent({
+    action: AuditAction.USER_INVITE,
+    entityType: 'TenantInvitation',
+    entityId: invitation.id,
+    tenantId,
+    actorId: actorContext?.actorId || createdById,
+    ipAddress: actorContext?.ipAddress,
+    userAgent: actorContext?.userAgent,
+    details: {
+      email,
+      name,
+      role: input.role,
+      roleProfileId: input.roleProfileId,
+      managerId: input.managerId,
+      teamIds: resolvedTeamIds,
+      expiresAt: invitation.expiresAt.toISOString(),
+    },
+  });
 
   const invitationUrl = `/accept-invitation?token=${rawToken}`;
 

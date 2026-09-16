@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { UserRole, TenantStatus } from '@prisma/client';
 import { requireRole } from '@/lib/auth/guards';
 import {
@@ -12,10 +13,13 @@ import {
   provisionTenantSchema,
   updateTenantPlanSchema,
 } from '@/lib/validation/tenants';
+import { extractClientRequestContext } from '@/services/audit';
 
 export async function provisionTenantAction(formData: FormData) {
   try {
     const user = await requireRole(UserRole.PLATFORM_ADMIN);
+    const headersList = await headers();
+    const reqContext = extractClientRequestContext(headersList);
 
     const rawData = {
       name: formData.get('name'),
@@ -34,7 +38,11 @@ export async function provisionTenantAction(formData: FormData) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Invalid organization data.' };
     }
 
-    const result = await provisionTenant(parsed.data, user.id);
+    const result = await provisionTenant(parsed.data, user.id, {
+      actorId: user.id,
+      ipAddress: reqContext.ipAddress,
+      userAgent: reqContext.userAgent,
+    });
 
     revalidatePath('/platform-admin/tenants');
     return {
@@ -78,9 +86,15 @@ export async function updateTenantPlanAction(tenantId: string, formData: FormDat
 
 export async function updateTenantStatusAction(tenantId: string, status: TenantStatus) {
   try {
-    await requireRole(UserRole.PLATFORM_ADMIN);
+    const user = await requireRole(UserRole.PLATFORM_ADMIN);
+    const headersList = await headers();
+    const reqContext = extractClientRequestContext(headersList);
 
-    const updatedTenant = await updateTenantStatus(tenantId, status);
+    const updatedTenant = await updateTenantStatus(tenantId, status, {
+      actorId: user.id,
+      ipAddress: reqContext.ipAddress,
+      userAgent: reqContext.userAgent,
+    });
 
     revalidatePath('/platform-admin/tenants');
     revalidatePath(`/platform-admin/tenants/${tenantId}`);
@@ -90,3 +104,4 @@ export async function updateTenantStatusAction(tenantId: string, status: TenantS
     return { success: false, error: message };
   }
 }
+

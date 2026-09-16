@@ -17,4 +17,5 @@ export * from './evidence-attachments';
 export * from './skills-profile';
 export * from './manager-analytics';
 export * from './reports';
-
+export * from './notifications';
+export * from './audit';

@@ -9,8 +9,10 @@ import {
   AssessmentCampaign,
   EvidenceAttachment,
   NotificationType,
+  AuditAction,
 } from '@prisma/client';
 import { createAndDispatchNotification } from '@/services/notifications';
+import { logAuditEvent } from './audit';
 
 export type StaffAssessmentListItem = Assessment & {
   campaign: Pick<
@@ -273,7 +275,8 @@ export async function saveAssessmentDraft(
 export async function submitAssessment(
   userId: string,
   tenantId: string,
-  input: SubmitAssessmentInput
+  input: SubmitAssessmentInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<Assessment> {
   if (!userId || !tenantId) {
     throw new Error('User and Tenant authorization required.');
@@ -385,7 +388,7 @@ export async function submitAssessment(
       ? AssessmentStatus.PENDING_CORROBORATION
       : AssessmentStatus.COMPLETED;
 
-    return tx.assessment.update({
+    const updated = await tx.assessment.update({
       where: {
         id: assessmentId,
       },
@@ -395,6 +398,27 @@ export async function submitAssessment(
         completedAt: requiresCorroboration ? null : now,
       },
     });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.ASSESSMENT_SUBMIT,
+      entityType: 'Assessment',
+      entityId: assessmentId,
+      tenantId,
+      actorId: actorContext?.actorId || userId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        campaignId: assessment.campaignId,
+        campaignName,
+        status: nextStatus,
+        resultingStatus: nextStatus,
+        requiresCorroboration,
+        itemsCount: input.items.length,
+      },
+    });
+
+    return updated;
   });
 
   // Post-submission notifications (decoupled, non-blocking)

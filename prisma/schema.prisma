@@ -78,6 +78,44 @@ enum NotificationEmailStatus {
   SKIPPED
 }
 
+enum AuditAction {
+  LOGIN
+  TENANT_PROVISION
+  TENANT_SUSPEND
+  TENANT_REACTIVATE
+  PLAN_CREATE
+  PLAN_UPDATE
+  FRAMEWORK_CREATE
+  FRAMEWORK_PUBLISH
+  FRAMEWORK_ADOPT
+  INDUSTRY_TEMPLATE_CREATE
+  INDUSTRY_TEMPLATE_UPDATE
+  COMPETENCY_CREATE
+  COMPETENCY_UPDATE
+  COMPETENCY_ACTIVATE
+  COMPETENCY_DEACTIVATE
+  USER_INVITE
+  USER_DEACTIVATE
+  USER_REACTIVATE
+  USER_ROLE_CHANGE
+  USER_ROLE_PROFILE_ASSIGN
+  DEPARTMENT_CREATE
+  DEPARTMENT_UPDATE
+  TEAM_CREATE
+  TEAM_UPDATE
+  TEAM_MEMBERSHIP_CHANGE
+  ROLE_PROFILE_CREATE
+  ROLE_PROFILE_UPDATE
+  ROLE_PROFILE_PUBLISH
+  ROLE_PROFILE_ARCHIVE
+  ROLE_PROFILE_UNARCHIVE
+  CAMPAIGN_CREATE
+  CAMPAIGN_UPDATE
+  CAMPAIGN_LAUNCH
+  ASSESSMENT_SUBMIT
+  CORROBORATION_SUBMIT
+}
+
 // ------------------------------------------------------
 // SUBSCRIPTION PLANS (PLATFORM LEVEL)
 // ------------------------------------------------------
@@ -122,6 +160,7 @@ model Tenant {
   departments        Department[]
   teams              Team[]
   notifications      Notification[]
+  auditLogs          AuditLog[]
 
   @@index([planId])
 }
@@ -338,6 +377,7 @@ model User {
   teamMemberships        TeamMembership[]
   managedTeams           Team[]                @relation("TeamManager")
   notifications          Notification[]        @relation("UserNotifications")
+  auditLogs              AuditLog[]
 
   @@index([tenantId])
   @@index([managerId])
@@ -654,3 +694,30 @@ model Notification {
   @@index([tenantId])
   @@index([createdAt])
 }
+
+// ------------------------------------------------------
+// AUDIT LOG
+// ------------------------------------------------------
+
+model AuditLog {
+  id           String      @id @default(cuid())
+  tenantId     String?
+  actorId      String?
+  actorRole    UserRole?
+  action       AuditAction
+  resourceType String
+  resourceId   String
+  details      Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime    @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  actor  User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([resourceType, resourceId])
+}
+

@@ -11,8 +11,10 @@ import {
   EvidenceAttachment,
   User,
   NotificationType,
+  AuditAction,
 } from '@prisma/client';
 import { createAndDispatchNotification } from '@/services/notifications';
+import { logAuditEvent } from './audit';
 
 export interface ManagerOverviewStats {
   pendingReviewsCount: number;
@@ -211,7 +213,8 @@ export async function getManagerCorroborationById(
 export async function submitCorroboration(
   managerId: string,
   tenantId: string,
-  input: SubmitCorroborationInput
+  input: SubmitCorroborationInput,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<Assessment> {
   if (!managerId || !tenantId) {
     throw new Error('Manager and Tenant authorization required.');
@@ -327,7 +330,7 @@ export async function submitCorroboration(
     }
 
     // Mark Assessment as COMPLETED
-    return tx.assessment.update({
+    const updated = await tx.assessment.update({
       where: {
         id: assessmentId,
       },
@@ -336,6 +339,26 @@ export async function submitCorroboration(
         completedAt: now,
       },
     });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.CORROBORATION_SUBMIT,
+      entityType: 'Assessment',
+      entityId: assessmentId,
+      tenantId,
+      actorId: actorContext?.actorId || managerId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        campaignId: assessment.campaignId,
+        campaignName,
+        staffUserId: assessmentUserId,
+        staffName: assessment.user.name,
+        reviewedItemsCount: input.items.length,
+      },
+    });
+
+    return updated;
   });
 
   // Post-corroboration notification to staff member (decoupled, non-blocking)
