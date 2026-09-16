@@ -85,20 +85,20 @@ export function LandingHero() {
           </div>
 
           <div className="hidden xl:flex absolute -bottom-8 -left-12 2xl:-left-20 z-20 animate-float-reverse">
-            <div className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-stone-200 shadow-[0_12px_28px_rgba(0,0,0,0.06)] flex items-center gap-3 text-xs">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-sm">
+            <div className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-stone-200/80 shadow-xs flex items-center gap-3 text-xs">
+              <div className="w-8 h-8 rounded-xl bg-stone-100 border border-stone-200/80 flex items-center justify-center text-stone-700 text-sm">
                 📊
               </div>
               <div>
                 <div className="font-semibold text-neutral-900">Gap Analysis Ready</div>
-                <div className="text-emerald-700 font-medium">Net Delta: +0.4 (Above Target)</div>
+                <div className="text-emerald-800 font-medium">Net Delta: +0.4 (Above Target)</div>
               </div>
             </div>
           </div>
 
           <div className="hidden xl:flex absolute -bottom-10 -right-10 2xl:-right-18 z-20 animate-float-slow">
-            <div className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-stone-200 shadow-[0_12px_28px_rgba(0,0,0,0.06)] flex items-center gap-3 text-xs">
-              <div className="w-8 h-8 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 text-sm">
+            <div className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-stone-200/80 shadow-xs flex items-center gap-3 text-xs">
+              <div className="w-8 h-8 rounded-xl bg-stone-100 border border-stone-200/80 flex items-center justify-center text-stone-700 text-sm">
                 🧭
               </div>
               <div>

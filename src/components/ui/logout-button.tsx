@@ -14,7 +14,7 @@ export function LogoutButton() {
         });
       }}
       disabled={isPending}
-      className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+      className="inline-flex items-center px-3.5 py-1.5 border border-stone-200/80 text-xs font-medium rounded-xl text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-1 focus:ring-neutral-900 transition-colors shadow-xs disabled:opacity-50"
     >
       {isPending ? 'Signing out...' : 'Sign out'}
     </button>

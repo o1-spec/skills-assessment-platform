@@ -82,7 +82,7 @@ export function OrgAdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex space-x-1 sm:space-x-4 border-b border-gray-200 px-4 sm:px-6 lg:px-8 bg-white">
+    <nav className="flex space-x-1 sm:space-x-4 border-b border-stone-200/80 px-4 sm:px-6 lg:px-8 bg-white">
       {navItems.map((item) => {
         const isActive = item.activePattern(pathname);
 
@@ -90,11 +90,11 @@ export function OrgAdminNav() {
           return (
             <span
               key={item.name}
-              className="inline-flex items-center px-3 py-4 border-b-2 border-transparent text-sm font-medium text-gray-400 cursor-not-allowed select-none"
+              className="inline-flex items-center px-3 py-4 border-b-2 border-transparent text-sm font-medium text-stone-400 cursor-not-allowed select-none"
               title="Coming in a future release"
             >
               {item.name}
-              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">
+              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-stone-100 text-stone-500">
                 Soon
               </span>
             </span>
@@ -107,8 +107,8 @@ export function OrgAdminNav() {
             href={item.href}
             className={`inline-flex items-center px-3 py-4 border-b-2 text-sm font-medium transition-colors ${
               isActive
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-600 hover:text-stone-900 hover:border-stone-300'
             }`}
           >
             {item.name}

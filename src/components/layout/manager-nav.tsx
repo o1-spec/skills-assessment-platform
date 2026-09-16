@@ -10,20 +10,20 @@ export function ManagerNav() {
   const isCorroborationsActive = pathname.startsWith('/manager/corroborations');
 
   return (
-    <div className="bg-white border-b border-gray-200">
+    <div className="bg-white border-b border-stone-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex space-x-8" aria-label="Manager Navigation">
           <Link
             href="/manager"
             className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
               isOverviewActive
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300'
             }`}
             aria-current={isOverviewActive ? 'page' : undefined}
           >
             <svg
-              className={`mr-2 h-4 w-4 ${isOverviewActive ? 'text-blue-600' : 'text-gray-400'}`}
+              className={`mr-2 h-4 w-4 ${isOverviewActive ? 'text-neutral-900' : 'text-stone-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -42,13 +42,13 @@ export function ManagerNav() {
             href="/manager/corroborations"
             className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
               isCorroborationsActive
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300'
             }`}
             aria-current={isCorroborationsActive ? 'page' : undefined}
           >
             <svg
-              className={`mr-2 h-4 w-4 ${isCorroborationsActive ? 'text-blue-600' : 'text-gray-400'}`}
+              className={`mr-2 h-4 w-4 ${isCorroborationsActive ? 'text-neutral-900' : 'text-stone-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

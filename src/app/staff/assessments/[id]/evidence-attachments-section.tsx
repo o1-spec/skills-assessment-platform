@@ -33,27 +33,20 @@ function formatBytes(bytes: number): string {
 function getFileIcon(mimeType: string) {
   if (mimeType.includes('pdf')) {
     return (
-      <svg className="h-5 w-5 text-red-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+      <svg className="h-5 w-5 text-rose-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
       </svg>
     );
   }
   if (mimeType.includes('image')) {
     return (
-      <svg className="h-5 w-5 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+      <svg className="h-5 w-5 text-stone-700 shrink-0" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
       </svg>
     );
   }
-  if (mimeType.includes('word') || mimeType.includes('document')) {
-    return (
-      <svg className="h-5 w-5 text-indigo-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 2v10h8V7h-3a1 1 0 01-1-1V3H6v3z" clipRule="evenodd" />
-      </svg>
-    );
-  }
   return (
-    <svg className="h-5 w-5 text-gray-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+    <svg className="h-5 w-5 text-stone-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
       <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
     </svg>
   );
@@ -179,21 +172,21 @@ export function EvidenceAttachmentsSection({
   return (
     <div className="space-y-3 pt-2">
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide">
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider">
           Evidence Attachments
         </label>
-        <span className="text-[11px] text-gray-500">
+        <span className="text-[11px] text-stone-500 font-medium">
           {attachments.length} {attachments.length === 1 ? 'file' : 'files'}
         </span>
       </div>
 
       {errorMessage && (
-        <div className="p-2.5 rounded bg-red-50 border border-red-200 text-xs text-red-700 flex items-center justify-between">
+        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200/80 text-xs font-semibold text-rose-800 flex items-center justify-between">
           <span>{errorMessage}</span>
           <button
             type="button"
             onClick={() => setErrorMessage(null)}
-            className="text-red-500 hover:text-red-700 font-bold ml-2"
+            className="text-rose-600 hover:text-rose-900 font-bold ml-2 cursor-pointer"
           >
             &times;
           </button>
@@ -201,7 +194,7 @@ export function EvidenceAttachmentsSection({
       )}
 
       {attachments.length > 0 && (
-        <ul className="divide-y divide-gray-100 bg-white border border-gray-200 rounded-md overflow-hidden">
+        <ul className="divide-y divide-stone-100 bg-white border border-stone-200/80 rounded-xl overflow-hidden shadow-2xs">
           {attachments.map((att) => {
             const isDeleting = deletingId === att.id;
             const isOpening = viewingId === att.id;
@@ -209,15 +202,15 @@ export function EvidenceAttachmentsSection({
             return (
               <li
                 key={att.id}
-                className="px-3 py-2.5 flex items-center justify-between gap-3 text-xs hover:bg-gray-50 transition-colors"
+                className="px-3.5 py-2.5 flex items-center justify-between gap-3 text-xs hover:bg-stone-50/80 transition-colors"
               >
                 <div className="flex items-center space-x-2.5 min-w-0">
                   {getFileIcon(att.mimeType)}
                   <div className="truncate">
-                    <span className="font-medium text-gray-900 block truncate" title={att.fileName}>
+                    <span className="font-semibold text-neutral-900 block truncate" title={att.fileName}>
                       {att.fileName}
                     </span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-stone-400 font-medium">
                       {formatBytes(att.fileSize)}
                     </span>
                   </div>
@@ -228,7 +221,7 @@ export function EvidenceAttachmentsSection({
                     type="button"
                     onClick={() => handleView(att.id)}
                     disabled={isOpening}
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center px-2.5 py-1 text-xs font-semibold text-neutral-800 hover:text-neutral-900 bg-stone-100 hover:bg-stone-200 rounded-lg border border-stone-200/80 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {isOpening ? 'Loading...' : 'View / Download'}
                   </button>
@@ -238,7 +231,7 @@ export function EvidenceAttachmentsSection({
                       type="button"
                       onClick={() => handleDeleteRequest(att)}
                       disabled={isDeleting}
-                      className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors disabled:opacity-50 cursor-pointer"
+                      className="inline-flex items-center px-2.5 py-1 text-xs font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200/80 transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       {isDeleting ? 'Deleting...' : 'Remove'}
                     </button>
@@ -251,7 +244,7 @@ export function EvidenceAttachmentsSection({
       )}
 
       {attachments.length === 0 && isReadOnly && (
-        <p className="text-xs text-gray-400 italic">No file attachments provided.</p>
+        <p className="text-xs text-stone-400 italic">No file attachments provided.</p>
       )}
 
       {!isReadOnly && !isManager && (
@@ -267,12 +260,12 @@ export function EvidenceAttachmentsSection({
           />
           <label
             htmlFor={`file-input-${assessmentItemId}`}
-            className={`inline-flex items-center justify-center px-3 py-1.5 border border-dashed border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-colors ${
+            className={`inline-flex items-center justify-center px-3.5 py-2 border border-dashed border-stone-300 rounded-xl text-xs font-semibold text-neutral-700 bg-stone-50 hover:bg-stone-100 hover:border-stone-400 cursor-pointer transition-colors ${
               isUploading ? 'opacity-50 pointer-events-none' : ''
             }`}
           >
             <svg
-              className="-ml-0.5 mr-1.5 h-4 w-4 text-gray-500"
+              className="-ml-0.5 mr-1.5 h-4 w-4 text-stone-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -286,7 +279,7 @@ export function EvidenceAttachmentsSection({
             </svg>
             {isUploading ? 'Uploading Attachment...' : 'Upload File Attachment'}
           </label>
-          <span className="text-[11px] text-gray-400">
+          <span className="text-[11px] text-stone-400 font-medium">
             PDF, PNG, JPG, DOC, DOCX up to 10MB
           </span>
         </div>

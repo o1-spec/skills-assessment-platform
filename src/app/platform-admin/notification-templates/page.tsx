@@ -21,25 +21,25 @@ export default async function NotificationTemplatesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Notification Templates</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-stone-900 tracking-tight">Notification Templates</h1>
+        <p className="mt-1 text-sm text-stone-500">
           Customize system-wide in-app notifications and email dispatch messages. All templates support dynamic variable placeholders with guaranteed built-in fallbacks.
         </p>
       </div>
 
-      <div className="bg-slate-900 text-slate-100 rounded-xl p-5 shadow-sm space-y-3">
+      <div className="bg-neutral-900 text-stone-100 rounded-2xl p-6 shadow-xs space-y-3 border border-neutral-800">
         <div className="flex items-center gap-2">
-          <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
-          <h2 className="text-sm font-semibold text-slate-100">Allowed Dynamic Placeholders</h2>
+          <h2 className="text-sm font-semibold text-stone-100">Allowed Dynamic Placeholders</h2>
         </div>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-stone-400">
           The following whitelisted variables are safely interpolated at dispatch time. Unknown variables are rejected to ensure delivery safety:
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           {ALLOWED_TEMPLATE_VARIABLES.map((v) => (
-            <code key={v} className="text-xs font-mono bg-slate-800 text-indigo-300 border border-slate-700 px-2.5 py-1 rounded">
+            <code key={v} className="text-xs font-mono bg-neutral-800 text-stone-200 border border-neutral-700 px-3 py-1 rounded-xl">
               {`{{${v}}}`}
             </code>
           ))}
@@ -50,22 +50,22 @@ export default async function NotificationTemplatesPage() {
         {templates.map((tpl) => (
           <div
             key={`${tpl.type}_${tpl.channel}`}
-            className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4"
+            className="bg-white border border-stone-200/80 rounded-2xl p-6 shadow-xs space-y-4"
           >
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 pb-3">
               <div>
-                <span className="text-base font-bold text-gray-900">{tpl.type}</span>
-                <span className="ml-2.5 inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider bg-gray-100 text-gray-700 border border-gray-200">
+                <span className="text-base font-bold text-stone-900">{tpl.type}</span>
+                <span className="ml-2.5 inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold uppercase tracking-wider bg-stone-100 text-stone-700 border border-stone-200/80">
                   {tpl.channel}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 {tpl.isCustom ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-800 border border-stone-200/80">
                     Custom Template
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200/80">
                     Built-in Default
                   </span>
                 )}
@@ -75,7 +75,7 @@ export default async function NotificationTemplatesPage() {
                     <input type="hidden" name="channel" value={tpl.channel} />
                     <button
                       type="submit"
-                      className="text-xs font-medium text-red-600 hover:text-red-800 hover:underline"
+                      className="text-xs font-medium text-rose-600 hover:text-rose-800 hover:underline transition-colors"
                     >
                       Reset to Default
                     </button>
@@ -90,7 +90,7 @@ export default async function NotificationTemplatesPage() {
 
               {tpl.channel === 'EMAIL' ? (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
                     Email Subject
                   </label>
                   <input
@@ -98,12 +98,12 @@ export default async function NotificationTemplatesPage() {
                     name="subject"
                     defaultValue={tpl.subject || ''}
                     placeholder="Enter email subject with optional {{variables}}..."
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-stone-200/80 bg-stone-50/40 rounded-xl px-3.5 py-2 text-sm text-stone-900 shadow-xs focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 transition-colors"
                   />
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
                     Notification Title
                   </label>
                   <input
@@ -111,13 +111,13 @@ export default async function NotificationTemplatesPage() {
                     name="title"
                     defaultValue={tpl.title || ''}
                     placeholder="Enter in-app notification title..."
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-stone-200/80 bg-stone-50/40 rounded-xl px-3.5 py-2 text-sm text-stone-900 shadow-xs focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 transition-colors"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
                   Message Body
                 </label>
                 <textarea
@@ -125,14 +125,14 @@ export default async function NotificationTemplatesPage() {
                   rows={4}
                   required
                   defaultValue={tpl.body}
-                  className="w-full font-mono text-xs border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full font-mono text-xs border border-stone-200/80 bg-stone-50/40 rounded-xl p-3.5 text-stone-900 shadow-xs focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 transition-colors"
                 />
               </div>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white font-medium text-xs rounded-lg transition-colors shadow-sm"
+                  className="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-xs rounded-xl transition-colors shadow-xs"
                 >
                   Save Template
                 </button>

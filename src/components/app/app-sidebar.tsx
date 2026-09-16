@@ -29,10 +29,10 @@ interface AppSidebarProps {
 
 const ROLE_LABELS: Record<UserRole, { label: string; badgeBg: string; badgeText: string }> = {
   PLATFORM_ADMIN: { label: 'Platform Admin', badgeBg: 'bg-neutral-900', badgeText: 'text-white' },
-  SUPPORT: { label: 'Support Agent', badgeBg: 'bg-amber-100', badgeText: 'text-amber-800' },
-  ORGANIZATION_ADMIN: { label: 'Organization Admin', badgeBg: 'bg-blue-100', badgeText: 'text-blue-800' },
-  MANAGER: { label: 'Team Manager', badgeBg: 'bg-indigo-100', badgeText: 'text-indigo-800' },
-  STAFF: { label: 'Staff Member', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-800' },
+  SUPPORT: { label: 'Support Agent', badgeBg: 'bg-stone-100 border border-stone-200/80', badgeText: 'text-stone-700' },
+  ORGANIZATION_ADMIN: { label: 'Organization Admin', badgeBg: 'bg-stone-100 border border-stone-200/80', badgeText: 'text-stone-800' },
+  MANAGER: { label: 'Team Manager', badgeBg: 'bg-stone-100 border border-stone-200/80', badgeText: 'text-stone-800' },
+  STAFF: { label: 'Staff Member', badgeBg: 'bg-emerald-50 border border-emerald-200/80', badgeText: 'text-emerald-800' },
 };
 
 export function AppSidebar({

@@ -12,20 +12,20 @@ export function StaffNav() {
   const isGapActive = pathname.startsWith('/staff/gap-analysis');
 
   return (
-    <div className="bg-white border-b border-gray-200">
+    <div className="bg-white border-b border-stone-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex space-x-8" aria-label="Staff Navigation">
           <Link
             href="/staff/assessments"
             className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
               isAssessmentsActive
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300'
             }`}
             aria-current={isAssessmentsActive ? 'page' : undefined}
           >
             <svg
-              className={`mr-2 h-4 w-4 ${isAssessmentsActive ? 'text-blue-600' : 'text-gray-400'}`}
+              className={`mr-2 h-4 w-4 ${isAssessmentsActive ? 'text-neutral-900' : 'text-stone-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -44,13 +44,13 @@ export function StaffNav() {
             href="/staff/skills"
             className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
               isSkillsActive
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300'
             }`}
             aria-current={isSkillsActive ? 'page' : undefined}
           >
             <svg
-              className={`mr-2 h-4 w-4 ${isSkillsActive ? 'text-blue-600' : 'text-gray-400'}`}
+              className={`mr-2 h-4 w-4 ${isSkillsActive ? 'text-neutral-900' : 'text-stone-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -69,13 +69,13 @@ export function StaffNav() {
             href="/staff/gap-analysis"
             className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
               isGapActive
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300'
             }`}
             aria-current={isGapActive ? 'page' : undefined}
           >
             <svg
-              className={`mr-2 h-4 w-4 ${isGapActive ? 'text-blue-600' : 'text-gray-400'}`}
+              className={`mr-2 h-4 w-4 ${isGapActive ? 'text-neutral-900' : 'text-stone-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -90,18 +90,17 @@ export function StaffNav() {
             My Gap
           </Link>
 
-
           <Link
             href="/staff/career-paths"
             className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
               pathname.startsWith('/staff/career-paths')
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300'
             }`}
             aria-current={pathname.startsWith('/staff/career-paths') ? 'page' : undefined}
           >
             <svg
-              className={`mr-2 h-4 w-4 ${pathname.startsWith('/staff/career-paths') ? 'text-blue-600' : 'text-gray-400'}`}
+              className={`mr-2 h-4 w-4 ${pathname.startsWith('/staff/career-paths') ? 'text-neutral-900' : 'text-stone-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -120,13 +119,13 @@ export function StaffNav() {
             href="/staff/learning"
             className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
               pathname.startsWith('/staff/learning')
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-neutral-900 text-neutral-900 font-semibold'
+                : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300'
             }`}
             aria-current={pathname.startsWith('/staff/learning') ? 'page' : undefined}
           >
             <svg
-              className={`mr-2 h-4 w-4 ${pathname.startsWith('/staff/learning') ? 'text-blue-600' : 'text-gray-400'}`}
+              className={`mr-2 h-4 w-4 ${pathname.startsWith('/staff/learning') ? 'text-neutral-900' : 'text-stone-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

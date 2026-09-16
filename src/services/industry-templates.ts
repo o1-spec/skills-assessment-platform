@@ -15,6 +15,8 @@ export type IndustryTemplateWithStats = IndustryTemplate & {
   };
 };
 
+export type IndustryTemplateWithCounts = IndustryTemplateWithStats;
+
 export type FullIndustryTemplate = IndustryTemplate & {
   frameworkVersion: {
     id: string;

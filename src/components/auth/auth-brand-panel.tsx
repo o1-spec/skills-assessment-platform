@@ -38,9 +38,9 @@ export function AuthBrandPanel() {
           </span>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex items-center justify-between text-xs">
+        <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200/80 shadow-xs flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-sm">
+            <div className="w-8 h-8 rounded-xl bg-stone-100 border border-stone-200/80 flex items-center justify-center text-stone-700 text-sm">
               📊
             </div>
             <div>
@@ -48,14 +48,14 @@ export function AuthBrandPanel() {
               <div className="text-neutral-500">Multi-Competency Delta Matrix</div>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-800 border border-stone-200/80">
             12 development gaps
           </span>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex items-center justify-between text-xs">
+        <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200/80 shadow-xs flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 text-sm">
+            <div className="w-8 h-8 rounded-xl bg-stone-100 border border-stone-200/80 flex items-center justify-center text-stone-700 text-sm">
               🧭
             </div>
             <div>
@@ -63,7 +63,7 @@ export function AuthBrandPanel() {
               <div className="text-neutral-500">Track: IC Engineering</div>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-800 border border-stone-200/80">
             Backend → Senior
           </span>
         </div>

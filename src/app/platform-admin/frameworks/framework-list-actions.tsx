@@ -73,7 +73,7 @@ export function FrameworkListActions({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
       {error && (
-        <div className="text-xs text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded max-w-xs">
+        <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200/80 px-3 py-1.5 rounded-xl max-w-xs font-semibold">
           {error}
         </div>
       )}
@@ -82,7 +82,7 @@ export function FrameworkListActions({
         <>
           <Link
             href={`/platform-admin/frameworks/${framework.id}`}
-            className="inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center justify-center px-3.5 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors"
           >
             View Framework
           </Link>
@@ -96,7 +96,7 @@ export function FrameworkListActions({
               setNewDescInput(`Draft created from published Version ${framework.version}`);
               setShowCloneModal(true);
             }}
-            className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center justify-center px-3.5 py-1.5 border border-transparent shadow-2xs text-xs font-semibold rounded-xl text-white bg-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             Create New Draft Version
           </button>
@@ -105,14 +105,14 @@ export function FrameworkListActions({
         <>
           <Link
             href={`/platform-admin/frameworks/${framework.id}`}
-            className="inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center justify-center px-3.5 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors"
           >
             Edit Framework
           </Link>
           <button
             onClick={handlePublish}
             disabled={isPublishing}
-            className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center justify-center px-3.5 py-1.5 border border-transparent shadow-2xs text-xs font-semibold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition-colors cursor-pointer"
           >
             {isPublishing ? 'Publishing...' : 'Publish'}
           </button>
@@ -120,28 +120,28 @@ export function FrameworkListActions({
       )}
 
       {showCloneModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-bold text-gray-900">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border border-stone-200/80">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <h3 className="text-base font-bold text-neutral-900">
                 Create New Draft Version from {framework.version}
               </h3>
               <button
                 onClick={() => setShowCloneModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-lg"
+                className="text-stone-400 hover:text-neutral-700 text-lg cursor-pointer"
               >
                 &times;
               </button>
             </div>
 
-            <p className="text-xs text-gray-600">
-              This will create a new mutable <strong className="text-gray-900">DRAFT</strong> containing an exact copy of all categories, competencies, and level descriptors from published Version {framework.version}.
+            <p className="text-xs text-stone-600 leading-relaxed">
+              This will create a new mutable <strong className="text-neutral-900">DRAFT</strong> containing an exact copy of all categories, competencies, and level descriptors from published Version {framework.version}.
             </p>
 
             <form onSubmit={handleCloneSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700">
-                  New Version Identifier <span className="text-red-500">*</span>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider">
+                  New Version Identifier <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -149,12 +149,12 @@ export function FrameworkListActions({
                   value={newVersionInput}
                   onChange={(e) => setNewVersionInput(e.target.value)}
                   placeholder="e.g. 1.1 or 2.0"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-xs focus:border-gray-900 focus:ring-gray-900 p-2 border"
+                  className="mt-1.5 block w-full rounded-xl border-stone-200/80 shadow-2xs text-xs focus:border-neutral-900 focus:ring-neutral-900 p-2.5 border"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700">
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider">
                   Description
                 </label>
                 <textarea
@@ -162,12 +162,12 @@ export function FrameworkListActions({
                   value={newDescInput}
                   onChange={(e) => setNewDescInput(e.target.value)}
                   placeholder="Summary of version updates..."
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-xs focus:border-gray-900 focus:ring-gray-900 p-2 border"
+                  className="mt-1.5 block w-full rounded-xl border-stone-200/80 shadow-2xs text-xs focus:border-neutral-900 focus:ring-neutral-900 p-2.5 border"
                 />
               </div>
 
               {error && (
-                <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-2 rounded">
+                <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200/80 p-3 rounded-xl font-semibold">
                   {error}
                 </div>
               )}
@@ -176,14 +176,14 @@ export function FrameworkListActions({
                 <button
                   type="button"
                   onClick={() => setShowCloneModal(false)}
-                  className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-xs font-semibold text-neutral-700 bg-white border border-stone-200/80 rounded-xl hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isCloning}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800 disabled:opacity-50"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer"
                 >
                   {isCloning ? 'Creating Draft...' : 'Create Draft Version'}
                 </button>

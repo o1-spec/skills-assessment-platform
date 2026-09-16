@@ -29,7 +29,7 @@ export function ShowcaseTabs() {
                 : 'text-neutral-500 hover:text-neutral-800 border-transparent hover:bg-white/50'
               }`}
           >
-            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span className="w-2 h-2 rounded-full bg-stone-600"></span>
             <span>Campaign Tracking</span>
           </button>
 
@@ -40,7 +40,7 @@ export function ShowcaseTabs() {
                 : 'text-neutral-500 hover:text-neutral-800 border-transparent hover:bg-white/50'
               }`}
           >
-            <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+            <span className="w-2 h-2 rounded-full bg-neutral-900"></span>
             <span>Career Ladders</span>
           </button>
 
@@ -246,12 +246,12 @@ export function ShowcaseTabs() {
               </div>
               <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/50">
                 <span className="text-xs text-neutral-500 font-medium">Self-Assessments</span>
-                <div className="text-2xl font-bold text-blue-600 mt-1">42</div>
+                <div className="text-2xl font-bold text-neutral-900 mt-1">42</div>
                 <span className="text-[11px] text-neutral-500">6 drafts in progress</span>
               </div>
               <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/50">
                 <span className="text-xs text-neutral-500 font-medium">Corroborations</span>
-                <div className="text-2xl font-bold text-emerald-600 mt-1">38</div>
+                <div className="text-2xl font-bold text-neutral-900 mt-1">38</div>
                 <span className="text-[11px] text-neutral-500">4 awaiting manager</span>
               </div>
               <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/50">
@@ -284,7 +284,7 @@ export function ShowcaseTabs() {
                 <div className="px-4 py-3 grid grid-cols-4 items-center">
                   <span className="font-medium text-neutral-900">David Chen</span>
                   <span className="text-neutral-600">DevOps Engineer</span>
-                  <span className="text-blue-700 font-medium">Draft (4/7)</span>
+                  <span className="text-stone-700 font-medium">Draft (4/7)</span>
                   <span className="text-right text-neutral-400">Waiting submission</span>
                 </div>
               </div>
@@ -303,13 +303,13 @@ export function ShowcaseTabs() {
                   Sequential role progression with dynamically computed competency deltas
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 self-start">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-800 border border-stone-200/80 self-start">
                 3 Milestones Mapped
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/30 relative">
+              <div className="p-4 rounded-xl border border-stone-200/80 bg-stone-50/30 relative">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-neutral-900 text-white text-xs font-bold flex items-center justify-center">
                     1
@@ -322,10 +322,10 @@ export function ShowcaseTabs() {
                   <div>• Testing: Level 2</div>
                   <div>• Collaboration: Level 2</div>
                 </div>
-                <div className="mt-3 text-[11px] font-semibold text-emerald-700">✓ Completed</div>
+                <div className="mt-3 text-[11px] font-semibold text-emerald-800">✓ Completed</div>
               </div>
 
-              <div className="p-4 rounded-xl border-2 border-neutral-900 bg-white relative shadow-sm">
+              <div className="p-4 rounded-xl border-2 border-neutral-900 bg-white relative shadow-xs">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-neutral-900 text-white text-xs font-bold flex items-center justify-center">
                     2
@@ -357,15 +357,15 @@ export function ShowcaseTabs() {
                   <div>• Technical Strategy: Level 4 (+1)</div>
                   <div>• Org Mentorship: Level 4 (+2)</div>
                 </div>
-                <div className="mt-3 text-[11px] font-semibold text-indigo-600">Target Promotion</div>
+                <div className="mt-3 text-[11px] font-semibold text-neutral-900">Target Promotion</div>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-indigo-50/50 border border-indigo-100 flex items-center justify-between text-xs">
-              <span className="text-indigo-950 font-medium">
+            <div className="p-3.5 rounded-xl bg-stone-100/70 border border-stone-200/80 flex items-center justify-between text-xs">
+              <span className="text-stone-900 font-medium">
                 Progression Delta: +4 total skill points required to advance from Backend Engineer to Senior Staff.
               </span>
-              <span className="text-indigo-700 font-semibold cursor-pointer hover:underline">
+              <span className="text-neutral-900 font-semibold cursor-pointer hover:underline">
                 Generate Growth Plan →
               </span>
             </div>

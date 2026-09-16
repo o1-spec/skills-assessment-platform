@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { TenantWithStats } from '@/services/tenants';
+import { TenantListItem } from '@/services/tenants';
 import { TenantStatus } from '@prisma/client';
 
 interface TenantsDirectoryViewProps {
-  initialTenants: TenantWithStats[];
+  initialTenants: TenantListItem[];
 }
 
 export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewProps) {
-  const [tenants] = useState<TenantWithStats[]>(initialTenants);
+  const [tenants] = useState<TenantListItem[]>(initialTenants);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
@@ -29,15 +29,15 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Organization Directory</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Organization Directory</h1>
+          <p className="text-xs text-stone-500 mt-1">
             Overview of provisioned organizations, active subscription plans, seat allocations, and onboarding statuses.
           </p>
         </div>
 
         <Link
           href="/platform-admin/tenants/new"
-          className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-semibold rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-xs font-semibold rounded-xl shadow-2xs text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -46,10 +46,10 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
         </Link>
       </div>
 
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-4 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative flex-1 w-full">
           <svg
-            className="w-4 h-4 absolute left-3 top-3 text-gray-400"
+            className="w-4 h-4 absolute left-3.5 top-3 text-stone-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -66,18 +66,18 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
             placeholder="Search organizations by name, slug, or domain..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full pl-10 pr-4 py-2 text-xs border border-stone-200/80 rounded-xl focus:ring-neutral-900 focus:border-neutral-900 shadow-2xs"
           />
         </div>
 
         <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+          <label className="text-[11px] font-bold text-stone-400 uppercase tracking-wider whitespace-nowrap">
             Status:
           </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-auto"
+            className="text-xs border border-stone-200/80 rounded-xl px-3 py-2 bg-white focus:ring-neutral-900 focus:border-neutral-900 w-full sm:w-auto shadow-2xs font-medium"
           >
             <option value="ALL">All Statuses</option>
             <option value={TenantStatus.ACTIVE}>Active</option>
@@ -87,10 +87,10 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50/75 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <table className="min-w-full divide-y divide-stone-100">
+            <thead className="bg-stone-50/70 text-left text-[11px] font-bold text-stone-400 uppercase tracking-wider">
               <tr>
                 <th scope="col" className="px-6 py-3.5">
                   Organization
@@ -112,10 +112,10 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-sm">
+            <tbody className="divide-y divide-stone-100 text-xs">
               {filteredTenants.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-stone-400 font-medium">
                     No organizations match the selected criteria.
                   </td>
                 </tr>
@@ -127,10 +127,10 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
                       : 0;
 
                   return (
-                    <tr key={tenant.id} className="hover:bg-gray-50/60 transition-colors">
+                    <tr key={tenant.id} className="hover:bg-stone-50/60 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-bold text-gray-900">{tenant.name}</div>
-                        <div className="text-xs text-gray-500 flex items-center space-x-2 mt-0.5">
+                        <div className="font-bold text-neutral-900">{tenant.name}</div>
+                        <div className="text-[11px] text-stone-500 flex items-center space-x-2 mt-0.5">
                           <span>slug: {tenant.slug}</span>
                           {tenant.domain && (
                             <>
@@ -143,38 +143,37 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
 
                       <td className="px-6 py-4 whitespace-nowrap">
                         {tenant.status === TenantStatus.ACTIVE && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                             Active
                           </span>
                         )}
                         {tenant.status === TenantStatus.PENDING_ONBOARDING && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">
                             Pending Onboarding
                           </span>
                         )}
                         {tenant.status === TenantStatus.SUSPENDED && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/60">
                             Suspended
                           </span>
                         )}
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{tenant.plan?.name || 'No Plan'}</div>
-                        <div className="text-xs text-gray-500 mt-1 flex items-center space-x-2">
+                        <div className="font-semibold text-neutral-900">{tenant.plan?.name || 'No Plan'}</div>
+                        <div className="text-[11px] text-stone-500 mt-1 flex items-center space-x-2">
                           <span>
                             {tenant.activeUsersCount} / {tenant.seatLimit ?? '∞'} seats ({seatUsagePercent}%)
                           </span>
                         </div>
-                        <div className="w-24 bg-gray-100 rounded-full h-1.5 mt-1 overflow-hidden">
+                        <div className="w-24 bg-stone-100 rounded-full h-1.5 mt-1 overflow-hidden border border-stone-200/50">
                           <div
-                            className={`h-1.5 rounded-full ${
-                              seatUsagePercent >= 100
-                                ? 'bg-red-500'
+                            className={`h-1.5 rounded-full ${seatUsagePercent >= 100
+                                ? 'bg-rose-500'
                                 : seatUsagePercent >= 80
-                                ? 'bg-amber-500'
-                                : 'bg-indigo-600'
-                            }`}
+                                  ? 'bg-amber-500'
+                                  : 'bg-neutral-900'
+                              }`}
                             style={{ width: `${seatUsagePercent}%` }}
                           />
                         </div>
@@ -182,33 +181,33 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
 
                       <td className="px-6 py-4 whitespace-nowrap">
                         {tenant.activeFrameworkVersion ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
                             v{tenant.activeFrameworkVersion}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">None</span>
+                          <span className="text-[11px] text-stone-400">None</span>
                         )}
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
                         {tenant.isOnboarded ? (
                           <span className="inline-flex items-center text-xs font-semibold text-emerald-600">
-                            <svg className="w-4 h-4 mr-1 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-3.5 h-3.5 mr-1 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                             Complete
                           </span>
                         ) : (
-                          <span className="inline-flex items-center text-xs font-medium text-gray-500">
+                          <span className="inline-flex items-center text-xs font-medium text-stone-400">
                             Pending Wizard
                           </span>
                         )}
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-xs">
                         <Link
                           href={`/platform-admin/tenants/${tenant.id}`}
-                          className="text-xs font-semibold text-indigo-600 hover:text-indigo-900"
+                          className="font-semibold text-neutral-900 hover:text-neutral-700 transition-colors"
                         >
                           View Details →
                         </Link>

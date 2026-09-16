@@ -55,9 +55,8 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; 
   FAILED: { bg: 'bg-red-50', text: 'text-red-800', border: 'border-red-200', dot: 'bg-red-500' },
   CANCELLED: { bg: 'bg-red-50', text: 'text-red-800', border: 'border-red-200', dot: 'bg-red-500' },
 
-  // Blue / Info / Scheduled
-  SCHEDULED: { bg: 'bg-sky-50', text: 'text-sky-800', border: 'border-sky-200', dot: 'bg-sky-500' },
-  INFO: { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200', dot: 'bg-blue-500' },
+  SCHEDULED: { bg: 'bg-stone-100', text: 'text-stone-800', border: 'border-stone-200/80', dot: 'bg-stone-500' },
+  INFO: { bg: 'bg-stone-100', text: 'text-stone-800', border: 'border-stone-200/80', dot: 'bg-stone-500' },
 };
 
 function formatStatus(status: string): string {

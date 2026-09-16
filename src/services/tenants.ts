@@ -24,6 +24,8 @@ export type TenantWithStats = Tenant & {
   } | null;
 };
 
+export type TenantListItem = TenantWithStats;
+
 export async function assertTenantHasAvailableSeat(tenantId: string): Promise<void> {
   const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },

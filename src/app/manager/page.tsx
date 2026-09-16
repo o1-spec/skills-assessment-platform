@@ -32,7 +32,7 @@ export default async function ManagerOverviewPage() {
         title="Manager Dashboard"
         description="Monitor your direct reports' verified skills profiles, team competency distribution, and pending corroborations."
         badge={
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
             Team Oversight
           </span>
         }

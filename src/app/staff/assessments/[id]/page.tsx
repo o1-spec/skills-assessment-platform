@@ -42,32 +42,33 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
+        <nav className="flex text-xs text-stone-500 mb-3" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
-              <Link href="/staff/assessments" className="hover:text-gray-900 transition-colors">
+              <Link href="/staff/assessments" className="hover:text-neutral-900 transition-colors">
                 My Assessments
               </Link>
             </li>
             <li>
-              <span className="text-gray-400">/</span>
+              <span className="text-stone-300">/</span>
             </li>
-            <li className="text-gray-900 font-medium truncate max-w-xs" aria-current="page">
+            <li className="text-neutral-900 font-semibold truncate max-w-xs" aria-current="page">
               {assessment.campaign.name}
             </li>
           </ol>
         </nav>
 
-        <div className="sm:flex sm:items-center sm:justify-between">
+        <div className="sm:flex sm:items-center sm:justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold text-gray-900">{assessment.campaign.name}</h1>
+            <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">{assessment.campaign.name}</h1>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${isCompleted
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                isCompleted
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
                   : isPendingReview || isSubmitted
-                    ? 'bg-purple-50 text-purple-700 border-purple-200'
-                    : 'bg-blue-50 text-blue-700 border-blue-200'
-                }`}
+                  ? 'bg-purple-50 text-purple-700 border-purple-200/60'
+                  : 'bg-stone-100 text-stone-700 border border-stone-200/80'
+              }`}
             >
               {formatAssessmentStatus(assessment.status)}
             </span>
@@ -76,7 +77,7 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
           <div className="mt-4 sm:mt-0">
             <Link
               href="/staff/assessments"
-              className="inline-flex items-center px-3.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors"
             >
               &larr; Back to Assessments
             </Link>
@@ -84,21 +85,21 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
         </div>
 
         {assessment.campaign.description && (
-          <p className="mt-2 text-sm text-gray-600 max-w-3xl">{assessment.campaign.description}</p>
+          <p className="mt-2 text-xs text-stone-500 max-w-3xl leading-relaxed">{assessment.campaign.description}</p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-xs">
         <div>
-          <div className="text-xs text-gray-500 font-medium">Competencies</div>
-          <div className="mt-1 text-base font-bold text-gray-900">
+          <div className="text-[11px] text-stone-400 font-bold uppercase tracking-wider">Competencies</div>
+          <div className="mt-1 text-sm font-bold text-neutral-900">
             {technicalItems.length} Tech / {behavioralItems.length} Behav
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-gray-500 font-medium">Review Requirement</div>
-          <div className="mt-1 text-sm font-semibold text-gray-900">
+          <div className="text-[11px] text-stone-400 font-bold uppercase tracking-wider">Review Requirement</div>
+          <div className="mt-1 text-sm font-semibold text-neutral-900">
             {assessment.campaign.requiresCorroboration
               ? 'Manager Corroboration Required'
               : 'Self-assessment Only'}
@@ -106,15 +107,15 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
         </div>
 
         <div>
-          <div className="text-xs text-gray-500 font-medium">Deadline</div>
-          <div className="mt-1 text-sm font-semibold text-gray-900">
+          <div className="text-[11px] text-stone-400 font-bold uppercase tracking-wider">Deadline</div>
+          <div className="mt-1 text-sm font-semibold text-neutral-900">
             {formatDate(assessment.campaign.deadline)}
           </div>
         </div>
       </div>
 
       {isPendingReview && (
-        <div className="rounded-md bg-purple-50 p-4 border border-purple-200">
+        <div className="rounded-2xl bg-purple-50/70 p-5 border border-purple-200/80">
           <div className="flex">
             <div className="shrink-0">
               <svg className="h-5 w-5 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
@@ -126,10 +127,10 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-semibold text-purple-800">
+              <h3 className="text-sm font-bold text-purple-900">
                 Assessment Submitted — Awaiting Manager Corroboration
               </h3>
-              <p className="mt-1 text-xs text-purple-700">
+              <p className="mt-1 text-xs text-purple-700 leading-relaxed">
                 You have submitted your self-assessment. Your manager will review your ratings and supporting evidence.
               </p>
             </div>
@@ -138,7 +139,7 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
       )}
 
       {isCompleted && (
-        <div className="rounded-md bg-emerald-50 p-4 border border-emerald-200">
+        <div className="rounded-2xl bg-emerald-50/70 p-5 border border-emerald-200/80">
           <div className="flex">
             <div className="shrink-0">
               <svg className="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
@@ -150,8 +151,8 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-semibold text-emerald-800">Assessment Completed</h3>
-              <p className="mt-1 text-xs text-emerald-700">
+              <h3 className="text-sm font-bold text-emerald-900">Assessment Completed</h3>
+              <p className="mt-1 text-xs text-emerald-700 leading-relaxed">
                 This assessment cycle is finished and finalized. Your results are displayed below.
               </p>
             </div>
@@ -160,10 +161,10 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
       )}
 
       {!isCompleted && !isPendingReview && isPastDeadline && (
-        <div className="rounded-md bg-amber-50 p-4 border border-amber-200">
+        <div className="rounded-2xl bg-amber-50/70 p-5 border border-amber-200/80">
           <div className="flex">
             <div className="shrink-0">
-              <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
                   d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -172,10 +173,10 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-semibold text-amber-800">
+              <h3 className="text-sm font-bold text-amber-900">
                 Assessment Deadline Has Passed
               </h3>
-              <p className="mt-1 text-xs text-amber-700">
+              <p className="mt-1 text-xs text-amber-700 leading-relaxed">
                 The deadline for this assessment was {formatDate(assessment.campaign.deadline)}. New submissions or draft changes are closed.
               </p>
             </div>
@@ -187,20 +188,20 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
         <AssessmentForm assessment={assessment} />
       ) : (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-6 shadow-sm">
-            <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-stone-200/80 p-6 space-y-6 shadow-xs">
+            <div className="border-b border-stone-100 pb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold text-gray-900">Your Assessed Competencies</h2>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <h2 className="text-base font-bold text-neutral-900">Your Assessed Competencies</h2>
+                <p className="text-xs text-stone-500 mt-0.5">
                   Summary of your self-assessment ratings and supporting evidence.
                 </p>
               </div>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded bg-gray-100 text-gray-700">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-stone-100 text-stone-700 border border-stone-200/80">
                 {assessment.items.length} items
               </span>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {assessment.items.map((item, idx) => {
                 const selectedLevelRecord = item.competency.levels.find(
                   (l) => l.level === item.selfRating
@@ -209,28 +210,29 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
                 return (
                   <div
                     key={item.id}
-                    className="p-5 rounded-lg border border-gray-200 bg-gray-50/40 space-y-3"
+                    className="p-5 rounded-2xl border border-stone-200/80 bg-stone-50/50 space-y-3"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-200 pb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-stone-200/60 pb-3">
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs font-bold text-gray-400">#{idx + 1}</span>
-                        <h3 className="text-sm font-bold text-gray-900">{item.competency.name}</h3>
+                        <span className="text-xs font-bold text-stone-400">#{idx + 1}</span>
+                        <h3 className="text-sm font-bold text-neutral-900">{item.competency.name}</h3>
                         <span
-                          className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded ${item.competency.type === CompetencyType.TECHNICAL
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-emerald-100 text-emerald-800'
-                            }`}
+                          className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-md border ${
+                            item.competency.type === CompetencyType.TECHNICAL
+                              ? 'bg-stone-100 text-stone-800 border-stone-200/80'
+                              : 'bg-purple-50 text-purple-700 border-purple-200/60'
+                          }`}
                         >
                           {item.competency.type}
                         </span>
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-stone-100 text-stone-800 border border-stone-200/80">
                           Self-Rating: {item.selfRating ? `Level ${item.selfRating}` : 'None'}
                         </span>
                         {item.finalRating !== null && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
                             Final Rating: Level {item.finalRating}
                           </span>
                         )}
@@ -238,22 +240,22 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
                     </div>
 
                     {selectedLevelRecord && (
-                      <div className="text-xs text-gray-700 bg-white p-3 rounded border border-gray-200">
-                        <span className="font-semibold text-gray-900">
+                      <div className="text-xs text-stone-700 bg-white p-3.5 rounded-xl border border-stone-200/80 leading-relaxed">
+                        <span className="font-bold text-neutral-900">
                           Level {selectedLevelRecord.level} Benchmark:
                         </span>{' '}
                         {selectedLevelRecord.description}
                       </div>
                     )}
 
-                    <div className="text-xs text-gray-700">
-                      <div className="font-semibold text-gray-700 mb-1">Supporting Evidence:</div>
+                    <div className="text-xs text-stone-700">
+                      <div className="font-bold text-stone-500 uppercase tracking-wider text-[11px] mb-1">Supporting Evidence:</div>
                       {item.evidenceText ? (
-                        <p className="bg-white p-3 rounded border border-gray-200 whitespace-pre-wrap">
+                        <p className="bg-white p-3.5 rounded-xl border border-stone-200/80 whitespace-pre-wrap leading-relaxed">
                           {item.evidenceText}
                         </p>
                       ) : (
-                        <p className="text-gray-400 italic">No evidence provided.</p>
+                        <p className="text-stone-400 italic">No evidence provided.</p>
                       )}
                     </div>
 
