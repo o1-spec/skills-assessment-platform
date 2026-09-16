@@ -2,9 +2,30 @@ import { ReactNode } from 'react';
 import { UserRole } from '@prisma/client';
 import { redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
-import { LogoutButton } from '@/components/ui';
-import { ManagerNav } from '@/components/layout';
-import { NotificationBell } from '@/components/notifications';
+import { AppShell, NavItem } from '@/components/app';
+import { SupportImpersonationBanner } from '@/components/layout/support-impersonation-banner';
+
+const MANAGER_NAV: NavItem[] = [
+  {
+    label: 'Team Dashboard',
+    href: '/manager',
+    exact: true,
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Corroborations',
+    href: '/manager/corroborations',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+];
 
 export default async function ManagerLayout({
   children,
@@ -18,37 +39,18 @@ export default async function ManagerLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              {user.tenant?.name?.charAt(0) ?? 'M'}
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-gray-900 leading-tight">
-                {user.tenant?.name ?? 'Organization Portal'}
-              </div>
-              <div className="text-xs text-gray-500">Skills Assessment Platform</div>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <NotificationBell />
-            <div className="text-right hidden sm:block">
-              <div className="text-sm font-medium text-gray-900">{user.name}</div>
-              <div className="text-xs text-indigo-600 font-medium">Manager</div>
-            </div>
-            <LogoutButton />
-          </div>
-        </div>
-
-        <ManagerNav />
-      </header>
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
-    </div>
+    <AppShell
+      role={UserRole.MANAGER}
+      user={{
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }}
+      tenantName={user.tenant?.name}
+      items={MANAGER_NAV}
+      banner={<SupportImpersonationBanner />}
+    >
+      {children}
+    </AppShell>
   );
 }

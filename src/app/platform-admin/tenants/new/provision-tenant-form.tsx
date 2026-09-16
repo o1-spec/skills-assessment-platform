@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { SubscriptionPlan } from '@prisma/client';
 import { provisionTenantAction } from '@/actions/tenants';
+import { PageHeader } from '@/components/app';
 
 interface ProvisionTenantFormProps {
   activePlans: SubscriptionPlan[];
@@ -79,95 +80,115 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData();
-      formData.set('name', name);
-      formData.set('slug', slug);
-      formData.set('planId', selectedPlanId);
-      formData.set('seatLimit', String(seatLimit));
-      formData.set('domain', domain);
-      formData.set('primaryContactName', primaryContactName);
-      formData.set('primaryContactEmail', primaryContactEmail);
-      formData.set('adminName', adminName);
-      formData.set('adminEmail', adminEmail);
+      const fd = new FormData();
+      fd.append('name', name.trim());
+      fd.append('slug', slug.trim());
+      if (domain.trim()) fd.append('domain', domain.trim());
+      if (primaryContactName.trim()) fd.append('primaryContactName', primaryContactName.trim());
+      if (primaryContactEmail.trim()) fd.append('primaryContactEmail', primaryContactEmail.trim());
+      fd.append('planId', selectedPlanId);
+      fd.append('seatLimit', String(seatLimit));
+      fd.append('adminName', adminName.trim());
+      fd.append('adminEmail', adminEmail.trim());
 
-      const res = await provisionTenantAction(formData);
-      if (!res.success) {
-        setError(res.error || 'Failed to provision organization.');
+      const res = await provisionTenantAction(fd);
+
+      if (
+        !res.success ||
+        !res.tenantId ||
+        !res.invitationUrl ||
+        !res.invitationEmail ||
+        !res.invitationName ||
+        !res.rawToken
+      ) {
+        setError(res.error || 'Failed to provision tenant.');
         setIsSubmitting(false);
         return;
       }
 
       setResult({
-        tenantId: res.tenantId!,
-        invitationUrl: res.invitationUrl!,
-        invitationEmail: res.invitationEmail!,
-        invitationName: res.invitationName!,
-        rawToken: res.rawToken!,
+        tenantId: res.tenantId,
+        invitationUrl: res.invitationUrl,
+        invitationEmail: res.invitationEmail,
+        invitationName: res.invitationName,
+        rawToken: res.rawToken,
       });
-    } catch {
-      setError('An unexpected error occurred during provisioning.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  function handleCopyInvitationUrl() {
+  async function handleCopyInvitationUrl() {
     if (!result) return;
-    const fullUrl = `${window.location.origin}${result.invitationUrl}`;
-    navigator.clipboard.writeText(fullUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+    const fullUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}${result.invitationUrl}`
+        : result.invitationUrl;
+
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      // Fallback
+    }
   }
 
   if (result) {
-    const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}${result.invitationUrl}` : result.invitationUrl;
+    const fullUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}${result.invitationUrl}`
+        : result.invitationUrl;
 
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 space-y-6">
-        <div className="flex items-center space-x-3 text-emerald-600">
-          <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-200">
+      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs p-6 sm:p-8 space-y-6">
+        <div className="flex items-center gap-4 text-emerald-600">
+          <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-200/80 shrink-0">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Organization Successfully Provisioned!</h2>
-            <p className="text-sm text-gray-500">
-              {name} has been provisioned in <span className="font-semibold text-amber-600">PENDING_ONBOARDING</span> status.
+            <h2 className="text-xl font-bold text-neutral-900 tracking-tight">Organization Successfully Provisioned!</h2>
+            <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">
+              {name} has been provisioned in <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Pending Onboarding</span> status.
             </p>
           </div>
         </div>
 
-        <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-sm text-amber-900 space-y-1">
-          <div className="font-semibold flex items-center space-x-1.5">
-            <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200/80 text-xs sm:text-sm text-amber-950 space-y-1">
+          <div className="font-semibold flex items-center gap-1.5 text-amber-900">
+            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>Initial Administrator Invitation Link</span>
           </div>
-          <p className="text-xs text-amber-800">
-            Invitation created for <strong>{result.invitationName}</strong> ({result.invitationEmail}). Email delivery is not configured in this MVP environment. Copy the one-time invitation link below to onboard the Organization Admin.
+          <p className="text-xs text-amber-800 leading-relaxed">
+            Invitation generated for <strong>{result.invitationName}</strong> ({result.invitationEmail}). Copy the single-use invitation link below to onboard the Organization Admin.
           </p>
         </div>
 
         <div className="space-y-2">
-          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+          <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider">
             One-Time Invitation URL
           </label>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <input
               type="text"
               readOnly
               value={fullUrl}
-              className="w-full text-xs font-mono bg-gray-50 px-3 py-2.5 border border-gray-300 rounded-lg text-gray-700 select-all"
+              className="w-full text-xs font-mono bg-stone-50 px-3.5 py-2.5 border border-stone-200 rounded-xl text-neutral-800 select-all focus:outline-none"
             />
             <button
               type="button"
               onClick={handleCopyInvitationUrl}
-              className={`px-4 py-2.5 text-xs font-semibold rounded-lg border transition-colors flex items-center space-x-1.5 whitespace-nowrap ${copied
+              className={`px-4 py-2.5 text-xs font-semibold rounded-xl border transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-2xs ${
+                copied
                   ? 'bg-emerald-600 text-white border-transparent'
-                  : 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700'
-                }`}
+                  : 'bg-neutral-900 text-white border-transparent hover:bg-neutral-800'
+              }`}
             >
               {copied ? (
                 <>
@@ -179,37 +200,42 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                    />
                   </svg>
                   <span>Copy Link</span>
                 </>
               )}
             </button>
           </div>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-neutral-400">
             This link expires in 7 days and can only be used once to activate the administrator account.
           </p>
         </div>
 
-        <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+        <div className="pt-6 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3">
           <Link
             href="/platform-admin/tenants"
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-stone-200/80 rounded-xl text-xs font-semibold text-neutral-700 hover:bg-stone-50 transition-colors"
           >
             ← Return to Organizations Directory
           </Link>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <Link
               href={result.invitationUrl}
               target="_blank"
-              className="px-4 py-2 border border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-sm font-medium"
+              className="px-4 py-2 border border-emerald-200 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl text-xs font-semibold transition-colors"
             >
               Open Invitation Flow ↗
             </Link>
             <Link
               href={`/platform-admin/tenants/${result.tenantId}`}
-              className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-semibold shadow-xs"
+              className="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-semibold shadow-2xs transition-colors"
             >
               View Organization Detail →
             </Link>
@@ -221,22 +247,18 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/platform-admin/tenants"
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-900 inline-flex items-center mb-2"
-        >
-          ← Back to Organizations Directory
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Provision Organization</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Create an enterprise organization tenant, configure subscription tier and seat quota, and invite the primary organization administrator.
-        </p>
-      </div>
+      <PageHeader
+        title="Provision Organization"
+        description="Create an enterprise organization tenant, configure subscription tier and seat quota, and invite the primary organization administrator."
+        breadcrumbs={[
+          { label: 'Tenants', href: '/platform-admin/tenants' },
+          { label: 'Provision' },
+        ]}
+      />
 
       {error && (
-        <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-start space-x-2">
-          <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+          <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>{error}</span>
@@ -244,21 +266,21 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
       )}
 
       {activePlans.length === 0 ? (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-sm text-amber-900 space-y-3">
-          <h3 className="font-bold text-base">No Active Subscription Plans Found</h3>
+        <div className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-6 text-xs text-amber-950 space-y-3">
+          <h3 className="font-bold text-sm">No Active Subscription Plans Found</h3>
           <p>You must have at least one active subscription plan before provisioning organizations.</p>
           <Link
             href="/platform-admin/plans"
-            className="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold text-xs hover:bg-amber-700"
+            className="inline-flex items-center px-4 py-2 bg-neutral-900 text-white rounded-xl font-semibold text-xs hover:bg-neutral-800 shadow-2xs"
           >
             Manage Subscription Plans →
           </Link>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-xs p-6 space-y-5">
-            <h2 className="text-base font-bold text-gray-900 pb-2 border-b border-gray-100 flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs p-6 space-y-5">
+            <h2 className="text-sm font-bold text-neutral-900 pb-2 border-b border-stone-100 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center justify-center">
                 1
               </span>
               <span>Organization Identity</span>
@@ -266,7 +288,7 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Organization Name *
                 </label>
                 <input
@@ -275,12 +297,12 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                   placeholder="e.g. Globex Corporation"
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Identifier Slug *
                 </label>
                 <input
@@ -292,13 +314,13 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                     setSlugTouched(true);
                     setSlug(e.target.value.toLowerCase());
                   }}
-                  className="w-full text-sm font-mono px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs font-mono px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
-                <p className="text-[11px] text-gray-400 mt-1">Unique URL and tenant namespace identifier.</p>
+                <p className="text-[11px] text-neutral-400 mt-1">Unique URL and tenant namespace identifier.</p>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Primary Domain (Optional)
                 </label>
                 <input
@@ -306,12 +328,12 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                   placeholder="e.g. globex.com"
                   value={domain}
                   onChange={(e) => setDomain(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Primary Contact Name (Optional)
                 </label>
                 <input
@@ -319,12 +341,12 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                   placeholder="e.g. John Doe"
                   value={primaryContactName}
                   onChange={(e) => setPrimaryContactName(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Primary Contact Email (Optional)
                 </label>
                 <input
@@ -332,15 +354,15 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                   placeholder="e.g. contact@globex.com"
                   value={primaryContactEmail}
                   onChange={(e) => setPrimaryContactEmail(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 shadow-xs p-6 space-y-5">
-            <h2 className="text-base font-bold text-gray-900 pb-2 border-b border-gray-100 flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center">
+          <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs p-6 space-y-5">
+            <h2 className="text-sm font-bold text-neutral-900 pb-2 border-b border-stone-100 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center justify-center">
                 2
               </span>
               <span>Subscription Tier & Seat Allocation</span>
@@ -348,13 +370,13 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Subscription Plan *
                 </label>
                 <select
                   value={selectedPlanId}
                   onChange={(e) => handlePlanChange(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 >
                   {activePlans.map((plan) => (
                     <option key={plan.id} value={plan.id}>
@@ -365,7 +387,7 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Enforced Seat Limit *
                 </label>
                 <input
@@ -374,28 +396,28 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                   required
                   value={seatLimit}
                   onChange={(e) => setSeatLimit(parseInt(e.target.value) || 1)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
-                <p className="text-[11px] text-gray-400 mt-1">Maximum active accounts allowed for this organization.</p>
+                <p className="text-[11px] text-neutral-400 mt-1">Maximum active accounts allowed for this organization.</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 shadow-xs p-6 space-y-5">
-            <h2 className="text-base font-bold text-gray-900 pb-2 border-b border-gray-100 flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center">
+          <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs p-6 space-y-5">
+            <h2 className="text-sm font-bold text-neutral-900 pb-2 border-b border-stone-100 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center justify-center">
                 3
               </span>
               <span>Initial Organization Administrator</span>
             </h2>
 
-            <p className="text-xs text-gray-500">
-              An invitation will be generated for this user with the <span className="font-semibold text-gray-900">ORGANIZATION_ADMIN</span> role.
+            <p className="text-xs text-neutral-500">
+              An invitation will be generated for this user with the <span className="font-semibold text-neutral-900">ORGANIZATION_ADMIN</span> role.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Administrator Full Name *
                 </label>
                 <input
@@ -404,12 +426,12 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                   placeholder="e.g. Jane Smith"
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
                   Administrator Email Address *
                 </label>
                 <input
@@ -418,16 +440,16 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
                   placeholder="e.g. jane.smith@globex.com"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-200/80">
             <Link
               href="/platform-admin/tenants"
-              className="px-5 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-stone-200/80 rounded-xl text-xs font-semibold text-neutral-700 hover:bg-stone-50 transition-colors"
             >
               Cancel
             </Link>
@@ -435,7 +457,7 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 shadow-sm transition-colors"
+              className="px-5 py-2 border border-transparent rounded-xl text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 shadow-2xs transition-colors"
             >
               {isSubmitting ? 'Provisioning...' : 'Provision Organization'}
             </button>

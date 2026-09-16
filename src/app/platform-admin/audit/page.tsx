@@ -1,6 +1,5 @@
 import { requireRole } from '@/lib/auth/guards';
 import { UserRole, AuditAction } from '@prisma/client';
-import { PlatformAdminNav } from '@/components/layout/platform-admin-nav';
 import { getAuditLogsForPlatformAdmin } from '@/services/audit';
 import { prisma } from '@/lib/db';
 import { PlatformAdminAuditView } from './audit-view';
@@ -55,25 +54,19 @@ export default async function PlatformAdminAuditPage({ searchParams }: PlatformA
   ]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <PlatformAdminNav />
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PlatformAdminAuditView
-          initialData={auditData}
-          tenants={tenants}
-          availableActions={Object.values(AuditAction)}
-          currentFilters={{
-            tenantId: resolvedParams.tenantId || '',
-            action: resolvedParams.action || '',
-            entityType: resolvedParams.entityType || '',
-            from: resolvedParams.from || '',
-            to: resolvedParams.to || '',
-            page,
-            pageSize,
-          }}
-        />
-      </main>
-    </div>
+    <PlatformAdminAuditView
+      initialData={auditData}
+      tenants={tenants}
+      availableActions={Object.values(AuditAction)}
+      currentFilters={{
+        tenantId: resolvedParams.tenantId || '',
+        action: resolvedParams.action || '',
+        entityType: resolvedParams.entityType || '',
+        from: resolvedParams.from || '',
+        to: resolvedParams.to || '',
+        page,
+        pageSize,
+      }}
+    />
   );
 }

@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { requireRole } from '@/lib/auth/guards';
 import { UserRole } from '@prisma/client';
-import { PlatformAdminNav } from '@/components/layout/platform-admin-nav';
 import { getTenantByIdForPlatformAdmin } from '@/services/tenants';
 import { getActiveSubscriptionPlans } from '@/services/plans';
 import { TenantDetailView } from './tenant-detail-view';
@@ -29,12 +28,8 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <PlatformAdminNav />
-
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <TenantDetailView tenant={tenant} activePlans={activePlans} />
-      </main>
+    <div className="max-w-5xl mx-auto">
+      <TenantDetailView tenant={tenant} activePlans={activePlans} />
     </div>
   );
 }
