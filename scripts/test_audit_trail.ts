@@ -9,7 +9,6 @@ import {
   AssessmentStatus,
 } from '@prisma/client';
 import {
-  logAuditEvent,
   sanitizeAuditDetails,
   getAuditLogsForPlatformAdmin,
   getAuditLogsForTenant,
@@ -32,16 +31,13 @@ import {
 import {
   createIndustryTemplate,
   updateIndustryTemplate,
-  toggleIndustryTemplateActive,
 } from '../src/services/industry-templates';
 import {
   createCustomCompetency,
   updateCustomCompetency,
   toggleCompetencyActive,
 } from '../src/services/competencies';
-import {
-  createTenantUserInvitation,
-} from '../src/services/invitations';
+
 import {
   updateTenantUser,
   deactivateTenantUser,
@@ -50,13 +46,9 @@ import {
 import {
   createDepartment,
   updateDepartment,
-  toggleDepartmentActive,
   createTeam,
   updateTeam,
-  toggleTeamActive,
   addTeamMember,
-  removeTeamMember,
-  setUserTeamMemberships,
 } from '../src/services/organization-structure';
 import {
   createRoleProfile,

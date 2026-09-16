@@ -10,9 +10,7 @@ import {
 } from '@prisma/client';
 import {
   createLearningResource,
-  updateLearningResource,
   toggleLearningResourceActive,
-  deleteLearningResource,
   getStaffLearningRecommendations,
   getLearningResourcesForTenant,
   getLearningResourceById,
@@ -21,8 +19,6 @@ import {
   generateDraftInterviewQuestions,
   createInterviewQuestionSet,
   updateInterviewQuestionSet,
-  deleteInterviewQuestionSet,
-  getInterviewQuestionSetsForTenant,
   getInterviewQuestionSetById,
   generateInterviewQuestionSetPdf,
 } from '../src/services/interview-questions';

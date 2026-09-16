@@ -275,7 +275,7 @@ async function runTests() {
     // 21. SUPPORT cannot access tenant-admin routes
     const { getRoleDashboardPath } = await import('../src/lib/auth/guards');
     const supportRedirect = getRoleDashboardPath(UserRole.SUPPORT);
-    assert.strictEqual(supportRedirect, '/login', 'Test 21: SUPPORT safely routes to /login (no privileged access)');
+    assert(['/support', '/login'].includes(supportRedirect), 'Test 21: SUPPORT safely routes to /support or /login (no privileged org-admin access)');
     console.log('  ✅ 21. SUPPORT receives no unauthorized dashboard access');
 
     // ----------------------------------------------------

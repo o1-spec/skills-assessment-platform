@@ -7,7 +7,6 @@ import {
   UserRole,
 } from '@prisma/client';
 import {
-  getStaffSkillsProfile,
   getStaffSkillsHistory,
   getStaffAspirationalGapAnalysis,
   getStaffPersonalGapAnalysis,
