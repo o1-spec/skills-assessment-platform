@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { prisma } from '@/lib/db';
-import { Tenant, TenantStatus, UserRole, SubscriptionPlan } from '@prisma/client';
+import { Tenant, TenantStatus, UserRole, SubscriptionPlan, BillingCycle } from '@prisma/client';
 import { ProvisionTenantInput, UpdateTenantPlanInput } from '@/lib/validation/tenants';
 import { hashInvitationToken, GeneratedInvitation, sendInvitationEmail } from './invitations';
 import { logAuditEvent, AuditAction, AuditActorContext } from './audit';
@@ -189,7 +189,7 @@ export async function getTenantByIdForPlatformAdmin(id: string): Promise<TenantW
  * sets status to PENDING_ONBOARDING, and creates an initial Org Admin invitation.
  */
 export async function provisionTenant(
-  input: ProvisionTenantInput,
+  input: Omit<ProvisionTenantInput, 'billingCycle'> & { billingCycle?: BillingCycle },
   createdById?: string,
   actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<{ tenant: Tenant; invitation: GeneratedInvitation }> {
@@ -242,6 +242,8 @@ export async function provisionTenant(
           slug,
           planId: input.planId,
           seatLimit: input.seatLimit,
+          billingCycle: input.billingCycle || BillingCycle.MONTHLY,
+          logoUrl: input.logoUrl ? input.logoUrl.trim() : null,
           domain: input.domain ? input.domain.trim() : null,
           primaryContactName: input.primaryContactName ? input.primaryContactName.trim() : null,
           primaryContactEmail: input.primaryContactEmail ? input.primaryContactEmail.toLowerCase().trim() : null,
@@ -266,18 +268,18 @@ export async function provisionTenant(
       await logAuditEvent({
         tx,
         tenantId: tenant.id,
-        actorId: actorContext?.actorId || createdById || null,
+        actorId: createdById || null,
         actorRole: UserRole.PLATFORM_ADMIN,
         action: AuditAction.USER_INVITE,
-        resourceType: 'TenantInvitation',
+        resourceType: 'User',
         resourceId: invitation.id,
         ipAddress: actorContext?.ipAddress,
         userAgent: actorContext?.userAgent,
         details: {
           email: adminEmail,
-          name: input.adminName.trim(),
           role: UserRole.ORGANIZATION_ADMIN,
-          expiresAt: invitation.expiresAt.toISOString(),
+          expiresAt: expiresAt.toISOString(),
+          isInitialAdmin: true,
         },
       });
 
@@ -285,7 +287,7 @@ export async function provisionTenant(
       await logAuditEvent({
         tx,
         tenantId: tenant.id,
-        actorId: actorContext?.actorId || createdById || null,
+        actorId: createdById || null,
         actorRole: UserRole.PLATFORM_ADMIN,
         action: AuditAction.TENANT_PROVISION,
         resourceType: 'Tenant',
@@ -298,6 +300,7 @@ export async function provisionTenant(
           planId: plan.id,
           planName: plan.name,
           seatLimit: input.seatLimit,
+          billingCycle: input.billingCycle,
           adminEmail,
         },
       });
@@ -341,7 +344,7 @@ export async function provisionTenant(
 }
 
 /**
- * Updates a tenant's subscription plan and seat limit.
+ * Updates a tenant's subscription plan, seat limit, and optional billing cycle.
  */
 export async function updateTenantPlanAndSeatLimit(
   tenantId: string,
@@ -383,12 +386,13 @@ export async function updateTenantPlanAndSeatLimit(
     data: {
       planId: plan.id,
       seatLimit: input.seatLimit,
+      ...(input.billingCycle ? { billingCycle: input.billingCycle } : {}),
     },
   });
 }
 
 /**
- * Updates a tenant's status (ACTIVE, SUSPENDED, PENDING_ONBOARDING).
+ * Updates a tenant's status (ACTIVE, SUSPENDED, PENDING_ONBOARDING, ARCHIVED).
  */
 export async function updateTenantStatus(
   tenantId: string,
@@ -413,6 +417,8 @@ export async function updateTenantStatus(
         ? AuditAction.TENANT_SUSPEND
         : status === TenantStatus.ACTIVE
         ? AuditAction.TENANT_REACTIVATE
+        : status === TenantStatus.ARCHIVED
+        ? AuditAction.TENANT_ARCHIVE
         : null;
 
     if (action) {
@@ -438,4 +444,15 @@ export async function updateTenantStatus(
   });
 
   return updated;
+}
+
+/**
+ * Terminal archival of a tenant.
+ * Sets status to ARCHIVED, audits the action, and preserves all historical data.
+ */
+export async function archiveTenant(
+  tenantId: string,
+  actor?: AuditActorContext
+): Promise<Tenant> {
+  return updateTenantStatus(tenantId, TenantStatus.ARCHIVED, actor);
 }

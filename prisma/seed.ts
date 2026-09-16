@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
-import { PrismaClient, UserRole, CompetencyType, RoleProfileStatus, CampaignStatus, AssessmentStatus, FrameworkStatus, TenantStatus } from '@prisma/client';
+import { PrismaClient, UserRole, CompetencyType, RoleProfileStatus, CampaignStatus, AssessmentStatus, FrameworkStatus, TenantStatus, CareerPathStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 function cleanConnectionString(rawUrl?: string) {
@@ -801,6 +801,83 @@ async function main() {
   });
 
   console.log(`✓ Organization structure: Engineering dept → Backend Engineering team (Michael + Sarah).`);
+
+  // 9. Demo Career Path: Backend Engineer -> Senior Backend Engineer
+  let seniorRole = await prisma.roleProfile.findFirst({
+    where: {
+      tenantId: tenant.id,
+      name: 'Senior Backend Engineer',
+    },
+  });
+
+  if (!seniorRole) {
+    seniorRole = await prisma.roleProfile.create({
+      data: {
+        tenantId: tenant.id,
+        name: 'Senior Backend Engineer',
+        description: 'Advanced engineering, architecture, and mentoring expectations for Senior Backend Engineers at Acme Technologies.',
+        status: RoleProfileStatus.PUBLISHED,
+      },
+    });
+
+    const seniorRequirements = [
+      { name: 'JavaScript', targetLevel: 5 },
+      { name: 'Node.js', targetLevel: 5 },
+      { name: 'SQL', targetLevel: 4 },
+      { name: 'REST APIs', targetLevel: 5 },
+      { name: 'Communication', targetLevel: 4 },
+      { name: 'Collaboration', targetLevel: 4 },
+      { name: 'Problem Solving', targetLevel: 4 },
+    ];
+
+    for (const req of seniorRequirements) {
+      const compId = competencyMap.get(req.name);
+      if (!compId) continue;
+
+      await prisma.roleRequirement.create({
+        data: {
+          roleProfileId: seniorRole.id,
+          competencyId: compId,
+          targetLevel: req.targetLevel,
+        },
+      });
+    }
+  }
+
+  let demoCareerPath = await prisma.careerPath.findFirst({
+    where: {
+      tenantId: tenant.id,
+      name: 'Backend Engineering Career Path',
+    },
+  });
+
+  if (!demoCareerPath) {
+    demoCareerPath = await prisma.careerPath.create({
+      data: {
+        tenantId: tenant.id,
+        name: 'Backend Engineering Career Path',
+        description: 'Progression track from Backend Engineer to Senior Backend Engineer at Acme Technologies.',
+        status: CareerPathStatus.PUBLISHED,
+      },
+    });
+
+    await prisma.careerPathStep.createMany({
+      data: [
+        {
+          careerPathId: demoCareerPath.id,
+          roleProfileId: roleProfile.id,
+          orderIndex: 0,
+        },
+        {
+          careerPathId: demoCareerPath.id,
+          roleProfileId: seniorRole.id,
+          orderIndex: 1,
+        },
+      ],
+    });
+  }
+  console.log(`✓ Demo Career Path ready: Backend Engineer → Senior Backend Engineer`);
+
   console.log('✨ Database seed completed successfully!');
 }
 

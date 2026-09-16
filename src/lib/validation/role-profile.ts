@@ -19,7 +19,7 @@ export const createRoleProfileSchema = z
       .max(500, 'Description cannot exceed 500 characters')
       .optional()
       .or(z.literal('')),
-    status: z.nativeEnum(RoleProfileStatus).default(RoleProfileStatus.DRAFT),
+    status: z.nativeEnum(RoleProfileStatus).optional().default(RoleProfileStatus.DRAFT),
     requirements: z.array(roleRequirementInputSchema).default([]),
   })
   .refine(

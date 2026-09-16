@@ -26,7 +26,9 @@ export async function provisionTenantAction(formData: FormData) {
       slug: formData.get('slug'),
       planId: formData.get('planId'),
       seatLimit: formData.get('seatLimit'),
+      billingCycle: formData.get('billingCycle') || 'MONTHLY',
       domain: formData.get('domain') || undefined,
+      logoUrl: formData.get('logoUrl') || undefined,
       primaryContactName: formData.get('primaryContactName') || undefined,
       primaryContactEmail: formData.get('primaryContactEmail') || undefined,
       adminName: formData.get('adminName'),
@@ -66,6 +68,7 @@ export async function updateTenantPlanAction(tenantId: string, formData: FormDat
     const rawData = {
       planId: formData.get('planId'),
       seatLimit: formData.get('seatLimit'),
+      billingCycle: formData.get('billingCycle') || undefined,
     };
 
     const parsed = updateTenantPlanSchema.safeParse(rawData);
@@ -103,5 +106,9 @@ export async function updateTenantStatusAction(tenantId: string, status: TenantS
     const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return { success: false, error: message };
   }
+}
+
+export async function archiveTenantAction(tenantId: string) {
+  return updateTenantStatusAction(tenantId, TenantStatus.ARCHIVED);
 }
 

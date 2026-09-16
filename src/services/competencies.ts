@@ -406,3 +406,55 @@ export async function deleteUnusedCustomCompetency(
     where: { id },
   });
 }
+
+/**
+ * Updates a tenant competency's weighting (OA-02 requirement).
+ * Strictly scoped to tenantId.
+ */
+export async function updateCompetencyWeight(
+  tenantId: string,
+  id: string,
+  weight: number,
+  actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
+): Promise<Competency> {
+  if (!tenantId || !id) {
+    throw new Error('Tenant ID and Competency ID are required.');
+  }
+
+  if (weight <= 0) {
+    throw new Error('Competency weight must be a positive integer.');
+  }
+
+  const comp = await prisma.competency.findFirst({
+    where: { id, tenantId },
+  });
+
+  if (!comp) {
+    throw new Error('Competency not found or does not belong to your organization.');
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.competency.update({
+      where: { id },
+      data: { weight },
+    });
+
+    await logAuditEvent({
+      tx,
+      action: AuditAction.COMPETENCY_UPDATE,
+      entityType: 'Competency',
+      entityId: updated.id,
+      tenantId,
+      actorId: actorContext?.actorId,
+      ipAddress: actorContext?.ipAddress,
+      userAgent: actorContext?.userAgent,
+      details: {
+        name: updated.name,
+        previousWeight: comp.weight,
+        newWeight: weight,
+      },
+    });
+
+    return updated;
+  });
+}

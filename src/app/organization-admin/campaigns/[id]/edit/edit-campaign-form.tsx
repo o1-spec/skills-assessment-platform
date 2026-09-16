@@ -34,6 +34,9 @@ export function EditCampaignForm({
 
   const [name, setName] = useState(campaign.name);
   const [description, setDescription] = useState(campaign.description || '');
+  const [startDate, setStartDate] = useState(() =>
+    campaign.startDate ? new Date(campaign.startDate).toISOString().split('T')[0] : ''
+  );
   const [deadline, setDeadline] = useState(() =>
     new Date(campaign.deadline).toISOString().split('T')[0]
   );
@@ -196,6 +199,23 @@ export function EditCampaignForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
           <div>
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+              Start Date <span className="text-gray-400 font-normal">(Optional Opening Date)</span>
+            </label>
+            <input
+              type="date"
+              id="startDate"
+              name="startDate"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 bg-white"
+            />
+            {state?.fieldErrors?.startDate && (
+              <p className="mt-1 text-xs text-red-600">{state.fieldErrors.startDate[0]}</p>
+            )}
+          </div>
+
+          <div>
             <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
               Assessment Deadline <span className="text-red-500">*</span>
             </label>
@@ -212,6 +232,7 @@ export function EditCampaignForm({
               <p className="mt-1 text-xs text-red-600">{state.fieldErrors.deadline[0]}</p>
             )}
           </div>
+        </div>
 
           <div className="flex items-center pt-6">
             <label className="relative flex items-start cursor-pointer">
@@ -234,7 +255,6 @@ export function EditCampaignForm({
             </label>
           </div>
         </div>
-      </div>
 
       {/* 2. Role Profile Template Selection Card */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">

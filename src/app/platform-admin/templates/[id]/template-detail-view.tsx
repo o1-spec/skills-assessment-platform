@@ -9,6 +9,7 @@ import {
   toggleIndustryTemplateActiveAction,
   deleteIndustryTemplateAction,
   addTemplateCompetencyAction,
+  updateTemplateCompetencyWeightAction,
   removeTemplateCompetencyAction,
   createTemplateRoleProfileAction,
   updateTemplateRoleProfileAction,
@@ -39,6 +40,10 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Competency weight editing state
+  const [editingWeightCompId, setEditingWeightCompId] = useState<string | null>(null);
+  const [weightValue, setWeightValue] = useState<number>(100);
 
   // Active tab inside template detail: 'competencies' | 'roles'
   const [activeTab, setActiveTab] = useState<'competencies' | 'roles'>('competencies');
@@ -179,6 +184,30 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         return;
       }
       setSuccessMsg(`"${compName}" removed from template.`);
+      router.refresh();
+    } catch {
+      setError('An unexpected error occurred.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateWeight = async (frameworkCompetencyId: string, weight: number) => {
+    if (weight <= 0) {
+      setError('Weight must be a positive integer.');
+      return;
+    }
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const res = await updateTemplateCompetencyWeightAction(template.id, frameworkCompetencyId, weight);
+      if (!res.success) {
+        setError(res.error || 'Failed to update competency weight.');
+        setIsSubmitting(false);
+        return;
+      }
+      setSuccessMsg('Competency weight updated.');
+      setEditingWeightCompId(null);
       router.refresh();
     } catch {
       setError('An unexpected error occurred.');
@@ -511,13 +540,57 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCompetency(tc.frameworkCompetencyId, tc.frameworkCompetency.name)}
-                          className="text-xs font-semibold text-red-600 hover:text-red-800 self-start shrink-0"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex items-center space-x-2 self-start shrink-0">
+                          {editingWeightCompId === tc.frameworkCompetencyId ? (
+                            <div className="flex items-center space-x-1">
+                              <input
+                                type="number"
+                                min={1}
+                                max={1000}
+                                value={weightValue}
+                                onChange={(e) => setWeightValue(parseInt(e.target.value, 10) || 100)}
+                                className="w-16 px-1.5 py-0.5 text-xs border border-gray-300 rounded"
+                              />
+                              <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() => handleUpdateWeight(tc.frameworkCompetencyId, weightValue)}
+                                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingWeightCompId(null)}
+                                className="text-xs text-gray-500 hover:text-gray-700"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-1.5">
+                              <span className="text-xs text-gray-600 font-medium">Weight: {tc.weight ?? 100}%</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingWeightCompId(tc.frameworkCompetencyId);
+                                  setWeightValue(tc.weight ?? 100);
+                                }}
+                                className="text-[11px] text-indigo-600 hover:text-indigo-800 underline"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          )}
+                          <span className="text-gray-300">|</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCompetency(tc.frameworkCompetencyId, tc.frameworkCompetency.name)}
+                            className="text-xs font-semibold text-red-600 hover:text-red-800"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -563,13 +636,57 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCompetency(bc.frameworkCompetencyId, bc.frameworkCompetency.name)}
-                          className="text-xs font-semibold text-red-600 hover:text-red-800 self-start shrink-0"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex items-center space-x-2 self-start shrink-0">
+                          {editingWeightCompId === bc.frameworkCompetencyId ? (
+                            <div className="flex items-center space-x-1">
+                              <input
+                                type="number"
+                                min={1}
+                                max={1000}
+                                value={weightValue}
+                                onChange={(e) => setWeightValue(parseInt(e.target.value, 10) || 100)}
+                                className="w-16 px-1.5 py-0.5 text-xs border border-gray-300 rounded"
+                              />
+                              <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() => handleUpdateWeight(bc.frameworkCompetencyId, weightValue)}
+                                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingWeightCompId(null)}
+                                className="text-xs text-gray-500 hover:text-gray-700"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-1.5">
+                              <span className="text-xs text-gray-600 font-medium">Weight: {bc.weight ?? 100}%</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingWeightCompId(bc.frameworkCompetencyId);
+                                  setWeightValue(bc.weight ?? 100);
+                                }}
+                                className="text-[11px] text-indigo-600 hover:text-indigo-800 underline"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          )}
+                          <span className="text-gray-300">|</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCompetency(bc.frameworkCompetencyId, bc.frameworkCompetency.name)}
+                            className="text-xs font-semibold text-red-600 hover:text-red-800"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

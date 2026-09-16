@@ -44,8 +44,8 @@ export async function authenticateUser(email: string, password: string): Promise
     return null;
   }
 
-  // Deny access if user belongs to a suspended tenant
-  if (user.tenant && user.tenant.status === 'SUSPENDED') {
+  // Deny access if user belongs to a suspended or archived tenant
+  if (user.tenant && (user.tenant.status === 'SUSPENDED' || user.tenant.status === 'ARCHIVED')) {
     return null;
   }
 
@@ -106,8 +106,8 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
     return null;
   }
 
-  // Deny access if user belongs to a suspended tenant
-  if (user.tenant && user.tenant.status === 'SUSPENDED') {
+  // Deny access if user belongs to a suspended or archived tenant
+  if (user.tenant && (user.tenant.status === 'SUSPENDED' || user.tenant.status === 'ARCHIVED')) {
     return null;
   }
 

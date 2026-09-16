@@ -59,7 +59,9 @@ export type FullIndustryTemplate = IndustryTemplate & {
   };
   competencies: {
     id: string;
+    industryTemplateId?: string;
     frameworkCompetencyId: string;
+    weight: number;
     frameworkCompetency: {
       id: string;
       name: string;
@@ -468,11 +470,12 @@ export async function deleteIndustryTemplate(id: string): Promise<IndustryTempla
 }
 
 /**
- * Adds a canonical competency to an industry template.
+ * Adds a canonical competency to an industry template with optional weighting.
  */
 export async function addTemplateCompetency(
   industryTemplateId: string,
-  frameworkCompetencyId: string
+  frameworkCompetencyId: string,
+  weight: number = 100
 ) {
   const template = await prisma.industryTemplate.findUnique({
     where: { id: industryTemplateId },
@@ -494,6 +497,10 @@ export async function addTemplateCompetency(
     throw new Error('Competency does not belong to this industry template’s framework version.');
   }
 
+  if (weight <= 0) {
+    throw new Error('Competency weight must be a positive integer.');
+  }
+
   // Check if already added
   const existing = await prisma.industryTemplateCompetency.findUnique({
     where: {
@@ -512,7 +519,31 @@ export async function addTemplateCompetency(
     data: {
       industryTemplateId,
       frameworkCompetencyId,
+      weight,
     },
+  });
+}
+
+/**
+ * Updates the weight for an industry template competency.
+ */
+export async function updateTemplateCompetencyWeight(
+  industryTemplateId: string,
+  frameworkCompetencyId: string,
+  weight: number
+) {
+  if (weight <= 0) {
+    throw new Error('Competency weight must be a positive integer.');
+  }
+
+  return prisma.industryTemplateCompetency.update({
+    where: {
+      industryTemplateId_frameworkCompetencyId: {
+        industryTemplateId,
+        frameworkCompetencyId,
+      },
+    },
+    data: { weight },
   });
 }
 

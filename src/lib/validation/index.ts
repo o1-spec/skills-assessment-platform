@@ -18,3 +18,4 @@ export * from './invitations';
 export * from './industry-templates';
 export * from './users';
 export * from './evidence-attachment';
+export * from './career-paths';

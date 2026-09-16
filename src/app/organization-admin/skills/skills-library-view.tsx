@@ -360,6 +360,8 @@ function CompetencyLibraryCard({
             </span>
             <span>&bull;</span>
             <span>{competency.levels.length} Levels</span>
+            <span>&bull;</span>
+            <span className="font-semibold text-gray-700">Weight: {competency.weight ?? 100}%</span>
           </div>
         </div>
 

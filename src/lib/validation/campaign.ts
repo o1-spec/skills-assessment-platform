@@ -14,6 +14,12 @@ export const createCampaignSchema = z
       .max(500, 'Description cannot exceed 500 characters')
       .optional()
       .or(z.literal('')),
+    startDate: z.coerce
+      .date({
+        message: 'Please enter a valid start date',
+      })
+      .optional()
+      .nullable(),
     deadline: z.coerce.date({
       message: 'Please enter a valid date for the deadline',
     }),
@@ -40,6 +46,18 @@ export const createCampaignSchema = z
       .transform((ids) => Array.from(new Set(ids))),
     status: z.nativeEnum(CampaignStatus).default(CampaignStatus.DRAFT),
   })
+  .refine(
+    (data) => {
+      if (data.startDate && data.deadline) {
+        return data.startDate.getTime() < data.deadline.getTime();
+      }
+      return true;
+    },
+    {
+      message: 'Campaign start date must be strictly before the deadline.',
+      path: ['startDate'],
+    }
+  )
   .refine(
     (data) => {
       if (data.status === CampaignStatus.ACTIVE) {
@@ -105,6 +123,12 @@ export const updateCampaignDraftSchema = z
       .max(500, 'Description cannot exceed 500 characters')
       .optional()
       .or(z.literal('')),
+    startDate: z.coerce
+      .date({
+        message: 'Please enter a valid start date',
+      })
+      .optional()
+      .nullable(),
     deadline: z.coerce.date({
       message: 'Please enter a valid date for the deadline',
     }),
@@ -129,7 +153,19 @@ export const updateCampaignDraftSchema = z
       .array(z.string().min(1))
       .default([])
       .transform((ids) => Array.from(new Set(ids))),
-  });
+  })
+  .refine(
+    (data) => {
+      if (data.startDate && data.deadline) {
+        return data.startDate.getTime() < data.deadline.getTime();
+      }
+      return true;
+    },
+    {
+      message: 'Campaign start date must be strictly before the deadline.',
+      path: ['startDate'],
+    }
+  );
 
 export type UpdateCampaignDraftInput = z.input<typeof updateCampaignDraftSchema>;
 export type UpdateCampaignDraftOutput = z.output<typeof updateCampaignDraftSchema>;

@@ -9,6 +9,7 @@ import {
   toggleIndustryTemplateActive,
   deleteIndustryTemplate,
   addTemplateCompetency,
+  updateTemplateCompetencyWeight,
   removeTemplateCompetency,
   createTemplateRoleProfile,
   updateTemplateRoleProfile,
@@ -153,6 +154,27 @@ export async function removeTemplateCompetencyAction(
     return {
       success: false as const,
       error: err instanceof Error ? err.message : 'Failed to remove competency from template.',
+    };
+  }
+}
+
+export async function updateTemplateCompetencyWeightAction(
+  industryTemplateId: string,
+  frameworkCompetencyId: string,
+  weight: number
+) {
+  await requireRole(UserRole.PLATFORM_ADMIN);
+
+  try {
+    await updateTemplateCompetencyWeight(industryTemplateId, frameworkCompetencyId, weight);
+    revalidatePath(`/platform-admin/templates/${industryTemplateId}`);
+    return {
+      success: true as const,
+    };
+  } catch (err: unknown) {
+    return {
+      success: false as const,
+      error: err instanceof Error ? err.message : 'Failed to update competency weight.',
     };
   }
 }

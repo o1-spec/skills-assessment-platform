@@ -18,6 +18,7 @@ enum UserRole {
   ORGANIZATION_ADMIN
   MANAGER
   STAFF
+  SUPPORT
 }
 
 enum CompetencyType {
@@ -59,6 +60,17 @@ enum TenantStatus {
   PENDING_ONBOARDING
   ACTIVE
   SUSPENDED
+  ARCHIVED
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+enum CareerPathStatus {
+  DRAFT
+  PUBLISHED
 }
 
 enum NotificationType {
@@ -83,6 +95,7 @@ enum AuditAction {
   TENANT_PROVISION
   TENANT_SUSPEND
   TENANT_REACTIVATE
+  TENANT_ARCHIVE
   PLAN_CREATE
   PLAN_UPDATE
   FRAMEWORK_CREATE
@@ -114,6 +127,9 @@ enum AuditAction {
   CAMPAIGN_LAUNCH
   ASSESSMENT_SUBMIT
   CORROBORATION_SUBMIT
+  CAREER_PATH_CREATE
+  CAREER_PATH_UPDATE
+  CAREER_PATH_PUBLISH
 }
 
 // ------------------------------------------------------
@@ -143,6 +159,8 @@ model Tenant {
   status              TenantStatus @default(PENDING_ONBOARDING)
   planId              String?
   seatLimit           Int?
+  billingCycle        BillingCycle @default(MONTHLY)
+  logoUrl             String?
   isOnboarded         Boolean      @default(false)
   domain              String?
   primaryContactName  String?
@@ -154,6 +172,7 @@ model Tenant {
   users              User[]
   competencies       Competency[]
   roleProfiles       RoleProfile[]
+  careerPaths        CareerPath[]
   campaigns          AssessmentCampaign[]
   frameworkAdoptions TenantFrameworkAdoption[]
   invitations        TenantInvitation[]
@@ -288,6 +307,7 @@ model IndustryTemplateCompetency {
   id                    String   @id @default(cuid())
   industryTemplateId    String
   frameworkCompetencyId String
+  weight                Int      @default(100)
   createdAt             DateTime @default(now())
 
   industryTemplate    IndustryTemplate    @relation(fields: [industryTemplateId], references: [id], onDelete: Cascade)
@@ -397,6 +417,7 @@ model Competency {
   frameworkCompetencyId String?
   isCustom              Boolean              @default(true)
   isActive              Boolean              @default(true)
+  weight                Int                  @default(100)
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
 
@@ -444,6 +465,7 @@ model RoleProfile {
   campaigns    AssessmentCampaign[]
   users        User[]
   invitations  TenantInvitation[]
+  careerPathSteps CareerPathStep[]
 
   @@index([tenantId])
 }
@@ -461,6 +483,42 @@ model RoleRequirement {
 }
 
 // ------------------------------------------------------
+// CAREER PATH
+// ------------------------------------------------------
+
+model CareerPath {
+  id          String           @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  status      CareerPathStatus @default(DRAFT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  steps  CareerPathStep[]
+
+  @@index([tenantId])
+}
+
+model CareerPathStep {
+  id            String   @id @default(cuid())
+  careerPathId  String
+  roleProfileId String
+  orderIndex    Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  careerPath  CareerPath  @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  roleProfile RoleProfile @relation(fields: [roleProfileId], references: [id], onDelete: Restrict)
+
+  @@unique([careerPathId, roleProfileId])
+  @@unique([careerPathId, orderIndex])
+  @@index([careerPathId])
+  @@index([roleProfileId])
+}
+
+// ------------------------------------------------------
 // ASSESSMENT CAMPAIGN
 // ------------------------------------------------------
 
@@ -471,6 +529,7 @@ model AssessmentCampaign {
   description           String?
   roleProfileId         String?
   frameworkVersionId    String?
+  startDate             DateTime?
   deadline              DateTime
   requiresCorroboration Boolean           @default(false)
   status                CampaignStatus    @default(DRAFT)

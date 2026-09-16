@@ -16,6 +16,7 @@ export interface CreateCampaignFormState {
   fieldErrors?: {
     name?: string[];
     description?: string[];
+    startDate?: string[];
     deadline?: string[];
     roleProfileId?: string[];
     competencyIds?: string[];
@@ -39,6 +40,7 @@ export async function createCampaignAction(
 
   const name = formData.get('name');
   const description = formData.get('description');
+  const startDateRaw = formData.get('startDate');
   const deadlineRaw = formData.get('deadline');
   const requiresCorroboration =
     formData.get('requiresCorroboration') === 'true' ||
@@ -73,13 +75,14 @@ export async function createCampaignAction(
     .filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
 
   const validated = createCampaignSchema.safeParse({
-    name: typeof name === 'string' ? name : '',
-    description: typeof description === 'string' ? description : '',
-    deadline: typeof deadlineRaw === 'string' ? deadlineRaw : '',
+    name,
+    description: description || undefined,
+    startDate: startDateRaw || undefined,
+    deadline: deadlineRaw,
     requiresCorroboration,
-    roleProfileId: typeof roleProfileId === 'string' ? roleProfileId : null,
-    competencyIds,
+    roleProfileId: roleProfileId || undefined,
     scope,
+    competencyIds,
     teamIds,
     participantIds,
     status,
@@ -138,6 +141,7 @@ export async function updateCampaignDraftAction(
 
   const name = formData.get('name');
   const description = formData.get('description');
+  const startDateRaw = formData.get('startDate');
   const deadlineRaw = formData.get('deadline');
   const requiresCorroboration =
     formData.get('requiresCorroboration') === 'true' ||
@@ -168,6 +172,7 @@ export async function updateCampaignDraftAction(
   const validated = updateCampaignDraftSchema.safeParse({
     name: typeof name === 'string' ? name : '',
     description: typeof description === 'string' ? description : '',
+    startDate: startDateRaw || undefined,
     deadline: typeof deadlineRaw === 'string' ? deadlineRaw : '',
     requiresCorroboration,
     roleProfileId: typeof roleProfileId === 'string' ? roleProfileId : null,

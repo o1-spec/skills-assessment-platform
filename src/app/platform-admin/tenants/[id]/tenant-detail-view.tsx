@@ -18,6 +18,7 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
   const [isEditingPlan, setIsEditingPlan] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(tenant.planId || activePlans[0]?.id || '');
   const [seatLimit, setSeatLimit] = useState(tenant.seatLimit || 25);
+  const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>(tenant.billingCycle || 'MONTHLY');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -40,6 +41,7 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
       const formData = new FormData();
       formData.set('planId', selectedPlanId);
       formData.set('seatLimit', String(seatLimit));
+      formData.set('billingCycle', billingCycle);
 
       const res = await updateTenantPlanAction(tenant.id, formData);
       if (!res.success) {
@@ -48,7 +50,7 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
         return;
       }
 
-      setSuccessMsg('Subscription plan and seat quota updated successfully.');
+      setSuccessMsg('Subscription plan, seat quota, and billing cycle updated successfully.');
       setIsEditingPlan(false);
       router.refresh();
     } catch {
@@ -59,7 +61,12 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
   }
 
   async function handleStatusChange(newStatus: TenantStatus) {
-    const actionLabel = newStatus === TenantStatus.SUSPENDED ? 'suspend' : 'reactivate';
+    const actionLabel =
+      newStatus === TenantStatus.SUSPENDED
+        ? 'suspend'
+        : newStatus === TenantStatus.ARCHIVED
+        ? 'permanently archive'
+        : 'reactivate';
     if (!confirm(`Are you sure you want to ${actionLabel} organization "${tenant.name}"?`)) {
       return;
     }
@@ -101,34 +108,70 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
           ← Back to Organizations Directory
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{tenant.name}</h1>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Slug: <span className="font-mono">{tenant.slug}</span> • ID: <span className="font-mono">{tenant.id}</span>
-            </p>
+          <div className="flex items-center space-x-3">
+            {tenant.logoUrl && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={tenant.logoUrl}
+                alt={`${tenant.name} Logo`}
+                className="w-10 h-10 rounded-lg object-contain bg-white border border-gray-200 p-1"
+              />
+            )}
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{tenant.name}</h1>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Slug: <span className="font-mono">{tenant.slug}</span> • ID: <span className="font-mono">{tenant.id}</span>
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center space-x-3">
             {tenant.status === TenantStatus.ACTIVE && (
-              <button
-                type="button"
-                onClick={() => handleStatusChange(TenantStatus.SUSPENDED)}
-                disabled={isSubmitting}
-                className="px-4 py-2 border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
-              >
-                Suspend Organization
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleStatusChange(TenantStatus.SUSPENDED)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  Suspend Organization
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleStatusChange(TenantStatus.ARCHIVED)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  Archive Organization
+                </button>
+              </>
             )}
 
             {tenant.status === TenantStatus.SUSPENDED && (
-              <button
-                type="button"
-                onClick={() => handleStatusChange(TenantStatus.ACTIVE)}
-                disabled={isSubmitting}
-                className="px-4 py-2 border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
-              >
-                Reactivate Organization
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleStatusChange(TenantStatus.ACTIVE)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  Reactivate Organization
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleStatusChange(TenantStatus.ARCHIVED)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  Archive Organization
+                </button>
+              </>
+            )}
+
+            {tenant.status === TenantStatus.ARCHIVED && (
+              <span className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium border border-gray-200">
+                Organization Archived (Terminal)
+              </span>
             )}
           </div>
         </div>
@@ -260,6 +303,20 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
                   className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Billing Cycle *
+                </label>
+                <select
+                  value={billingCycle}
+                  onChange={(e) => setBillingCycle(e.target.value as 'MONTHLY' | 'ANNUAL')}
+                  className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="MONTHLY">Monthly</option>
+                  <option value="ANNUAL">Annual</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex items-center justify-end space-x-3 pt-3 border-t border-gray-100">
@@ -280,7 +337,7 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
             </div>
           </form>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
             <div>
               <span className="text-xs text-gray-500 block">Assigned Plan</span>
               <span className="font-semibold text-gray-900">{tenant.plan?.name || 'Unassigned'}</span>
@@ -292,6 +349,14 @@ export function TenantDetailView({ tenant, activePlans }: TenantDetailViewProps)
               <span className="font-semibold text-gray-900">{tenant.seatLimit ?? 'Unlimited'} active seats</span>
               <p className="text-xs text-gray-500 mt-1">
                 Currently {tenant.activeUsersCount} active accounts ({tenant.seatLimit ? Math.max(0, tenant.seatLimit - tenant.activeUsersCount) : '∞'} seats available).
+              </p>
+            </div>
+
+            <div>
+              <span className="text-xs text-gray-500 block">Billing Cycle</span>
+              <span className="font-semibold text-gray-900 capitalize">{tenant.billingCycle.toLowerCase()}</span>
+              <p className="text-xs text-gray-500 mt-1">
+                Invoice schedule configured for this tenant.
               </p>
             </div>
           </div>

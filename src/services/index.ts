@@ -19,3 +19,4 @@ export * from './manager-analytics';
 export * from './reports';
 export * from './notifications';
 export * from './audit';
+export * from './career-paths';

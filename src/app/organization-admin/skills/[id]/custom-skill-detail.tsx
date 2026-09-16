@@ -9,6 +9,7 @@ import {
   updateCustomCompetencyAction,
   toggleCompetencyActiveAction,
   deleteCustomCompetencyAction,
+  updateCompetencyWeightAction,
 } from '@/actions/skills';
 
 interface LevelRow {
@@ -52,6 +53,34 @@ export function CustomSkillDetail({
   const [isToggling, setIsToggling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [weight, setWeight] = useState<number>(competency.weight ?? 100);
+  const [isUpdatingWeight, setIsUpdatingWeight] = useState(false);
+  const [weightSuccess, setWeightSuccess] = useState<string | null>(null);
+
+  async function handleUpdateWeight(e: React.FormEvent) {
+    e.preventDefault();
+    if (weight <= 0) {
+      setError('Weight must be a positive integer.');
+      return;
+    }
+    setIsUpdatingWeight(true);
+    setError(null);
+    setWeightSuccess(null);
+    try {
+      const res = await updateCompetencyWeightAction(competency.id, weight);
+      if (!res.success) {
+        setError(res.error || 'Failed to update competency weight.');
+      } else {
+        setWeightSuccess('Competency weight updated successfully.');
+        router.refresh();
+      }
+    } catch {
+      setError('An unexpected error occurred.');
+    } finally {
+      setIsUpdatingWeight(false);
+    }
+  }
 
   function handleAddLevel() {
     const nextLevelNum = levels.length > 0 ? Math.max(...levels.map((l) => l.level)) + 1 : 1;
@@ -240,6 +269,37 @@ export function CustomSkillDetail({
             )}
           </div>
         </div>
+      </div>
+
+      {/* Weight Configuration Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-2xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900">Competency Weighting</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Configure the importance weighting for this skill within your organization (default: 100).
+            </p>
+          </div>
+          <form onSubmit={handleUpdateWeight} className="flex items-center space-x-2">
+            <input
+              type="number"
+              min={1}
+              max={1000}
+              value={weight}
+              onChange={(e) => setWeight(parseInt(e.target.value, 10) || 100)}
+              className="w-20 px-2.5 py-1 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500"
+            />
+            <span className="text-xs text-gray-500 font-medium">%</span>
+            <button
+              type="submit"
+              disabled={isUpdatingWeight || weight === (competency.weight ?? 100)}
+              className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {isUpdatingWeight ? 'Saving...' : 'Save Weight'}
+            </button>
+          </form>
+        </div>
+        {weightSuccess && <p className="text-xs text-emerald-600 font-medium">{weightSuccess}</p>}
       </div>
 
       {/* Informational Banners */}

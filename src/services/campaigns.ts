@@ -502,6 +502,7 @@ export async function createAssessmentCampaign(
         tenantId,
         name: input.name,
         description: input.description || null,
+        startDate: input.startDate || null,
         deadline: input.deadline,
         requiresCorroboration: input.requiresCorroboration,
         status: input.status,
@@ -665,6 +666,7 @@ export async function updateCampaignDraft(
       data: {
         name: input.name,
         description: input.description || null,
+        startDate: input.startDate || null,
         deadline: input.deadline,
         requiresCorroboration: input.requiresCorroboration,
         roleProfileId: input.roleProfileId || null,

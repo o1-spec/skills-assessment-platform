@@ -15,6 +15,7 @@ import {
   updateCustomCompetency,
   toggleCompetencyActive,
   deleteUnusedCustomCompetency,
+  updateCompetencyWeight,
 } from '@/services/competencies';
 
 export async function adoptFrameworkAction(frameworkVersionId: string) {
@@ -153,3 +154,24 @@ export async function deleteCustomCompetencyAction(id: string) {
     return { success: false, error: message };
   }
 }
+
+export async function updateCompetencyWeightAction(id: string, weight: number) {
+  try {
+    const user = await requireRole(UserRole.ORGANIZATION_ADMIN);
+    if (!user.tenantId) {
+      return { success: false, error: 'User does not belong to an organization.' };
+    }
+
+    await updateCompetencyWeight(user.tenantId, id, weight, {
+      actorId: user.id,
+    });
+
+    revalidatePath('/organization-admin/skills');
+    revalidatePath(`/organization-admin/skills/${id}`);
+    return { success: true };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    return { success: false, error: message };
+  }
+}
+
