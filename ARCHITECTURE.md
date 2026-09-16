@@ -201,7 +201,7 @@ stateDiagram-v2
     }
     
     ACTIVE --> CLOSED: Org Admin closes campaign OR operational period concludes
-    CLOSED --> [*]: Campaign immutable; assessments and ratings finalized
+    CLOSED --> [*]: Campaign immutable, assessments and ratings finalized
 ```
 
 ### 4.3 Framework Versioning & Adoption Lifecycle
@@ -346,7 +346,7 @@ sequenceDiagram
     AssSvc->>DB: UPDATE AssessmentItem SET finalRating = selfRating
     AssSvc->>DB: UPDATE Assessment SET status = COMPLETED, completedAt = NOW()
     AssSvc->>DB: INSERT INTO AuditLog (action: ASSESSMENT_SUBMIT_AUTO_FINALIZED)
-    AssSvc-->>Staff: Assessment completed immediately; no manager review queued
+    AssSvc-->>Staff: Assessment completed immediately, no manager review queued
 ```
 
 ### 5.4 Automated Scheduled Reporting & Cron Pipeline (Flow H)
