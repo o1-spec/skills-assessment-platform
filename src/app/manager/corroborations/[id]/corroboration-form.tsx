@@ -121,7 +121,7 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-xs sticky top-16 z-20 backdrop-blur-md bg-white/95">
+      <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-xs sticky top-16 z-20 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="text-[11px] text-neutral-500 font-semibold uppercase tracking-wider">
@@ -304,20 +304,18 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
     return (
       <div
         key={item.id}
-        className={`bg-white rounded-2xl border transition-all p-5 sm:p-6 space-y-5 shadow-xs ${
-          isRatingChanged ? 'border-amber-300 ring-1 ring-amber-300/60' : 'border-stone-200/80'
-        }`}
+        className={`bg-white rounded-2xl border transition-all p-5 sm:p-6 space-y-5 shadow-xs ${isRatingChanged ? 'border-amber-300 ring-1 ring-amber-300/60' : 'border-stone-200/80'
+          }`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-stone-100 pb-3">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="text-xs font-bold text-neutral-400 font-mono">#{num}</span>
             <h3 className="text-base font-bold text-neutral-900">{item.competency.name}</h3>
             <span
-              className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full border ${
-                item.competency.type === CompetencyType.TECHNICAL
+              className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full border ${item.competency.type === CompetencyType.TECHNICAL
                   ? 'bg-stone-100 text-neutral-800 border-stone-200'
                   : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-              }`}
+                }`}
             >
               {item.competency.type}
             </span>
@@ -388,11 +386,10 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
                 <label
                   key={level.id}
                   onClick={() => handleRatingChange(item.id, level.level)}
-                  className={`flex items-start p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
-                    isSelected
+                  className={`flex items-start p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${isSelected
                       ? 'border-neutral-900 bg-stone-50/80 ring-1 ring-neutral-900 shadow-2xs'
                       : 'border-stone-200/80 hover:border-stone-300 hover:bg-stone-50/40 bg-white'
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -445,11 +442,10 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
                 ? 'Provide detailed justification for adjusting this rating...'
                 : 'Optional manager feedback or observations...'
             }
-            className={`w-full rounded-xl border px-3.5 py-2.5 text-xs shadow-2xs focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white ${
-              isRatingChanged && currentReview.justification.trim() === ''
+            className={`w-full rounded-xl border px-3.5 py-2.5 text-xs shadow-2xs focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white ${isRatingChanged && currentReview.justification.trim() === ''
                 ? 'border-amber-300 focus:border-amber-500'
                 : 'border-stone-200 focus:border-neutral-900'
-            }`}
+              }`}
           />
         </div>
       </div>
