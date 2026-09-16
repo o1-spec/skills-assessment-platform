@@ -251,10 +251,11 @@ export function CreateRoleForm({ competencies, availableTemplates = [] }: Create
                   </div>
 
                   {selectedLevelObj && (
-                    <div className="mt-3 pt-3 border-t border-stone-200/60 text-xs text-stone-700 bg-white p-3 rounded-xl border border-stone-200/80">
+                    <div className="mt-3 pt-3 border-t border-stone-200/60 text-xs text-stone-700 bg-white p-3 rounded-xl border">
                       <span className="font-semibold text-neutral-900">Level {selectedLevelObj.level} Expectation:</span>{' '}
                       {selectedLevelObj.description}
                     </div>
+
                   )}
                 </div>
               );
@@ -316,7 +317,7 @@ export function CreateRoleForm({ competencies, availableTemplates = [] }: Create
                   </div>
 
                   {selectedLevelObj && (
-                    <div className="mt-3 pt-3 border-t border-stone-200/60 text-xs text-stone-700 bg-white p-3 rounded-xl border border-stone-200/80">
+                    <div className="mt-3 pt-3 border-t border-stone-200/60 text-xs text-stone-700 bg-white p-3 rounded-xl border">
                       <span className="font-semibold text-emerald-700">Level {selectedLevelObj.level} Expectation:</span>{' '}
                       {selectedLevelObj.description}
                     </div>
