@@ -4,12 +4,15 @@ interface AuthFormCardProps {
   title: string;
   subtitle?: string;
   badge?: string;
+  maxWidth?: 'md' | 'lg' | 'xl';
   children: React.ReactNode;
 }
 
-export function AuthFormCard({ title, subtitle, badge, children }: AuthFormCardProps) {
+export function AuthFormCard({ title, subtitle, badge, maxWidth = 'md', children }: AuthFormCardProps) {
+  const widthClass = maxWidth === 'xl' ? 'max-w-xl' : maxWidth === 'lg' ? 'max-w-lg' : 'max-w-md';
+
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-[0_12px_32px_rgba(0,0,0,0.04)] p-6 sm:p-9 transition-all">
+    <div className={`w-full ${widthClass} mx-auto bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-[0_12px_32px_rgba(0,0,0,0.04)] p-6 sm:p-9 transition-all`}>
       <div className="mb-7 text-left">
         {badge && (
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-700 border border-stone-200 mb-3">

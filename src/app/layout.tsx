@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Skills Assessment Platform — Evidence-Based Workforce Intelligence",
   description: "A multi-tenant skills assessment platform for organizations to benchmark competencies, assess talent, identify skill gaps, and guide career progression.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

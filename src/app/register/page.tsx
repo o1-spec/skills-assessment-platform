@@ -29,6 +29,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
       <AuthFormCard
         title="Get started with SkillsIQ"
         subtitle="Join your organization or begin the process of setting up a new SkillsIQ workspace."
+        maxWidth="lg"
       >
         <RegisterGateway />
       </AuthFormCard>

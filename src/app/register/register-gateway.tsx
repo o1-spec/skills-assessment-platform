@@ -72,8 +72,8 @@ export function RegisterGateway() {
           If your organization has invited you to SkillsIQ, use the secure invitation link sent to your email to complete your account setup.
         </p>
 
-        <form onSubmit={handleTokenSubmit} className="space-y-2.5">
-          <div className="flex flex-col sm:flex-row items-stretch gap-2">
+        <form onSubmit={handleTokenSubmit} className="space-y-3">
+          <div>
             <input
               type="text"
               value={tokenInput}
@@ -82,19 +82,20 @@ export function RegisterGateway() {
                 setTokenError('');
               }}
               placeholder="Paste invitation link or token..."
-              className="flex-1 px-3 py-2 text-xs rounded-xl border border-stone-200 bg-white text-neutral-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-neutral-900"
+              className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-stone-200 bg-white text-neutral-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-neutral-900 transition-colors"
             />
-            <button
-              type="submit"
-              className="px-4 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl transition-all shadow-xs active:scale-[0.98] shrink-0"
-            >
-              Continue with invitation →
-            </button>
           </div>
+          <button
+            type="submit"
+            className="w-full py-2.5 px-4 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-full transition-all shadow-xs active:scale-[0.99] flex items-center justify-center gap-1.5"
+          >
+            <span>Continue with invitation</span>
+            <span>→</span>
+          </button>
           {tokenError && (
             <p className="text-xs text-red-600">{tokenError}</p>
           )}
-          <p className="text-[11px] text-stone-500">
+          <p className="text-[11px] text-stone-500 text-center">
             Or simply click the activation link directly in the email received from your administrator.
           </p>
         </form>
