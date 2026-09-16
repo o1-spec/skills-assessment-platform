@@ -566,7 +566,7 @@ export async function runCorroborationReminderNotifications(
     }
 
     result.processed++;
-    const dedupeKey = `corroboration-overdue:${assessment.id}:${threshold}`;
+    const dedupeKey = `reminder:overdue-corrob:${assessment.id}:threshold:${threshold}`;
 
     const existing = await prisma.notification.findUnique({
       where: { dedupeKey },

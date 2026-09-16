@@ -152,12 +152,12 @@ class FallbackDevEmailClient implements EmailClient {
     const isProduction = process.env.NODE_ENV === 'production';
 
     if (isProduction) {
-      console.error(
-        '[NotificationEngine:Email] CRITICAL: Email provider credentials (RESEND_API_KEY) are not configured in production environment. Email delivery is disabled.'
+      console.warn(
+        '[NotificationEngine:Email] WARNING: Email provider credentials (RESEND_API_KEY) are not configured in production environment. Email delivery was skipped.'
       );
       return {
         success: false,
-        status: 'FAILED',
+        status: 'SKIPPED',
         error: 'Email provider credentials not configured in production',
       };
     }
@@ -188,17 +188,13 @@ export function setMockEmailClient(client: InMemoryTestEmailClient | null): void
 
 /**
  * Resolves the active email client:
- * 1. If test mock is set or NODE_ENV === 'test', returns mock client.
+ * 1. If test mock is set, returns mock client.
  * 2. If RESEND_API_KEY is configured, returns ResendEmailClient.
- * 3. Otherwise returns FallbackDevEmailClient (SKIPPED in dev, FAILED in prod).
+ * 3. Otherwise returns FallbackDevEmailClient (SKIPPED).
  */
 export function getEmailClient(): EmailClient {
   if (mockEmailClientInstance) {
     return mockEmailClientInstance;
-  }
-
-  if (process.env.NODE_ENV === 'test') {
-    return getMockEmailClient();
   }
 
   const resendApiKey = process.env.RESEND_API_KEY;

@@ -542,8 +542,33 @@ async function main() {
     // =========================================================================
     // SECTION 7: EMAIL FAILURE BEHAVIOR & ERROR STORAGE (Tests 24 - 26)
     // =========================================================================
-    console.log('\n7. Testing Email Provider Failure Containment (Tests 24-26)...');
+    console.log('\n7. Testing Email Provider Statuses & Failure Containment (Tests 24-26)...');
 
+    // Test 24a: Missing provider credentials -> emailStatus SKIPPED
+    setMockEmailClient(null); // Temporarily clear mock to hit FallbackDevEmailClient
+    const skippedNotif = await createAndDispatchNotification({
+      tenantId,
+      recipientId: testStaff1.id,
+      type: NotificationType.SYSTEM,
+      title: 'Provider Missing Notification',
+      message: 'This notification should be created with emailStatus SKIPPED.',
+    });
+    cleanupNotificationIds.push(skippedNotif.id);
+    assert.strictEqual(skippedNotif.emailStatus, NotificationEmailStatus.SKIPPED, 'Missing provider must set emailStatus SKIPPED');
+    setMockEmailClient(mockEmail); // Restore mock client
+
+    // Test 24b: Successful mock provider -> emailStatus SENT
+    const sentNotif = await createAndDispatchNotification({
+      tenantId,
+      recipientId: testStaff1.id,
+      type: NotificationType.SYSTEM,
+      title: 'Successful Delivery Notification',
+      message: 'This notification should be created with emailStatus SENT.',
+    });
+    cleanupNotificationIds.push(sentNotif.id);
+    assert.strictEqual(sentNotif.emailStatus, NotificationEmailStatus.SENT, 'Successful delivery must set emailStatus SENT');
+
+    // Test 24c: Provider error -> emailStatus FAILED
     mockEmail.simulateNextFailure('Provider network timeout error');
     const failedNotif = await createAndDispatchNotification({
       tenantId,
@@ -554,19 +579,20 @@ async function main() {
     });
     cleanupNotificationIds.push(failedNotif.id);
 
-    // Test 24: Simulated provider failure marks notification FAILED
     assert.strictEqual(failedNotif.emailStatus, NotificationEmailStatus.FAILED);
     assert(failedNotif.emailError?.includes('Provider network timeout'), 'Error string must be saved');
-    console.log('   ✅ Test 24 Passed: Notification marked as FAILED with error message.');
+    console.log('   ✅ Test 24 Passed: Email statuses verified (SKIPPED on missing provider, SENT on success, FAILED on error).');
 
-    // Test 25: Parent workflow remains successful
+    // Test 25: Parent workflow remains successful despite email failure
     assert(failedNotif.id, 'Parent operation succeeded and returned Notification instance');
     console.log('   ✅ Test 25 Passed: Parent operation completed successfully despite email failure.');
 
-    // Test 26: In-app notification remains visible
-    const staff1ListAfterFail = await getNotificationsForUser(testStaff1.id, tenantId);
-    assert(staff1ListAfterFail.notifications.some((n) => n.id === failedNotif.id), 'Notification must remain visible in-app');
-    console.log('   ✅ Test 26 Passed: In-app notification remains visible and accessible.');
+    // Test 26: In-app notification exists and remains visible in all three cases
+    const staff1ListAfterAll = await getNotificationsForUser(testStaff1.id, tenantId);
+    assert(staff1ListAfterAll.notifications.some((n) => n.id === skippedNotif.id), 'SKIPPED notification exists in-app');
+    assert(staff1ListAfterAll.notifications.some((n) => n.id === sentNotif.id), 'SENT notification exists in-app');
+    assert(staff1ListAfterAll.notifications.some((n) => n.id === failedNotif.id), 'FAILED notification exists in-app');
+    console.log('   ✅ Test 26 Passed: In-app notifications exist and remain accessible across all 3 provider statuses.');
 
     // =========================================================================
     // SECTION 8: AUTOMATED ASSESSMENT DEADLINE REMINDERS (Tests 27 - 31)
@@ -800,14 +826,55 @@ async function main() {
     assert.strictEqual(unrelatedNotifs.notifications.length, 0, 'Unrelated manager must receive no reminders');
     console.log('   ✅ Test 34 Passed: Non-direct managers receive no overdue reminders.');
 
-    // Test 35: Duplicate cron runs remain idempotent
-    const rerunCorrob = await runCorroborationReminderNotifications({
+    // Test 35a: First overdue cron run created the notification with threshold dedupeKey
+    assert.strictEqual(
+      overdueAlert.dedupeKey,
+      `reminder:overdue-corrob:${overdueAssessment.id}:threshold:5`,
+      'DedupeKey must match reminder:overdue-corrob:${id}:threshold:${threshold}'
+    );
+
+    // Test 35b: Same-day second run creates none
+    const sameDayRerun = await runCorroborationReminderNotifications({
       now: overdueCurrentDate,
       thresholdBusinessDays: 5,
     });
-    assert.strictEqual(rerunCorrob.created, 0, 'Re-running overdue job must not create duplicates');
-    assert(rerunCorrob.skipped >= 1, 'Re-running must skip already notified records');
-    console.log('   ✅ Test 35 Passed: Overdue corroboration job is idempotent across runs.');
+    assert.strictEqual(sameDayRerun.created, 0, 'Same-day second run must create 0 reminders');
+    assert(sameDayRerun.skipped >= 1, 'Same-day second run must skip existing dedupeKey');
+
+    // Test 35c: Next-day run creates none for same threshold
+    const nextDay = new Date(overdueCurrentDate.getTime() + 24 * 60 * 60 * 1000);
+    const nextDayRerun = await runCorroborationReminderNotifications({
+      now: nextDay,
+      thresholdBusinessDays: 5,
+    });
+    assert.strictEqual(nextDayRerun.created, 0, 'Next-day run must create 0 reminders for same threshold');
+    assert(nextDayRerun.skipped >= 1, 'Next-day run must skip existing dedupeKey');
+
+    // Test 35d: Several days later still creates none for same threshold
+    const severalDaysLater = new Date(overdueCurrentDate.getTime() + 5 * 24 * 60 * 60 * 1000);
+    const severalDaysLaterRerun = await runCorroborationReminderNotifications({
+      now: severalDaysLater,
+      thresholdBusinessDays: 5,
+    });
+    assert.strictEqual(severalDaysLaterRerun.created, 0, 'Several days later must create 0 reminders for same threshold');
+
+    // Test 35e: Different configured threshold creates a distinct reminder
+    // (7+ business days passed, so threshold 6 is also met and has not been notified yet)
+    const newThresholdRerun = await runCorroborationReminderNotifications({
+      now: severalDaysLater,
+      thresholdBusinessDays: 6,
+    });
+    assert.strictEqual(newThresholdRerun.created, 1, 'Different configured threshold must create a distinct reminder');
+    const newThresholdAlerts = await prisma.notification.findMany({
+      where: {
+        recipientId: testManager.id,
+        dedupeKey: `reminder:overdue-corrob:${overdueAssessment.id}:threshold:6`,
+      },
+    });
+    assert.strictEqual(newThresholdAlerts.length, 1, 'Must find notification for threshold 6');
+    cleanupNotificationIds.push(newThresholdAlerts[0].id);
+
+    console.log('   ✅ Test 35 Passed: Overdue corroboration dedupe verified across same-day, next-day, multi-day, and threshold change.');
 
     // =========================================================================
     // SECTION 10: CRON ENDPOINT SECURITY & EXECUTION (Tests 36 - 37)
