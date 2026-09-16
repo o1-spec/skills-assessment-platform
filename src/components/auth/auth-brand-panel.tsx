@@ -3,10 +3,8 @@ import React from 'react';
 export function AuthBrandPanel() {
   return (
     <div className="relative hidden lg:flex flex-col justify-between p-12 xl:p-16 bg-[#faf9f6] border-r border-stone-200/80 overflow-hidden min-h-160">
-      {/* Subtle Ambient Radial Glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-tr from-emerald-100/50 via-teal-50/60 to-purple-100/40 blur-3xl rounded-full pointer-events-none -z-10" />
 
-      {/* Top Value Narrative */}
       <div className="space-y-6 max-w-lg z-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-white border border-stone-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-neutral-800">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -24,9 +22,7 @@ export function AuthBrandPanel() {
         </p>
       </div>
 
-      {/* Decorative Floating Status Cards */}
       <div className="space-y-3.5 my-10 max-w-md z-10">
-        {/* Card 1: Campaign status */}
         <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 text-sm">
@@ -42,7 +38,6 @@ export function AuthBrandPanel() {
           </span>
         </div>
 
-        {/* Card 2: Gap analysis */}
         <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-sm">
@@ -58,7 +53,6 @@ export function AuthBrandPanel() {
           </span>
         </div>
 
-        {/* Card 3: Career progression */}
         <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 text-sm">
@@ -74,7 +68,6 @@ export function AuthBrandPanel() {
           </span>
         </div>
 
-        {/* Card 4: Manager review */}
         <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-stone-200 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 text-sm">
@@ -91,7 +84,6 @@ export function AuthBrandPanel() {
         </div>
       </div>
 
-      {/* Bottom Trust Micro-Bar */}
       <div className="pt-6 border-t border-stone-200/80 flex items-center justify-between text-xs text-neutral-500 z-10">
         <span>SFIA 1.0 Aligned</span>
         <span>•</span>

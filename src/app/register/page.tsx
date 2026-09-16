@@ -15,7 +15,6 @@ export const metadata = {
 export default async function RegisterPage({ searchParams }: RegisterPageProps) {
   const { token, type } = await searchParams;
 
-  // Preserve token and type query parameter when forwarding directly into existing invitation acceptance flow
   if (token) {
     redirect(`/accept-invitation?token=${encodeURIComponent(token)}${type ? `&type=${encodeURIComponent(type)}` : ''}`);
   }

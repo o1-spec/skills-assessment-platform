@@ -8,7 +8,6 @@ export function RegisterGateway() {
   const [tokenInput, setTokenInput] = useState('');
   const [tokenError, setTokenError] = useState('');
 
-  // Workspace request state
   const [fullName, setFullName] = useState('');
   const [workEmail, setWorkEmail] = useState('');
   const [orgName, setOrgName] = useState('');
@@ -23,7 +22,6 @@ export function RegisterGateway() {
       setTokenError('Please enter your invitation token.');
       return;
     }
-    // If the user pasted a full URL, extract the token parameter
     try {
       if (cleanToken.includes('token=')) {
         const urlObj = new URL(cleanToken.startsWith('http') ? cleanToken : `http://dummy.com/${cleanToken}`);
@@ -35,7 +33,6 @@ export function RegisterGateway() {
         }
       }
     } catch {
-      // Fall through to plain token
     }
 
     router.push(`/accept-invitation?token=${encodeURIComponent(cleanToken)}`);
@@ -54,7 +51,6 @@ export function RegisterGateway() {
 
     setFormError('');
     setRequestSubmitting(true);
-    // Instant confirmation without introducing unwanted persistence or notifications
     setTimeout(() => {
       setRequestSubmitting(false);
       setRequestSubmitted(true);
@@ -63,7 +59,6 @@ export function RegisterGateway() {
 
   return (
     <div className="space-y-6">
-      {/* Choice Card 1: Joining an Existing Organization */}
       <div className="p-5 sm:p-6 rounded-2xl border border-stone-200 bg-stone-50/50 hover:bg-stone-50 transition-all">
         <div className="flex items-center gap-2.5 mb-2">
           <span className="w-7 h-7 rounded-lg bg-white border border-stone-200 text-neutral-800 flex items-center justify-center text-xs font-bold shadow-2xs">
@@ -105,7 +100,6 @@ export function RegisterGateway() {
         </form>
       </div>
 
-      {/* Choice Card 2: Setting Up SkillsIQ for a New Organization */}
       <div className="p-5 sm:p-6 rounded-2xl border border-stone-200 bg-white shadow-2xs">
         <div className="flex items-center gap-2.5 mb-2">
           <span className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xs font-bold shadow-2xs">

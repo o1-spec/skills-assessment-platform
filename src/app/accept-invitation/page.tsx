@@ -18,7 +18,6 @@ export default async function AcceptInvitationPage({ searchParams }: AcceptInvit
   const { token, type } = await searchParams;
   const isPlatform = type === 'platform';
 
-  // ── Platform Administrator / Support Invitation Flow ─────────────────────
   if (isPlatform) {
     if (!token) {
       return (
@@ -131,7 +130,6 @@ export default async function AcceptInvitationPage({ searchParams }: AcceptInvit
     );
   }
 
-  // ── Standard Tenant Invitation Flow ──────────────────────────────────────
   if (!token) {
     return (
       <AuthShell mode="invitation">

@@ -39,7 +39,6 @@ export function AcceptPlatformInvitationForm({
 
   return (
     <div className="space-y-5">
-      {/* Invitation summary */}
       <div className="bg-stone-50/80 border border-stone-200 rounded-2xl p-4 space-y-1 text-xs">
         <div className="flex items-center justify-between">
           <p className="font-semibold text-neutral-900 text-sm">{invitation.name}</p>

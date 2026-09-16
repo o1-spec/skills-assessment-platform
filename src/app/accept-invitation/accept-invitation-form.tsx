@@ -66,7 +66,6 @@ export function AcceptInvitationForm({ token, invitation }: AcceptInvitationForm
         </div>
       )}
 
-      {/* Organization and Scope Information Card */}
       <div className="p-4 bg-stone-50/80 rounded-2xl border border-stone-200 text-xs space-y-1.5">
         <div className="text-neutral-900 font-bold text-sm flex items-center justify-between">
           <span>{invitation.tenant.name}</span>
@@ -100,7 +99,6 @@ export function AcceptInvitationForm({ token, invitation }: AcceptInvitationForm
         </div>
       </div>
 
-      {/* Password Fields */}
       <div>
         <label htmlFor="invitation-password" className="block text-xs font-semibold text-neutral-800 uppercase tracking-wider mb-1.5">
           Set Password
