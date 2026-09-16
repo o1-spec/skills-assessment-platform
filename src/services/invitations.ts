@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { TenantInvitation, Tenant, UserRole, TenantStatus, RoleProfileStatus } from '@prisma/client';
 import { AcceptInvitationInput } from '@/lib/validation/invitations';
+import { sendEmail } from '@/lib/email';
 
 export interface GeneratedInvitation {
   id: string;
@@ -41,6 +42,64 @@ export type InvitationDetail = TenantInvitation & {
  */
 export function hashInvitationToken(rawToken: string): string {
   return crypto.createHash('sha256').update(rawToken.trim()).digest('hex');
+}
+
+/**
+ * Sends a standardized invitation email with the secure acceptance URL.
+ */
+export async function sendInvitationEmail(params: {
+  to: string;
+  name: string;
+  organizationName: string;
+  role: string;
+  invitationUrl: string;
+  expiresAt: Date;
+}): Promise<void> {
+  const formattedExpiry = params.expiresAt.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const subject = `You're invited to join ${params.organizationName} on Skills Assessment Platform`;
+  const text = `Hello ${params.name},\n\nYou have been invited to join ${params.organizationName} as a ${params.role} on the Skills Assessment Platform.\n\nPlease accept your invitation using the following link:\n${params.invitationUrl}\n\nThis invitation expires on ${formattedExpiry}.\n\nIf you did not expect this invitation, you can safely ignore this email.`;
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1f2937;">
+      <h2 style="color: #111827; margin-bottom: 16px;">Welcome to ${escapeHtml(params.organizationName)}</h2>
+      <p style="font-size: 15px; line-height: 1.6; margin-bottom: 16px;">
+        Hello <strong>${escapeHtml(params.name)}</strong>,
+      </p>
+      <p style="font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+        You have been invited to join <strong>${escapeHtml(params.organizationName)}</strong> as <strong>${escapeHtml(params.role)}</strong> on the Skills Assessment Platform.
+      </p>
+      <p style="margin-bottom: 24px;">
+        <a href="${params.invitationUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">Accept Invitation</a>
+      </p>
+      <p style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+        Or copy and paste this link into your browser:<br/>
+        <span style="color: #2563eb; word-break: break-all;">${params.invitationUrl}</span>
+      </p>
+      <p style="font-size: 13px; color: #9ca3af; margin-top: 16px;">
+        This invitation link will expire on ${formattedExpiry}.
+      </p>
+    </div>
+  `;
+
+  await sendEmail({
+    to: params.to,
+    subject,
+    text,
+    html,
+  });
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /**
@@ -112,6 +171,22 @@ export async function createTenantAdminInvitation(
     },
   });
 
+  const invitationUrl = `/accept-invitation?token=${rawToken}`;
+
+  // Dispatch invitation email safely (DB transaction/creation is committed first)
+  try {
+    await sendInvitationEmail({
+      to: email,
+      name,
+      organizationName: tenant.name,
+      role: 'Organization Administrator',
+      invitationUrl,
+      expiresAt: invitation.expiresAt,
+    });
+  } catch (emailErr) {
+    console.error('[NotificationEngine:Invitation] Failed to dispatch admin invitation email:', emailErr);
+  }
+
   return {
     id: invitation.id,
     tenantId: invitation.tenantId,
@@ -120,7 +195,7 @@ export async function createTenantAdminInvitation(
     role: invitation.role,
     expiresAt: invitation.expiresAt,
     rawToken,
-    invitationUrl: `/accept-invitation?token=${rawToken}`,
+    invitationUrl,
   };
 }
 
@@ -231,6 +306,29 @@ export async function createTenantUserInvitation(
     });
   }
 
+  const invitationUrl = `/accept-invitation?token=${rawToken}`;
+
+  // Dispatch employee invitation email safely
+  try {
+    const roleLabel =
+      input.role === UserRole.ORGANIZATION_ADMIN
+        ? 'Organization Administrator'
+        : input.role === UserRole.MANAGER
+        ? 'Manager'
+        : 'Staff Member';
+
+    await sendInvitationEmail({
+      to: email,
+      name,
+      organizationName: tenant.name,
+      role: roleLabel,
+      invitationUrl,
+      expiresAt: invitation.expiresAt,
+    });
+  } catch (emailErr) {
+    console.error('[NotificationEngine:Invitation] Failed to dispatch employee invitation email:', emailErr);
+  }
+
   return {
     id: invitation.id,
     tenantId: invitation.tenantId,
@@ -242,7 +340,7 @@ export async function createTenantUserInvitation(
     teamIds: resolvedTeamIds,
     expiresAt: invitation.expiresAt,
     rawToken,
-    invitationUrl: `/accept-invitation?token=${rawToken}`,
+    invitationUrl,
   };
 }
 

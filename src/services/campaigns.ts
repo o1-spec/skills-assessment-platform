@@ -20,7 +20,9 @@ import {
   AssessmentStatus,
   RoleProfileStatus,
   UserRole,
+  NotificationType,
 } from '@prisma/client';
+import { createAndDispatchNotification } from '@/services/notifications';
 
 export type CampaignListItem = AssessmentCampaign & {
   roleProfile: {
@@ -482,7 +484,7 @@ export async function createAssessmentCampaign(
   }
 
   // 5. Execute atomic transaction
-  return prisma.$transaction(async (tx) => {
+  const createdCampaign = await prisma.$transaction(async (tx) => {
     // Capture active framework version for campaign cycle provenance
     const activeAdoption = await tx.tenantFrameworkAdoption.findFirst({
       where: {
@@ -547,6 +549,12 @@ export async function createAssessmentCampaign(
 
     return campaign;
   });
+
+  if (isActive) {
+    await notifyCampaignAssignedParticipants(createdCampaign.id, tenantId);
+  }
+
+  return createdCampaign;
 }
 
 /**
@@ -688,7 +696,7 @@ export async function launchCampaign(
     throw new Error('Cannot launch campaign: no eligible active staff members were resolved for this scope.');
   }
 
-  return prisma.$transaction(async (tx) => {
+  const launchedCampaign = await prisma.$transaction(async (tx) => {
     // 1. Capture active framework version for campaign cycle provenance
     const activeAdoption = await tx.tenantFrameworkAdoption.findFirst({
       where: { tenantId, isActive: true },
@@ -730,6 +738,71 @@ export async function launchCampaign(
 
     return launched;
   });
+
+  await notifyCampaignAssignedParticipants(launchedCampaign.id, tenantId);
+
+  return launchedCampaign;
+}
+
+/**
+ * Central helper to notify all enrolled staff participants when a campaign becomes ACTIVE.
+ */
+async function notifyCampaignAssignedParticipants(
+  campaignId: string,
+  tenantId: string
+): Promise<void> {
+  try {
+    const campaign = await prisma.assessmentCampaign.findUnique({
+      where: { id: campaignId },
+      include: {
+        participants: true,
+        assessments: {
+          select: {
+            id: true,
+            userId: true,
+          },
+        },
+      },
+    });
+
+    if (!campaign || campaign.status !== CampaignStatus.ACTIVE) return;
+
+    const formattedDeadline = new Date(campaign.deadline).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+
+    const assessmentMap = new Map(campaign.assessments.map((a) => [a.userId, a.id]));
+
+    for (const participant of campaign.participants) {
+      const assessmentId = assessmentMap.get(participant.userId);
+      const href = assessmentId ? `/staff/assessments/${assessmentId}` : '/staff/assessments';
+      const dedupeKey = `campaign-assigned:${campaign.id}:${participant.userId}`;
+
+      await createAndDispatchNotification({
+        tenantId,
+        recipientId: participant.userId,
+        type: NotificationType.CAMPAIGN_ASSIGNED,
+        title: `New Assessment Assigned: ${campaign.name}`,
+        message: `You have been enrolled in the "${campaign.name}" skills assessment. Complete and submit your self-assessment before the deadline on ${formattedDeadline}.`,
+        href,
+        resourceType: 'AssessmentCampaign',
+        resourceId: campaign.id,
+        dedupeKey,
+      }).catch((err) => {
+        console.error(
+          `[NotificationEngine:Campaign] Failed to dispatch notification to user ${participant.userId}:`,
+          err
+        );
+      });
+    }
+  } catch (err) {
+    console.error(
+      `[NotificationEngine:Campaign] Error dispatching launch notifications for campaign ${campaignId}:`,
+      err
+    );
+  }
 }
 
 /**

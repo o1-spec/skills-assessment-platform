@@ -10,7 +10,9 @@ import {
   Corroboration,
   EvidenceAttachment,
   User,
+  NotificationType,
 } from '@prisma/client';
+import { createAndDispatchNotification } from '@/services/notifications';
 
 export interface ManagerOverviewStats {
   pendingReviewsCount: number;
@@ -294,8 +296,12 @@ export async function submitCorroboration(
 
   const now = new Date();
 
+  const assessmentUserId = assessment.userId;
+  const assessmentId = assessment.id;
+  const campaignName = assessment.campaign.name;
+
   // 4. Atomically persist Corroborations, update finalRating, and mark Assessment COMPLETED
-  return prisma.$transaction(async (tx) => {
+  const completedAssessment = await prisma.$transaction(async (tx) => {
     for (const submitted of input.items) {
       const existingItem = existingItemMap.get(submitted.assessmentItemId)!;
 
@@ -323,7 +329,7 @@ export async function submitCorroboration(
     // Mark Assessment as COMPLETED
     return tx.assessment.update({
       where: {
-        id: assessment.id,
+        id: assessmentId,
       },
       data: {
         status: AssessmentStatus.COMPLETED,
@@ -331,4 +337,31 @@ export async function submitCorroboration(
       },
     });
   });
+
+  // Post-corroboration notification to staff member (decoupled, non-blocking)
+  try {
+    await createAndDispatchNotification({
+      tenantId,
+      recipientId: assessmentUserId,
+      type: NotificationType.CORROBORATION_COMPLETED,
+      title: `Assessment Review Completed: ${campaignName}`,
+      message: `Your manager has reviewed and corroborated your skills assessment for "${campaignName}". Your results are now finalized.`,
+      href: `/staff/assessments/${assessmentId}`,
+      resourceType: 'Assessment',
+      resourceId: assessmentId,
+      dedupeKey: `corroboration-completed:${assessmentId}`,
+    }).catch((err) => {
+      console.error(
+        '[NotificationEngine:Corroboration] Failed to dispatch corroboration completed notification:',
+        err
+      );
+    });
+  } catch (notifErr) {
+    console.error(
+      '[NotificationEngine:Corroboration] Error in post-corroboration notification handler:',
+      notifErr
+    );
+  }
+
+  return completedAssessment;
 }

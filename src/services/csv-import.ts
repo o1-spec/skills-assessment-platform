@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import Papa from 'papaparse';
 import { prisma } from '@/lib/db';
 import { UserRole, RoleProfileStatus } from '@prisma/client';
-import { GeneratedInvitation } from './invitations';
+import { GeneratedInvitation, sendInvitationEmail } from './invitations';
 
 /**
  * Raw CSV column names expected in the import file.
@@ -314,6 +314,42 @@ export async function bulkCreateUserInvitations(
     },
     { timeout: 30000 }
   );
+
+  // Dispatch invitation emails outside the transaction for atomicity and resilience
+  try {
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { name: true },
+    });
+    const orgName = tenant?.name || 'Your Organization';
+
+    for (const inv of invitations) {
+      try {
+        const roleLabel =
+          inv.role === UserRole.ORGANIZATION_ADMIN
+            ? 'Organization Administrator'
+            : inv.role === UserRole.MANAGER
+            ? 'Manager'
+            : 'Staff Member';
+
+        await sendInvitationEmail({
+          to: inv.email,
+          name: inv.name,
+          organizationName: orgName,
+          role: roleLabel,
+          invitationUrl: inv.invitationUrl,
+          expiresAt: inv.expiresAt,
+        });
+      } catch (emailErr) {
+        console.error(
+          `[NotificationEngine:CSV] Failed to dispatch invitation email to ${inv.email}:`,
+          emailErr
+        );
+      }
+    }
+  } catch (err) {
+    console.error('[NotificationEngine:CSV] Error in bulk invitation email dispatch:', err);
+  }
 
   return invitations;
 }

@@ -3,6 +3,7 @@ import { UserRole } from '@prisma/client';
 import { requireRole } from '@/lib/auth';
 import { LogoutButton } from '@/components/ui';
 import { OrgAdminNav } from '@/components/layout';
+import { NotificationBell } from '@/components/notifications';
 
 export default async function OrganizationAdminLayout({
   children,
@@ -29,6 +30,7 @@ export default async function OrganizationAdminLayout({
           </div>
 
           <div className="flex items-center space-x-4">
+            <NotificationBell />
             <div className="text-right hidden sm:block">
               <div className="text-sm font-medium text-gray-900">{user.name}</div>
               <div className="text-xs text-purple-600 font-medium">Organization Admin</div>

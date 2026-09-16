@@ -61,6 +61,23 @@ enum TenantStatus {
   SUSPENDED
 }
 
+enum NotificationType {
+  CAMPAIGN_ASSIGNED
+  ASSESSMENT_DUE_REMINDER
+  ASSESSMENT_SUBMITTED_FOR_REVIEW
+  CORROBORATION_OVERDUE
+  CORROBORATION_COMPLETED
+  ASSESSMENT_COMPLETED
+  SYSTEM
+}
+
+enum NotificationEmailStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
 // ------------------------------------------------------
 // SUBSCRIPTION PLANS (PLATFORM LEVEL)
 // ------------------------------------------------------
@@ -104,6 +121,7 @@ model Tenant {
   invitations        TenantInvitation[]
   departments        Department[]
   teams              Team[]
+  notifications      Notification[]
 
   @@index([planId])
 }
@@ -319,6 +337,7 @@ model User {
   managedInvitations     TenantInvitation[]    @relation("InvitationManager")
   teamMemberships        TeamMembership[]
   managedTeams           Team[]                @relation("TeamManager")
+  notifications          Notification[]        @relation("UserNotifications")
 
   @@index([tenantId])
   @@index([managerId])
@@ -605,4 +624,33 @@ model TenantInvitationTeam {
   @@unique([invitationId, teamId])
   @@index([invitationId])
   @@index([teamId])
+}
+
+// ------------------------------------------------------
+// NOTIFICATIONS
+// ------------------------------------------------------
+
+model Notification {
+  id           String                  @id @default(cuid())
+  tenantId     String?
+  recipientId  String
+  type         NotificationType
+  title        String
+  message      String
+  href         String?
+  resourceType String?
+  resourceId   String?
+  readAt       DateTime?
+  emailStatus  NotificationEmailStatus @default(PENDING)
+  emailSentAt  DateTime?
+  emailError   String?
+  dedupeKey    String?                 @unique
+  createdAt    DateTime                @default(now())
+
+  recipient User    @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  tenant    Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, readAt])
+  @@index([tenantId])
+  @@index([createdAt])
 }

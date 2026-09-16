@@ -8,7 +8,9 @@ import {
   CompetencyLevel,
   AssessmentCampaign,
   EvidenceAttachment,
+  NotificationType,
 } from '@prisma/client';
+import { createAndDispatchNotification } from '@/services/notifications';
 
 export type StaffAssessmentListItem = Assessment & {
   campaign: Pick<
@@ -360,8 +362,11 @@ export async function submitAssessment(
   const now = new Date();
   const requiresCorroboration = assessment.campaign.requiresCorroboration;
 
+  const campaignName = assessment.campaign.name;
+  const assessmentId = assessment.id;
+
   // 5. Execute submission atomically
-  return prisma.$transaction(async (tx) => {
+  const submittedAssessment = await prisma.$transaction(async (tx) => {
     for (const submitted of input.items) {
       await tx.assessmentItem.update({
         where: {
@@ -382,7 +387,7 @@ export async function submitAssessment(
 
     return tx.assessment.update({
       where: {
-        id: assessment.id,
+        id: assessmentId,
       },
       data: {
         status: nextStatus,
@@ -391,4 +396,71 @@ export async function submitAssessment(
       },
     });
   });
+
+  // Post-submission notifications (decoupled, non-blocking)
+  try {
+    if (requiresCorroboration) {
+      const staffUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          managerId: true,
+          manager: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              isActive: true,
+            },
+          },
+        },
+      });
+
+      if (staffUser && staffUser.managerId && staffUser.manager && staffUser.manager.isActive) {
+        const manager = staffUser.manager;
+        await createAndDispatchNotification({
+          tenantId,
+          recipientId: manager.id,
+          type: NotificationType.ASSESSMENT_SUBMITTED_FOR_REVIEW,
+          title: `Assessment Submitted for Review: ${staffUser.name}`,
+          message: `${staffUser.name} has submitted their self-assessment for "${campaignName}". Please review and corroborate their ratings.`,
+          href: `/manager/corroborations/${assessmentId}`,
+          resourceType: 'Assessment',
+          resourceId: assessmentId,
+          dedupeKey: `assessment-submitted-review:${assessmentId}`,
+        }).catch((err) => {
+          console.error(
+            '[NotificationEngine:Assessment] Failed to dispatch manager review notification:',
+            err
+          );
+        });
+      }
+    } else {
+      // Direct completion without manager corroboration
+      await createAndDispatchNotification({
+        tenantId,
+        recipientId: userId,
+        type: NotificationType.ASSESSMENT_COMPLETED,
+        title: `Assessment Completed: ${campaignName}`,
+        message: `Your skills assessment for "${campaignName}" has been completed and recorded successfully.`,
+        href: `/staff/assessments/${assessmentId}`,
+        resourceType: 'Assessment',
+        resourceId: assessmentId,
+        dedupeKey: `assessment-completed:${assessmentId}`,
+      }).catch((err) => {
+        console.error(
+          '[NotificationEngine:Assessment] Failed to dispatch completion notification to staff:',
+          err
+        );
+      });
+    }
+  } catch (notifErr) {
+    console.error(
+      '[NotificationEngine:Assessment] Error in post-submission notification handler:',
+      notifErr
+    );
+  }
+
+  return submittedAssessment;
 }

@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 import { Tenant, TenantStatus, UserRole, SubscriptionPlan } from '@prisma/client';
 import { ProvisionTenantInput, UpdateTenantPlanInput } from '@/lib/validation/tenants';
-import { hashInvitationToken, GeneratedInvitation } from './invitations';
+import { hashInvitationToken, GeneratedInvitation, sendInvitationEmail } from './invitations';
 
 export type TenantWithStats = Tenant & {
   plan: SubscriptionPlan | null;
@@ -231,7 +231,7 @@ export async function provisionTenant(
   const tokenHash = hashInvitationToken(rawToken);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-  return prisma.$transaction(
+  const result = await prisma.$transaction(
     async (tx) => {
       // Create Tenant
       const tenant = await tx.tenant.create({
@@ -281,6 +281,22 @@ export async function provisionTenant(
       timeout: 15000,
     }
   );
+
+  // Dispatch initial org admin invitation email safely (DB transaction committed first)
+  try {
+    await sendInvitationEmail({
+      to: adminEmail,
+      name: input.adminName.trim(),
+      organizationName: result.tenant.name,
+      role: 'Organization Administrator',
+      invitationUrl: result.invitation.invitationUrl,
+      expiresAt: result.invitation.expiresAt,
+    });
+  } catch (err) {
+    console.error('[NotificationEngine:Tenant] Failed to dispatch provisioned admin invitation email:', err);
+  }
+
+  return result;
 }
 
 /**
