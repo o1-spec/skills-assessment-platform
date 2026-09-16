@@ -1,5 +1,6 @@
 import { getInvitationByRawToken } from '@/services/invitations';
 import { getPlatformInvitationByRawToken } from '@/services/platform-users';
+import { AuthShell, AuthFormCard } from '@/components/auth';
 import { AcceptInvitationForm } from './accept-invitation-form';
 import { AcceptPlatformInvitationForm } from './accept-platform-form';
 import Link from 'next/link';
@@ -9,33 +10,37 @@ interface AcceptInvitationPageProps {
 }
 
 export const metadata = {
-  title: 'Accept Administrator Invitation | Skills Assessment Platform',
-  description: 'Activate your organization administrator account.',
+  title: 'Accept Invitation | SkillsIQ Skills Assessment Platform',
+  description: 'Activate your account on the SkillsIQ platform.',
 };
 
 export default async function AcceptInvitationPage({ searchParams }: AcceptInvitationPageProps) {
   const { token, type } = await searchParams;
   const isPlatform = type === 'platform';
 
-  // Route platform invitations through the platform invitation service
+  // ── Platform Administrator / Support Invitation Flow ─────────────────────
   if (isPlatform) {
     if (!token) {
       return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-          <div className="sm:mx-auto sm:w-full sm:max-w-md">
-            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-              <h2 className="text-xl font-bold text-gray-900">Missing Invitation Link</h2>
-              <p className="text-sm text-gray-500">
-                No platform invitation token was provided. Please use the complete invitation URL from your email.
+        <AuthShell mode="invitation">
+          <AuthFormCard
+            title="Missing Invitation Link"
+            subtitle="No platform invitation token was provided."
+            badge="Platform Access"
+          >
+            <div className="space-y-4 text-center">
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                Please use the complete invitation URL received from your platform administrator email.
               </p>
-              <div className="pt-2">
-                <Link href="/login" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
-                  Return to Login →
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+              >
+                Return to Login →
+              </Link>
             </div>
-          </div>
-        </div>
+          </AuthFormCard>
+        </AuthShell>
       );
     }
 
@@ -43,107 +48,111 @@ export default async function AcceptInvitationPage({ searchParams }: AcceptInvit
 
     if (!platformInvitation) {
       return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-          <div className="sm:mx-auto sm:w-full sm:max-w-md">
-            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-              <h2 className="text-xl font-bold text-gray-900">Invalid Platform Invitation</h2>
-              <p className="text-sm text-gray-500">
-                This platform invitation link is invalid or does not exist. Contact a Platform Administrator.
+        <AuthShell mode="invitation">
+          <AuthFormCard
+            title="Invalid Platform Invitation"
+            subtitle="This invitation link is invalid or does not exist."
+            badge="Security Notice"
+          >
+            <div className="space-y-4 text-center">
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                The security token could not be verified. Contact a Platform Administrator to request a new invitation.
               </p>
-              <div className="pt-2">
-                <Link href="/login" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
-                  Return to Login →
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+              >
+                Return to Login →
+              </Link>
             </div>
-          </div>
-        </div>
+          </AuthFormCard>
+        </AuthShell>
       );
     }
 
     if (platformInvitation.acceptedAt) {
       return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-          <div className="sm:mx-auto sm:w-full sm:max-w-md">
-            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-              <h2 className="text-xl font-bold text-gray-900">Invitation Already Accepted</h2>
-              <p className="text-sm text-gray-500">
-                This platform invitation for <strong>{platformInvitation.email}</strong> was already accepted on{' '}
-                {new Date(platformInvitation.acceptedAt).toLocaleDateString()}.
+        <AuthShell mode="invitation">
+          <AuthFormCard
+            title="Invitation Already Accepted"
+            subtitle={`This invitation for ${platformInvitation.email} was previously accepted.`}
+            badge="Account Active"
+          >
+            <div className="space-y-4 text-center">
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                Accepted on {new Date(platformInvitation.acceptedAt).toLocaleDateString()}. Please sign in with your password.
               </p>
-              <div className="pt-2">
-                <Link href="/login" className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-xs">
-                  Sign In →
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+              >
+                Sign In to Workspace →
+              </Link>
             </div>
-          </div>
-        </div>
+          </AuthFormCard>
+        </AuthShell>
       );
     }
 
     if (new Date(platformInvitation.expiresAt) < new Date()) {
       return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-          <div className="sm:mx-auto sm:w-full sm:max-w-md">
-            <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-              <h2 className="text-xl font-bold text-gray-900">Invitation Expired</h2>
-              <p className="text-sm text-gray-500">
-                This platform invitation expired on {new Date(platformInvitation.expiresAt).toLocaleDateString()}.
-                Contact a Platform Administrator for a new invitation.
+        <AuthShell mode="invitation">
+          <AuthFormCard
+            title="Invitation Expired"
+            subtitle={`This platform invitation expired on ${new Date(platformInvitation.expiresAt).toLocaleDateString()}.`}
+            badge="Expired Link"
+          >
+            <div className="space-y-4 text-center">
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                For security reasons, platform invitation links expire after 7 days. Contact a Platform Administrator for a fresh link.
               </p>
-              <div className="pt-2">
-                <Link href="/login" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
-                  Return to Login →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Skills Assessment Platform</h1>
-          <p className="text-sm text-gray-500 mt-1">Activate your platform account</p>
-        </div>
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 sm:px-10 space-y-6">
-            <AcceptPlatformInvitationForm token={token} invitation={platformInvitation} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Standard tenant invitation flow (unchanged) ──────────────────────────
-  if (!token) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Missing Invitation Link</h2>
-            <p className="text-sm text-gray-500">
-              No invitation token was provided. Please use the complete invitation URL received from your platform administrator.
-            </p>
-            <div className="pt-2">
               <Link
                 href="/login"
-                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
               >
                 Return to Login →
               </Link>
             </div>
+          </AuthFormCard>
+        </AuthShell>
+      );
+    }
+
+    return (
+      <AuthShell mode="invitation">
+        <AuthFormCard
+          title="Activate Platform Account"
+          subtitle="Set your password to complete your platform account setup."
+          badge="Platform Operations"
+        >
+          <AcceptPlatformInvitationForm token={token} invitation={platformInvitation} />
+        </AuthFormCard>
+      </AuthShell>
+    );
+  }
+
+  // ── Standard Tenant Invitation Flow ──────────────────────────────────────
+  if (!token) {
+    return (
+      <AuthShell mode="invitation">
+        <AuthFormCard
+          title="Missing Invitation Link"
+          subtitle="No organization invitation token was found in the URL."
+          badge="Invitation Required"
+        >
+          <div className="space-y-4 text-center">
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              Please open the invitation link sent to your work email, or enter your invitation token below.
+            </p>
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+            >
+              Go to Invitation Gateway →
+            </Link>
           </div>
-        </div>
-      </div>
+        </AuthFormCard>
+      </AuthShell>
     );
   }
 
@@ -151,103 +160,85 @@ export default async function AcceptInvitationPage({ searchParams }: AcceptInvit
 
   if (!invitation) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-red-50 border border-red-200 text-red-600 flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Invalid Invitation Link</h2>
-            <p className="text-sm text-gray-500">
-              The invitation link provided is invalid or does not exist. Please request a new invitation from your platform administrator.
+      <AuthShell mode="invitation">
+        <AuthFormCard
+          title="Invalid Invitation Link"
+          subtitle="The invitation token provided is invalid or has been revoked."
+          badge="Security Check"
+        >
+          <div className="space-y-4 text-center">
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              Please request a new invitation from your organization administrator.
             </p>
-            <div className="pt-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
-              >
-                Return to Login →
-              </Link>
-            </div>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+            >
+              Return to Login →
+            </Link>
           </div>
-        </div>
-      </div>
+        </AuthFormCard>
+      </AuthShell>
     );
   }
 
   if (invitation.acceptedAt) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Invitation Already Accepted</h2>
-            <p className="text-sm text-gray-500">
-              This administrator invitation for <strong>{invitation.email}</strong> was already accepted on{' '}
-              {new Date(invitation.acceptedAt).toLocaleDateString()}. Please sign in with your password.
+      <AuthShell mode="invitation">
+        <AuthFormCard
+          title="Invitation Already Accepted"
+          subtitle={`The invitation for ${invitation.email} has already been accepted.`}
+          badge="Active Account"
+        >
+          <div className="space-y-4 text-center">
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              Accepted on {new Date(invitation.acceptedAt).toLocaleDateString()}. You can proceed directly to sign in with your credentials.
             </p>
-            <div className="pt-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-xs"
-              >
-                Sign In to Dashboard →
-              </Link>
-            </div>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+            >
+              Sign In to Workspace →
+            </Link>
           </div>
-        </div>
-      </div>
+        </AuthFormCard>
+      </AuthShell>
     );
   }
 
   if (new Date(invitation.expiresAt) < new Date()) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Invitation Expired</h2>
-            <p className="text-sm text-gray-500">
-              This invitation expired on {new Date(invitation.expiresAt).toLocaleDateString()}. Please contact your platform administrator for a new invitation link.
+      <AuthShell mode="invitation">
+        <AuthFormCard
+          title="Invitation Expired"
+          subtitle={`This organization invitation expired on ${new Date(invitation.expiresAt).toLocaleDateString()}.`}
+          badge="Expired Link"
+        >
+          <div className="space-y-4 text-center">
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              Please contact your organization administrator to receive an updated invitation.
             </p>
-            <div className="pt-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
-              >
-                Return to Login →
-              </Link>
-            </div>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-full text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+            >
+              Return to Login →
+            </Link>
           </div>
-        </div>
-      </div>
+        </AuthFormCard>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Skills Assessment Platform</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Complete your organization account setup
-        </p>
-      </div>
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-md rounded-2xl border border-gray-200 sm:px-10 space-y-6">
-          <AcceptInvitationForm token={token} invitation={invitation} />
-        </div>
-      </div>
-    </div>
+    <AuthShell mode="invitation">
+      <AuthFormCard
+        title="Complete Account Setup"
+        subtitle={`Welcome to ${invitation.tenant.name}. Create your password to activate your account.`}
+        badge={invitation.tenant.name}
+      >
+        <AcceptInvitationForm token={token} invitation={invitation} />
+      </AuthFormCard>
+    </AuthShell>
   );
 }

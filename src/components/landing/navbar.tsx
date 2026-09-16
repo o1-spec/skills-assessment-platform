@@ -67,7 +67,7 @@ export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
               key={link.href}
               href={link.href}
               onClick={(e) => handleNavClick(e, link.href)}
-              className="hover:text-neutral-900 transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-neutral-900 hover:after:w-full after:transition-all after:duration-200"
+              className="hover:text-neutral-900 transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-neutral-900 hover:after:w-full after:transition-all after:duration-200"
             >
               {link.label}
             </a>
@@ -101,13 +101,13 @@ export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
                 href="/login"
                 className="px-3.5 py-1.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                Sign in
+                Login
               </Link>
               <Link
-                href="/login"
+                href="/register"
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-full hover:bg-neutral-800 transition-all shadow-sm hover:shadow active:scale-[0.98]"
               >
-                <span>Get started</span>
+                <span>Register</span>
                 <svg
                   className="w-3.5 h-3.5 text-neutral-400"
                   fill="none"
@@ -183,14 +183,14 @@ export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center px-4 py-2.5 text-sm font-medium text-neutral-800 bg-stone-200/80 hover:bg-stone-300 rounded-full transition-colors"
                 >
-                  Sign in
+                  Login
                 </Link>
                 <Link
-                  href="/login"
+                  href="/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-full transition-colors shadow-sm"
                 >
-                  Get started
+                  Register
                 </Link>
               </>
             )}

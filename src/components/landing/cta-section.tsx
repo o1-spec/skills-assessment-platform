@@ -25,10 +25,10 @@ export function LandingCTA() {
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
               <Link
-                href="/login"
+                href="/register"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-semibold text-neutral-900 bg-white rounded-full hover:bg-neutral-100 transition-all shadow-md active:scale-[0.98]"
               >
-                <span>Get started with Demo</span>
+                <span>Get started</span>
                 <svg className="w-4 h-4 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
@@ -38,7 +38,7 @@ export function LandingCTA() {
                 href="/login"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-medium text-white border border-neutral-700 bg-neutral-800/80 rounded-full hover:bg-neutral-800 transition-all"
               >
-                <span>Sign in to Workspace</span>
+                <span>Login</span>
               </Link>
             </div>
 

@@ -29,10 +29,10 @@ export function LandingHero() {
 
           <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <Link
-              href="/login"
+              href="/register"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-white bg-neutral-900 rounded-full hover:bg-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
             >
-              <span>Get started with Demo</span>
+              <span>Get started</span>
               <svg className="w-4 h-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
