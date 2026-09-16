@@ -29,9 +29,8 @@ export function LandingHowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-20 bg-white border-t border-stone-200/80">
+    <section id="how-it-works" className="py-20 bg-white border-t border-stone-200/80 scroll-mt-16 sm:scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="max-w-2xl mx-auto text-center mb-16">
           <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
             End-to-End Workflow
@@ -44,7 +43,6 @@ export function LandingHowItWorks() {
           </p>
         </div>
 
-        {/* 4 Steps Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
           {steps.map((item, index) => (
             <div

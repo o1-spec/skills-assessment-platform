@@ -9,7 +9,6 @@ export function ShowcaseTabs() {
 
   return (
     <div className="w-full bg-white rounded-2xl md:rounded-3xl border border-stone-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)] overflow-hidden">
-      {/* Top Tab Switcher */}
       <div className="border-b border-stone-200/80 bg-stone-50/60 px-3 sm:px-6 pt-3 flex items-center justify-between overflow-x-auto scrollbar-none gap-2">
         <div className="flex items-center gap-1 sm:gap-2">
           <button
@@ -63,12 +62,9 @@ export function ShowcaseTabs() {
         </div>
       </div>
 
-      {/* Tab Panel Display */}
       <div className="p-4 sm:p-7 md:p-9 bg-white min-h-115">
-        {/* Tab 1: Gap Analysis */}
         {activeTab === 'gap-analysis' && (
           <div className="space-y-6">
-            {/* Header info bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-stone-100">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-linear-to-tr from-emerald-500 to-teal-400 text-white font-semibold flex items-center justify-center text-sm shadow-sm">
@@ -95,9 +91,7 @@ export function ShowcaseTabs() {
               </div>
             </div>
 
-            {/* Comparison Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Competency 1 */}
               <div className="p-4 rounded-xl border border-stone-200/80 bg-stone-50/40 hover:bg-stone-50 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -126,7 +120,6 @@ export function ShowcaseTabs() {
                 </div>
               </div>
 
-              {/* Competency 2 */}
               <div className="p-4 rounded-xl border border-stone-200/80 bg-stone-50/40 hover:bg-stone-50 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -155,7 +148,6 @@ export function ShowcaseTabs() {
                 </div>
               </div>
 
-              {/* Competency 3 */}
               <div className="p-4 rounded-xl border border-stone-200/80 bg-stone-50/40 hover:bg-stone-50 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -184,7 +176,6 @@ export function ShowcaseTabs() {
                 </div>
               </div>
 
-              {/* Competency 4 */}
               <div className="p-4 rounded-xl border border-stone-200/80 bg-stone-50/40 hover:bg-stone-50 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -214,7 +205,6 @@ export function ShowcaseTabs() {
               </div>
             </div>
 
-            {/* Bottom action indicator */}
             <div className="p-3.5 rounded-xl bg-stone-100/70 border border-stone-200 flex items-center justify-between text-xs">
               <span className="text-neutral-600 font-medium">
                 Recommendation: 1 targeted development action mapped to bridge Technical Mentorship.
@@ -226,7 +216,6 @@ export function ShowcaseTabs() {
           </div>
         )}
 
-        {/* Tab 2: Campaign Tracking */}
         {activeTab === 'campaigns' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-stone-100">
@@ -272,7 +261,6 @@ export function ShowcaseTabs() {
               </div>
             </div>
 
-            {/* Campaign participant list preview */}
             <div className="border border-stone-200 rounded-xl overflow-hidden text-xs">
               <div className="bg-stone-100/60 px-4 py-2.5 font-semibold text-neutral-700 grid grid-cols-4">
                 <span>Employee</span>
@@ -304,7 +292,6 @@ export function ShowcaseTabs() {
           </div>
         )}
 
-        {/* Tab 3: Career Ladders */}
         {activeTab === 'career-paths' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-stone-100">
@@ -321,9 +308,7 @@ export function ShowcaseTabs() {
               </span>
             </div>
 
-            {/* Stepper visualization */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Step 1 */}
               <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/30 relative">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-neutral-900 text-white text-xs font-bold flex items-center justify-center">
@@ -340,7 +325,6 @@ export function ShowcaseTabs() {
                 <div className="mt-3 text-[11px] font-semibold text-emerald-700">✓ Completed</div>
               </div>
 
-              {/* Step 2 */}
               <div className="p-4 rounded-xl border-2 border-neutral-900 bg-white relative shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-neutral-900 text-white text-xs font-bold flex items-center justify-center">
@@ -360,7 +344,6 @@ export function ShowcaseTabs() {
                 <div className="mt-3 text-[11px] font-semibold text-neutral-900">Current Benchmark</div>
               </div>
 
-              {/* Step 3 */}
               <div className="p-4 rounded-xl border border-dashed border-stone-300 bg-stone-50/60 relative">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-stone-300 text-stone-700 text-xs font-bold flex items-center justify-center">
@@ -389,7 +372,6 @@ export function ShowcaseTabs() {
           </div>
         )}
 
-        {/* Tab 4: Manager Review */}
         {activeTab === 'corroboration' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-stone-100">

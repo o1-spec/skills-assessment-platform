@@ -6,7 +6,6 @@ export function LandingFooter() {
     <footer className="bg-[#faf9f6] border-t border-stone-200 text-neutral-600 text-xs py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-          {/* Brand Column */}
           <div className="col-span-2 space-y-3">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center text-white text-xs font-bold">
@@ -27,7 +26,6 @@ export function LandingFooter() {
             </div>
           </div>
 
-          {/* Column 1: Capabilities */}
           <div>
             <h4 className="font-semibold text-neutral-900 mb-3 uppercase tracking-wider text-[11px]">
               Platform
@@ -61,7 +59,6 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Column 2: Portals */}
           <div>
             <h4 className="font-semibold text-neutral-900 mb-3 uppercase tracking-wider text-[11px]">
               Portals
@@ -95,7 +92,6 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Column 3: Trust & Specs */}
           <div>
             <h4 className="font-semibold text-neutral-900 mb-3 uppercase tracking-wider text-[11px]">
               Specifications
@@ -125,7 +121,6 @@ export function LandingFooter() {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="pt-8 border-t border-stone-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-neutral-500">
           <div>
             © {new Date().getFullYear()} Skills Assessment Platform. Prepared for Training Heights Evaluation.

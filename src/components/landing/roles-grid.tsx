@@ -62,9 +62,8 @@ export function LandingRolesGrid() {
   ];
 
   return (
-    <section id="roles" className="py-20 bg-[#faf9f6] border-t border-stone-200/80">
+    <section id="roles" className="py-20 bg-[#faf9f6] border-t border-stone-200/80 scroll-mt-16 sm:scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="max-w-2xl mx-auto text-center mb-16">
           <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
             Multi-Portal Experience
@@ -77,7 +76,6 @@ export function LandingRolesGrid() {
           </p>
         </div>
 
-        {/* 4 Roles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           {roles.map((item) => (
             <div
@@ -111,7 +109,6 @@ export function LandingRolesGrid() {
                 </div>
               </div>
 
-              {/* Demo Login Quick-Fill Prompt */}
               <div className="mt-6 pt-4 border-t border-stone-100 flex items-center justify-between text-xs">
                 <div className="text-neutral-500 font-mono">
                   Demo: <span className="font-semibold text-neutral-800">{item.demoEmail}</span>

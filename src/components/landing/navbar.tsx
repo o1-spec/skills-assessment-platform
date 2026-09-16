@@ -16,10 +16,27 @@ interface NavbarProps {
 export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    const element = document.querySelector(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.history.pushState(null, '', targetId);
+    }
+  };
+
+  const navLinks = [
+    { label: 'Features', href: '#features' },
+    { label: 'Showcase', href: '#showcase' },
+    { label: 'Roles', href: '#roles' },
+    { label: 'How it Works', href: '#how-it-works' },
+    { label: 'Architecture', href: '#trust' },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-[#faf9f6]/85 border-b border-stone-200/70 transition-all">
+    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-[#faf9f6]/90 border-b border-stone-200/70 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center text-white shadow-sm group-hover:bg-neutral-800 transition-colors">
             <svg
@@ -44,41 +61,19 @@ export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
           </span>
         </Link>
 
-        {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-neutral-600">
-          <a
-            href="#features"
-            className="hover:text-neutral-900 transition-colors py-1"
-          >
-            Features
-          </a>
-          <a
-            href="#showcase"
-            className="hover:text-neutral-900 transition-colors py-1"
-          >
-            Showcase
-          </a>
-          <a
-            href="#roles"
-            className="hover:text-neutral-900 transition-colors py-1"
-          >
-            Roles
-          </a>
-          <a
-            href="#how-it-works"
-            className="hover:text-neutral-900 transition-colors py-1"
-          >
-            How it Works
-          </a>
-          <a
-            href="#trust"
-            className="hover:text-neutral-900 transition-colors py-1"
-          >
-            Architecture
-          </a>
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
+              className="hover:text-neutral-900 transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-neutral-900 hover:after:w-full after:transition-all after:duration-200"
+            >
+              {link.label}
+            </a>
+          ))}
         </nav>
 
-        {/* Right CTA Actions */}
         <div className="hidden sm:flex items-center gap-3">
           {user ? (
             <Link
@@ -131,12 +126,20 @@ export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
           )}
         </div>
 
-        {/* Mobile Hamburger Toggle */}
-        <div className="flex md:hidden items-center">
+        <div className="flex md:hidden items-center gap-2">
+          {user && (
+            <Link
+              href={dashboardPath || '/login'}
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-neutral-900 rounded-full"
+            >
+              Workspace
+            </Link>
+          )}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-stone-200/50 transition-colors"
             aria-label="Toggle Menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -151,50 +154,25 @@ export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-stone-200 bg-[#faf9f6] px-4 pt-2 pb-6 space-y-3">
-          <a
-            href="#features"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-stone-200/50"
-          >
-            Features
-          </a>
-          <a
-            href="#showcase"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-stone-200/50"
-          >
-            Showcase
-          </a>
-          <a
-            href="#roles"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-stone-200/50"
-          >
-            Roles
-          </a>
-          <a
-            href="#how-it-works"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-stone-200/50"
-          >
-            How it Works
-          </a>
-          <a
-            href="#trust"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-stone-200/50"
-          >
-            Architecture
-          </a>
+        <div className="md:hidden border-b border-stone-200/80 bg-[#faf9f6]/95 backdrop-blur-xl px-5 pt-3 pb-6 space-y-2 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
+              className="block px-3.5 py-2.5 rounded-xl text-base font-medium text-neutral-800 hover:bg-stone-200/60 active:bg-stone-200 transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
 
-          <div className="pt-3 border-t border-stone-200 flex flex-col gap-2">
+          <div className="pt-4 mt-2 border-t border-stone-200/80 flex flex-col gap-2.5">
             {user ? (
               <Link
                 href={dashboardPath || '/login'}
-                className="w-full text-center px-4 py-2.5 text-sm font-medium text-white bg-neutral-900 rounded-full hover:bg-neutral-800 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-neutral-900 rounded-full hover:bg-neutral-800 transition-colors shadow-sm"
               >
                 Go to Workspace
               </Link>
@@ -202,13 +180,15 @@ export function LandingNavbar({ user, dashboardPath }: NavbarProps) {
               <>
                 <Link
                   href="/login"
-                  className="w-full text-center px-4 py-2 text-sm font-medium text-neutral-800 bg-stone-200/70 rounded-full hover:bg-stone-300 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center px-4 py-2.5 text-sm font-medium text-neutral-800 bg-stone-200/80 hover:bg-stone-300 rounded-full transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/login"
-                  className="w-full text-center px-4 py-2.5 text-sm font-medium text-white bg-neutral-900 rounded-full hover:bg-neutral-800 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-full transition-colors shadow-sm"
                 >
                   Get started
                 </Link>
