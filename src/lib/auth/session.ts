@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
 export const SESSION_COOKIE_NAME = 'skills_session';
-export const SESSION_DURATION_SECONDS = 8 * 60 * 60; // 8 hours
+export const SESSION_DURATION_SECONDS = 8 * 60 * 60;
 
 function getAuthSecretKey(): Uint8Array {
   const secret = process.env.AUTH_SECRET;

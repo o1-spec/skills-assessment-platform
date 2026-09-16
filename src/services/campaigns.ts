@@ -128,9 +128,6 @@ export type CampaignMonitoringSummary = {
 
 export type CampaignMonitoringStats = CampaignMonitoringSummary;
 
-/**
- * Retrieves all assessment campaigns belonging to the specified tenant.
- */
 export async function getCampaignsForTenant(tenantId: string): Promise<CampaignListItem[]> {
   if (!tenantId) {
     return [];
@@ -168,10 +165,6 @@ export async function getCampaignsForTenant(tenantId: string): Promise<CampaignL
   });
 }
 
-/**
- * Retrieves a single assessment campaign by ID with strict tenant isolation.
- * Returns null if the campaign does not belong to the tenant.
- */
 export async function getCampaignById(
   id: string,
   tenantId: string
@@ -248,9 +241,6 @@ export async function getCampaignById(
   });
 }
 
-/**
- * Loads published role profiles with requirements for preselection.
- */
 export async function getPublishedRoleProfilesForTenant(
   tenantId: string
 ): Promise<PublishedRoleProfileOption[]> {
@@ -278,9 +268,6 @@ export async function getPublishedRoleProfilesForTenant(
   });
 }
 
-/**
- * Loads active staff users eligible to be campaign participants.
- */
 export async function getEligibleCampaignParticipants(
   tenantId: string
 ): Promise<EligibleParticipantOption[]> {
@@ -306,9 +293,6 @@ export async function getEligibleCampaignParticipants(
   });
 }
 
-/**
- * Loads active teams eligible to be targeted by a campaign.
- */
 export async function getEligibleCampaignTeams(tenantId: string): Promise<EligibleTeamOption[]> {
   if (!tenantId) {
     return [];
@@ -335,9 +319,6 @@ export async function getEligibleCampaignTeams(tenantId: string): Promise<Eligib
   });
 }
 
-/**
- * Resolves participant user IDs based on the specified scope and selections.
- */
 export async function resolveCampaignParticipants(
   tenantId: string,
   scope: CampaignScope,
@@ -362,7 +343,6 @@ export async function resolveCampaignParticipants(
     const teamIds = options.teamIds || [];
     if (teamIds.length === 0) return [];
 
-    // Verify all teams belong to tenant and are active
     const teams = await prisma.team.findMany({
       where: {
         id: { in: teamIds },
@@ -376,7 +356,6 @@ export async function resolveCampaignParticipants(
       throw new Error('One or more selected teams are invalid, inactive, or belong to another organization.');
     }
 
-    // Find all active STAFF users belonging to these teams
     const memberships = await prisma.teamMembership.findMany({
       where: {
         teamId: { in: teamIds },
@@ -416,10 +395,6 @@ export async function resolveCampaignParticipants(
   return [];
 }
 
-/**
- * Creates an assessment campaign atomically.
- * If status is ACTIVE, also initializes Assessment and AssessmentItem records for all participants.
- */
 export async function createAssessmentCampaign(
   tenantId: string,
   rawInput: CreateCampaignInput,
@@ -433,13 +408,11 @@ export async function createAssessmentCampaign(
 
   const isActive = input.status === CampaignStatus.ACTIVE;
 
-  // 1. Resolve participants based on scope
   const resolvedParticipantIds = await resolveCampaignParticipants(tenantId, input.scope, {
     teamIds: input.teamIds,
     participantIds: input.participantIds,
   });
 
-  // 2. Business logic checks for ACTIVE campaigns
   if (isActive) {
     if (input.competencyIds.length === 0) {
       throw new Error('An active campaign must contain at least one competency.');
@@ -455,7 +428,6 @@ export async function createAssessmentCampaign(
     }
   }
 
-  // 3. Validate optional RoleProfile ownership
   if (input.roleProfileId) {
     const roleProfile = await prisma.roleProfile.findFirst({
       where: {
@@ -471,7 +443,6 @@ export async function createAssessmentCampaign(
     }
   }
 
-  // 4. Validate Competencies ownership
   if (input.competencyIds.length > 0) {
     const validCompetencies = await prisma.competency.findMany({
       where: {
@@ -486,9 +457,7 @@ export async function createAssessmentCampaign(
     }
   }
 
-  // 5. Execute atomic transaction
   const createdCampaign = await prisma.$transaction(async (tx) => {
-    // Capture active framework version for campaign cycle provenance
     const activeAdoption = await tx.tenantFrameworkAdoption.findFirst({
       where: {
         tenantId,
@@ -496,7 +465,6 @@ export async function createAssessmentCampaign(
       },
     });
 
-    // Create base campaign with join rows
     const campaign = await tx.assessmentCampaign.create({
       data: {
         tenantId,
@@ -530,7 +498,6 @@ export async function createAssessmentCampaign(
       },
     });
 
-    // If ACTIVE, instantiate Assessment and AssessmentItem records for every participant
     if (isActive && resolvedParticipantIds.length > 0 && input.competencyIds.length > 0) {
       for (const userId of resolvedParticipantIds) {
         await tx.assessment.create({
@@ -598,10 +565,6 @@ export async function createAssessmentCampaign(
   return createdCampaign;
 }
 
-/**
- * Updates a DRAFT assessment campaign.
- * Active campaigns are immutable and cannot be updated.
- */
 export async function updateCampaignDraft(
   tenantId: string,
   campaignId: string,
@@ -627,7 +590,6 @@ export async function updateCampaignDraft(
     throw new Error('Only draft campaigns can be modified. Active campaigns are immutable.');
   }
 
-  // Validate optional role profile
   if (input.roleProfileId) {
     const rp = await prisma.roleProfile.findFirst({
       where: { id: input.roleProfileId, tenantId, status: RoleProfileStatus.PUBLISHED, isArchived: false },
@@ -637,7 +599,6 @@ export async function updateCampaignDraft(
     }
   }
 
-  // Validate competencies
   if (input.competencyIds.length > 0) {
     const validCompetencies = await prisma.competency.findMany({
       where: { id: { in: input.competencyIds }, tenantId },
@@ -648,19 +609,16 @@ export async function updateCampaignDraft(
     }
   }
 
-  // Resolve participants for draft snapshot
   const resolvedParticipantIds = await resolveCampaignParticipants(tenantId, input.scope, {
     teamIds: input.teamIds,
     participantIds: input.participantIds,
   });
 
   return prisma.$transaction(async (tx) => {
-    // 1. Delete existing draft associations
     await tx.campaignCompetency.deleteMany({ where: { campaignId } });
     await tx.campaignTeam.deleteMany({ where: { campaignId } });
     await tx.campaignParticipant.deleteMany({ where: { campaignId } });
 
-    // 2. Update campaign details
     const updated = await tx.assessmentCampaign.update({
       where: { id: campaignId },
       data: {
@@ -703,11 +661,6 @@ export async function updateCampaignDraft(
   });
 }
 
-/**
- * Atomically launches a DRAFT assessment campaign into ACTIVE status.
- * Captures the current active framework version, resolves eligible staff participants,
- * snapshots participants, and creates Assessment and AssessmentItem records.
- */
 export async function launchCampaign(
   tenantId: string,
   campaignId: string,
@@ -742,7 +695,6 @@ export async function launchCampaign(
     throw new Error('An active campaign must contain at least one competency.');
   }
 
-  // Resolve participants according to campaign.scope
   const teamIds = campaign.campaignTeams.map((t) => t.teamId);
   const participantIds = campaign.participants.map((p) => p.userId);
 
@@ -756,18 +708,15 @@ export async function launchCampaign(
   }
 
   const launchedCampaign = await prisma.$transaction(async (tx) => {
-    // 1. Capture active framework version for campaign cycle provenance
     const activeAdoption = await tx.tenantFrameworkAdoption.findFirst({
       where: { tenantId, isActive: true },
     });
 
-    // 2. Refresh CampaignParticipant snapshot
     await tx.campaignParticipant.deleteMany({ where: { campaignId } });
     await tx.campaignParticipant.createMany({
       data: resolvedParticipantIds.map((userId) => ({ campaignId, userId })),
     });
 
-    // 3. Create Assessment and AssessmentItem records
     for (const userId of resolvedParticipantIds) {
       await tx.assessment.create({
         data: {
@@ -786,7 +735,6 @@ export async function launchCampaign(
       });
     }
 
-    // 4. Update campaign status to ACTIVE and bind framework version
     const launched = await tx.assessmentCampaign.update({
       where: { id: campaignId },
       data: {
@@ -819,9 +767,6 @@ export async function launchCampaign(
   return launchedCampaign;
 }
 
-/**
- * Central helper to notify all enrolled staff participants when a campaign becomes ACTIVE.
- */
 async function notifyCampaignAssignedParticipants(
   campaignId: string,
   tenantId: string
@@ -880,9 +825,6 @@ async function notifyCampaignAssignedParticipants(
   }
 }
 
-/**
- * Calculates monitoring metrics and participant records for an assessment campaign.
- */
 export async function getCampaignMonitoringStats(
   tenantId: string,
   campaignId: string

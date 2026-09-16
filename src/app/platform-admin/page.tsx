@@ -57,7 +57,6 @@ export default async function PlatformAdminPage() {
         </div>
       </div>
 
-      {/* Global Stats Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-4">
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
           <div className="flex items-center justify-between">
@@ -136,11 +135,10 @@ export default async function PlatformAdminPage() {
         </div>
       </div>
 
-      {/* Informational Panel */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-3">
         <h2 className="text-base font-bold text-gray-900">Platform Admin Control Plane</h2>
         <p className="text-xs text-gray-600 leading-relaxed max-w-3xl">
-          As a Platform Administrator, you maintain platform-wide infrastructure, canonical competency frameworks, and SaaS tenant separation. 
+          As a Platform Administrator, you maintain platform-wide infrastructure, canonical competency frameworks, and SaaS tenant separation.
           Individual tenant operations, role profiles, assessment campaigns, and manager corroborations remain strictly isolated within their respective organizations.
         </p>
         <div className="pt-2">

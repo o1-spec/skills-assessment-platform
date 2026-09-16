@@ -25,9 +25,6 @@ export type FullFrameworkVersion = FrameworkVersion & {
   allCategories: FrameworkCategory[];
 };
 
-/**
- * Retrieves all framework versions with summary statistics.
- */
 export async function getFrameworkVersions(): Promise<FrameworkVersionWithStats[]> {
   const versions = await prisma.frameworkVersion.findMany({
     include: {
@@ -61,9 +58,6 @@ export async function getFrameworkVersions(): Promise<FrameworkVersionWithStats[
   });
 }
 
-/**
- * Retrieves a framework version by ID with full category, competency, and level hierarchy.
- */
 export async function getFrameworkVersionById(id: string): Promise<FullFrameworkVersion | null> {
   const version = await prisma.frameworkVersion.findUnique({
     where: { id },
@@ -99,7 +93,6 @@ export async function getFrameworkVersionById(id: string): Promise<FullFramework
 
   if (!version) return null;
 
-  // Root categories only in the tree
   const rootCategories = version.categories.filter((cat) => !cat.parentId) as FullFrameworkCategory[];
   const allCategories = version.categories;
 
@@ -113,9 +106,6 @@ export async function getFrameworkVersionById(id: string): Promise<FullFramework
 import { logAuditEvent, AuditAction, AuditActorContext } from './audit';
 import { UserRole } from '@prisma/client';
 
-/**
- * Creates a new framework version draft.
- */
 export async function createFrameworkDraft(
   data: {
     version: string;
@@ -161,9 +151,6 @@ export async function createFrameworkDraft(
   });
 }
 
-/**
- * Creates a category in a draft framework version.
- */
 export async function createFrameworkCategory(
   frameworkVersionId: string,
   data: {
@@ -181,7 +168,6 @@ export async function createFrameworkCategory(
     throw new Error('Framework version not found.');
   }
 
-  // Published framework immutability enforcement
   if (framework.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot add category: Published frameworks are immutable.');
   }
@@ -219,9 +205,6 @@ export async function createFrameworkCategory(
   });
 }
 
-/**
- * Updates an existing framework category.
- */
 export async function updateFrameworkCategory(
   id: string,
   data: {
@@ -238,7 +221,6 @@ export async function updateFrameworkCategory(
     throw new Error('Category not found.');
   }
 
-  // Published framework immutability enforcement
   if (category.frameworkVersion.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot update category: Published frameworks are immutable.');
   }
@@ -252,9 +234,6 @@ export async function updateFrameworkCategory(
   });
 }
 
-/**
- * Deletes an existing framework category (Safe delete behavior).
- */
 export async function deleteFrameworkCategory(id: string): Promise<FrameworkCategory> {
   const category = await prisma.frameworkCategory.findUnique({
     where: { id },
@@ -269,7 +248,6 @@ export async function deleteFrameworkCategory(id: string): Promise<FrameworkCate
     throw new Error('Category not found.');
   }
 
-  // Published framework immutability enforcement
   if (category.frameworkVersion.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot delete category: Published frameworks are immutable.');
   }
@@ -283,9 +261,6 @@ export async function deleteFrameworkCategory(id: string): Promise<FrameworkCate
   });
 }
 
-/**
- * Creates a competency in a draft framework version.
- */
 export async function createFrameworkCompetency(
   frameworkVersionId: string,
   data: {
@@ -302,7 +277,6 @@ export async function createFrameworkCompetency(
     throw new Error('Framework version not found.');
   }
 
-  // Published framework immutability enforcement
   if (framework.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot create competency: Published frameworks are immutable.');
   }
@@ -324,9 +298,6 @@ export async function createFrameworkCompetency(
   });
 }
 
-/**
- * Updates an existing framework competency.
- */
 export async function updateFrameworkCompetency(
   id: string,
   data: {
@@ -348,7 +319,6 @@ export async function updateFrameworkCompetency(
     throw new Error('Competency not found.');
   }
 
-  // Published framework immutability enforcement
   if (competency.category.frameworkVersion.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot update competency: Published frameworks are immutable.');
   }
@@ -372,9 +342,6 @@ export async function updateFrameworkCompetency(
   });
 }
 
-/**
- * Deletes an existing framework competency in a draft framework.
- */
 export async function deleteFrameworkCompetency(id: string): Promise<FrameworkCompetency> {
   const competency = await prisma.frameworkCompetency.findUnique({
     where: { id },
@@ -389,7 +356,6 @@ export async function deleteFrameworkCompetency(id: string): Promise<FrameworkCo
     throw new Error('Competency not found.');
   }
 
-  // Published framework immutability enforcement
   if (competency.category.frameworkVersion.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot delete competency: Published frameworks are immutable.');
   }
@@ -399,9 +365,6 @@ export async function deleteFrameworkCompetency(id: string): Promise<FrameworkCo
   });
 }
 
-/**
- * Creates a level descriptor for a competency in a draft framework.
- */
 export async function createFrameworkLevel(
   frameworkVersionId: string,
   data: {
@@ -419,7 +382,6 @@ export async function createFrameworkLevel(
     throw new Error('Framework version not found.');
   }
 
-  // Published framework immutability enforcement
   if (framework.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot add level: Published frameworks are immutable.');
   }
@@ -460,9 +422,6 @@ export async function createFrameworkLevel(
   });
 }
 
-/**
- * Updates an existing framework level descriptor.
- */
 export async function updateFrameworkLevel(
   id: string,
   data: {
@@ -488,7 +447,6 @@ export async function updateFrameworkLevel(
     throw new Error('Level descriptor not found.');
   }
 
-  // Published framework immutability enforcement
   if (levelRecord.frameworkCompetency.category.frameworkVersion.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot update level: Published frameworks are immutable.');
   }
@@ -522,9 +480,6 @@ export async function updateFrameworkLevel(
   });
 }
 
-/**
- * Deletes a framework level descriptor in a draft framework.
- */
 export async function deleteFrameworkLevel(id: string): Promise<FrameworkLevel> {
   const levelRecord = await prisma.frameworkLevel.findUnique({
     where: { id },
@@ -543,7 +498,6 @@ export async function deleteFrameworkLevel(id: string): Promise<FrameworkLevel> 
     throw new Error('Level descriptor not found.');
   }
 
-  // Published framework immutability enforcement
   if (levelRecord.frameworkCompetency.category.frameworkVersion.status !== FrameworkStatus.DRAFT) {
     throw new Error('Cannot delete level: Published frameworks are immutable.');
   }
@@ -553,9 +507,6 @@ export async function deleteFrameworkLevel(id: string): Promise<FrameworkLevel> 
   });
 }
 
-/**
- * Atomically publishes a draft framework version after comprehensive validation.
- */
 export async function publishFrameworkVersion(
   id: string,
   actor?: AuditActorContext
@@ -583,21 +534,17 @@ export async function publishFrameworkVersion(
     throw new Error('Cannot publish framework: Only DRAFT frameworks can be published.');
   }
 
-  // Flatten all competencies across root and subcategories
   const allCompetencies = framework.categories.flatMap((cat) => cat.competencies);
 
-  // Validation Rule 1: At least 1 competency must exist
   if (allCompetencies.length === 0) {
     throw new Error('Cannot publish framework: At least one competency is required before publishing.');
   }
 
-  // Validation Rule 2: Every competency must have at least 1 level
   for (const comp of allCompetencies) {
     if (comp.levels.length === 0) {
       throw new Error(`Cannot publish framework: Competency '${comp.name}' must have at least one level descriptor.`);
     }
 
-    // Validation Rule 3: Every level must have a non-empty description
     for (const lvl of comp.levels) {
       if (!lvl.description || lvl.description.trim().length === 0) {
         throw new Error(`Cannot publish framework: Level ${lvl.level} of competency '${comp.name}' has an empty description.`);
@@ -633,7 +580,6 @@ export async function publishFrameworkVersion(
     return pub;
   });
 
-  // Post-commit: notify affected tenants — outside transaction, non-blocking (Correction 8)
   try {
     await notifyTenantsOfNewFrameworkVersion(
       published.id,
@@ -646,15 +592,11 @@ export async function publishFrameworkVersion(
       '[NotificationEngine:Framework] Version notification dispatch failed:',
       msg
     );
-    // Publication is already committed — do NOT rethrow
   }
 
   return published;
 }
 
-/**
- * Copies an entire published framework into a new DRAFT version.
- */
 export async function createDraftFromPublishedVersion(
   sourceVersionId: string,
   newVersion: string,
@@ -691,7 +633,6 @@ export async function createDraftFromPublishedVersion(
     throw new Error(`Framework version '${newVersion.trim()}' already exists.`);
   }
 
-  // Perform full deep copy in a transaction with extended timeout for latency
   return prisma.$transaction(async (tx) => {
     const draft = await tx.frameworkVersion.create({
       data: {
@@ -702,10 +643,8 @@ export async function createDraftFromPublishedVersion(
       },
     });
 
-    // Map old category ID -> new category ID
     const categoryIdMap = new Map<string, string>();
 
-    // 1. Copy root categories first
     const rootCategories = source.categories.filter((cat) => !cat.parentId);
     for (const rootCat of rootCategories) {
       const newRootCat = await tx.frameworkCategory.create({
@@ -719,7 +658,6 @@ export async function createDraftFromPublishedVersion(
       });
       categoryIdMap.set(rootCat.id, newRootCat.id);
 
-      // Copy direct competencies of root category
       for (const comp of rootCat.competencies) {
         const newComp = await tx.frameworkCompetency.create({
           data: {
@@ -742,7 +680,6 @@ export async function createDraftFromPublishedVersion(
       }
     }
 
-    // 2. Copy subcategories
     const subCategories = source.categories.filter((cat) => cat.parentId);
     for (const subCat of subCategories) {
       const newParentId = subCat.parentId ? categoryIdMap.get(subCat.parentId) : null;
@@ -757,7 +694,6 @@ export async function createDraftFromPublishedVersion(
       });
       categoryIdMap.set(subCat.id, newSubCat.id);
 
-      // Copy competencies of subcategory
       for (const comp of subCat.competencies) {
         const newComp = await tx.frameworkCompetency.create({
           data: {
@@ -787,34 +723,14 @@ export async function createDraftFromPublishedVersion(
   });
 }
 
-// ---------------------------------------------------------------------------
-// FRAMEWORK VERSION NOTIFICATION HELPER (private)
-// ---------------------------------------------------------------------------
-
 import { createAndDispatchNotification } from './notifications';
 import { NotificationType, TenantStatus } from '@prisma/client';
 
-/**
- * Notifies active ORGANIZATION_ADMIN users of tenants that are on an older
- * framework version when a new version is published.
- *
- * Targeting logic (Correction 2):
- * - Active adoption where frameworkVersionId ≠ publishedVersionId
- * - Adopted version's publishedAt < new version's publishedAt (timestamp ordering)
- * - Tenant is ACTIVE
- *
- * Deduplication (Correction 9):
- * - dedupeKey: framework-version-available:{tenantId}:{publishedVersionId}:{userId}
- *
- * Failure isolation (Correction 8):
- * - Per-recipient errors are caught and logged; batch continues
- */
 async function notifyTenantsOfNewFrameworkVersion(
   publishedVersionId: string,
   publishedVersion: string,
   publishedAt: Date
 ): Promise<void> {
-  // Find all tenants actively using an older version (by publishedAt timestamp)
   const affectedAdoptions = await prisma.tenantFrameworkAdoption.findMany({
     where: {
       isActive: true,
@@ -847,7 +763,6 @@ async function notifyTenantsOfNewFrameworkVersion(
     const { tenant } = adoption;
 
     for (const recipient of tenant.users) {
-      // Per-recipient isolation (Correction 8)
       try {
         await createAndDispatchNotification({
           tenantId: tenant.id,
@@ -855,10 +770,9 @@ async function notifyTenantsOfNewFrameworkVersion(
           type: NotificationType.FRAMEWORK_VERSION_AVAILABLE,
           title: 'New Framework Version Available',
           message: `Framework version ${publishedVersion} has been published. Review and adopt it to keep your skills library current.`,
-          href: '/organization-admin/skills', // Correction 4 — verified route
+          href: '/organization-admin/skills',
           resourceType: 'FrameworkVersion',
           resourceId: publishedVersionId,
-          // Deterministic deduplication (Correction 9)
           dedupeKey: `framework-version-available:${tenant.id}:${publishedVersionId}:${recipient.id}`,
         });
       } catch (err: unknown) {

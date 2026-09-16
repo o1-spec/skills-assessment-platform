@@ -17,8 +17,6 @@ interface CorroborationFormProps {
 const initialActionState: CorroborationFormActionState = {};
 
 export function CorroborationForm({ assessment }: CorroborationFormProps) {
-  // Local state for manager review: map of itemId -> { rating: number, justification: string }
-  // Preselected to staff's selfRating by default
   const [reviews, setReviews] = useState<
     Record<string, { rating: number; justification: string }>
   >(() => {
@@ -73,7 +71,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
     }));
   };
 
-  // Build payload
   const getPayload = () => {
     return Object.entries(reviews).map(([itemId, val]) => ({
       assessmentItemId: itemId,
@@ -82,7 +79,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
     }));
   };
 
-  // Validate before opening confirmation modal
   const handleOpenConfirmModal = () => {
     const errors: string[] = [];
 
@@ -93,7 +89,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
         continue;
       }
 
-      // Check justification requirement if rating changed
       if (review.rating !== item.selfRating) {
         if (!review.justification || review.justification.trim().length === 0) {
           errors.push(
@@ -126,7 +121,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Sticky Top Summary & Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm sticky top-0 z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -156,7 +150,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
         </div>
       </div>
 
-      {/* Errors display */}
       {state?.error && (
         <div className="rounded-md bg-red-50 p-4 border border-red-200">
           <div className="text-sm font-medium text-red-800">{state.error}</div>
@@ -176,9 +169,7 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
         </div>
       )}
 
-      {/* Form sections */}
       <div className="space-y-8">
-        {/* Technical Competencies */}
         {technicalItems.length > 0 && (
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-2">
@@ -197,7 +188,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         )}
 
-        {/* Behavioral Competencies */}
         {behavioralItems.length > 0 && (
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-2">
@@ -218,7 +208,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         )}
 
-        {/* Bottom Actions */}
         <div className="pt-6 border-t border-gray-200 flex items-center justify-between">
           <Link
             href="/manager/corroborations"
@@ -238,7 +227,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
       {isConfirmModalOpen && (
         <div
           className="fixed inset-0 z-50 overflow-y-auto bg-gray-500/75 flex items-center justify-center p-4"
@@ -318,7 +306,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           isRatingChanged ? 'border-amber-300 shadow-sm ring-1 ring-amber-300' : 'border-gray-200 shadow-sm'
         } p-6 space-y-5`}
       >
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-100 pb-3">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold text-gray-400">#{num}</span>
@@ -346,7 +333,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         </div>
 
-        {/* Staff Self-Assessment Details Section */}
         <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-3">
           <div>
             <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
@@ -384,7 +370,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         </div>
 
-        {/* Manager Level Choices */}
         <div className="space-y-2.5 pt-2 border-t border-gray-100">
           <div className="text-xs font-bold text-gray-800 uppercase tracking-wider">
             Corroborated Manager Rating:
@@ -430,7 +415,6 @@ export function CorroborationForm({ assessment }: CorroborationFormProps) {
           </div>
         </div>
 
-        {/* Manager Justification Field */}
         <div className="space-y-2 pt-2 border-t border-gray-100">
           <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
             Manager Justification / Comments

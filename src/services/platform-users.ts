@@ -9,11 +9,6 @@ if (typeof window !== 'undefined') {
   throw new Error('This module can only be executed on the server.');
 }
 
-// ---------------------------------------------------------------------------
-// CONSTANTS & TYPES
-// ---------------------------------------------------------------------------
-
-/** The only roles valid for platform users. Enforced at service level. */
 const PLATFORM_ONLY_ROLES = [UserRole.PLATFORM_ADMIN, UserRole.SUPPORT] as const;
 type PlatformRole = (typeof PLATFORM_ONLY_ROLES)[number];
 
@@ -32,14 +27,6 @@ export type PlatformInvitationWithCreator = PlatformInvitation & {
   } | null;
 };
 
-// ---------------------------------------------------------------------------
-// PRIVATE GUARDS
-// ---------------------------------------------------------------------------
-
-/**
- * Validates that a role is a platform-only role (PLATFORM_ADMIN or SUPPORT).
- * Rejects ORGANIZATION_ADMIN, MANAGER, STAFF at service level.
- */
 function assertPlatformRole(role: UserRole): asserts role is PlatformRole {
   if (!PLATFORM_ONLY_ROLES.includes(role as PlatformRole)) {
     throw new Error(
@@ -48,10 +35,6 @@ function assertPlatformRole(role: UserRole): asserts role is PlatformRole {
   }
 }
 
-/**
- * Asserts that the target user is a platform user (tenantId === null).
- * Prevents tenant accounts from being modified through this service.
- */
 async function assertPlatformUser(userId: string): Promise<User> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -65,10 +48,6 @@ async function assertPlatformUser(userId: string): Promise<User> {
   return user;
 }
 
-/**
- * Asserts that removing / demoting the given platform admin would not leave
- * zero active PLATFORM_ADMINs on the platform.
- */
 async function assertNotLastActivePlatformAdmin(excludeUserId: string): Promise<void> {
   const remaining = await prisma.user.count({
     where: {
@@ -85,13 +64,6 @@ async function assertNotLastActivePlatformAdmin(excludeUserId: string): Promise<
   }
 }
 
-// ---------------------------------------------------------------------------
-// READ FUNCTIONS
-// ---------------------------------------------------------------------------
-
-/**
- * Returns all platform users (PLATFORM_ADMIN + SUPPORT) with basic counts.
- */
 export async function getPlatformUsers(): Promise<PlatformUserWithCounts[]> {
   return prisma.user.findMany({
     where: {
@@ -110,9 +82,6 @@ export async function getPlatformUsers(): Promise<PlatformUserWithCounts[]> {
   });
 }
 
-/**
- * Returns pending platform invitations (unaccepted, unexpired, uncancelled).
- */
 export async function getPendingPlatformInvitations(): Promise<PlatformInvitationWithCreator[]> {
   return prisma.platformInvitation.findMany({
     where: {
@@ -129,9 +98,6 @@ export async function getPendingPlatformInvitations(): Promise<PlatformInvitatio
   });
 }
 
-/**
- * Retrieves a pending, valid PlatformInvitation by its raw token.
- */
 export async function getPlatformInvitationByRawToken(
   rawToken: string
 ): Promise<PlatformInvitationWithCreator | null> {
@@ -147,15 +113,6 @@ export async function getPlatformInvitationByRawToken(
   });
 }
 
-// ---------------------------------------------------------------------------
-// WRITE FUNCTIONS
-// ---------------------------------------------------------------------------
-
-/**
- * Creates a platform invitation for a new PLATFORM_ADMIN or SUPPORT account.
- * Sends an invitation email via the existing email abstraction.
- * Email failure is logged but does NOT roll back the invitation.
- */
 export async function invitePlatformUser(
   actorId: string,
   input: {
@@ -165,7 +122,6 @@ export async function invitePlatformUser(
   },
   actorContext?: { ipAddress?: string | null; userAgent?: string | null }
 ): Promise<{ invitation: PlatformInvitation; invitationUrl: string }> {
-  // 1. Validate role (Correction 5 — service-level enforcement)
   assertPlatformRole(input.role);
 
   const email = input.email.toLowerCase().trim();
@@ -174,13 +130,11 @@ export async function invitePlatformUser(
   if (!email) throw new Error('Email is required.');
   if (!name) throw new Error('Name is required.');
 
-  // 2. No existing active user with this email
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new Error(`An account with email "${email}" already exists.`);
   }
 
-  // 3. No live pending platform invitation for this email
   const livePending = await prisma.platformInvitation.findFirst({
     where: {
       email,
@@ -195,12 +149,10 @@ export async function invitePlatformUser(
     );
   }
 
-  // 4. Generate token — raw never persisted or audited (Correction 3)
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashInvitationToken(rawToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-  // 5. Create invitation record
   const invitation = await prisma.platformInvitation.create({
     data: {
       email,
@@ -212,7 +164,6 @@ export async function invitePlatformUser(
     },
   });
 
-  // 6. Audit — raw token is never logged
   await logAuditEvent({
     tenantId: null,
     actorId,
@@ -232,7 +183,6 @@ export async function invitePlatformUser(
 
   const invitationUrl = `/accept-invitation?token=${rawToken}&type=platform`;
 
-  // 7. Send email via existing abstraction — failure logged but non-fatal (Correction 3)
   const roleLabel =
     input.role === UserRole.PLATFORM_ADMIN ? 'Platform Administrator' : 'Support';
   try {
@@ -254,10 +204,6 @@ export async function invitePlatformUser(
   return { invitation, invitationUrl };
 }
 
-/**
- * Accepts a platform invitation, creating a tenantId=null User.
- * Re-validates stored role before creating the account.
- */
 export async function acceptPlatformInvitation(
   rawToken: string,
   password: string
@@ -281,10 +227,8 @@ export async function acceptPlatformInvitation(
         throw new Error('This invitation link has expired.');
       }
 
-      // Re-validate stored role (Correction 5)
       assertPlatformRole(invitation.role);
 
-      // Check for existing account
       const existingUser = await tx.user.findUnique({
         where: { email: invitation.email.toLowerCase().trim() },
       });
@@ -296,21 +240,19 @@ export async function acceptPlatformInvitation(
 
       const passwordHash = await bcrypt.hash(password, 10);
 
-      // Create platform user — tenantId MUST be null (Correction 6)
       const user = await tx.user.create({
         data: {
           name: invitation.name,
           email: invitation.email.toLowerCase().trim(),
           passwordHash,
           role: invitation.role,
-          tenantId: null, // explicit invariant
+          tenantId: null,
           managerId: null,
           roleProfileId: null,
           isActive: true,
         },
       });
 
-      // Mark invitation accepted
       await tx.platformInvitation.update({
         where: { id: invitation.id },
         data: { acceptedAt: new Date() },
@@ -324,28 +266,20 @@ export async function acceptPlatformInvitation(
   );
 }
 
-/**
- * Changes the application role of a platform user (PLATFORM_ADMIN ↔ SUPPORT).
- * Enforces final-admin lockout and tenantId=null invariant.
- */
 export async function changePlatformUserRole(
   actorId: string,
   targetUserId: string,
   newRole: UserRole,
   actorContext?: { ipAddress?: string | null; userAgent?: string | null }
 ): Promise<User> {
-  // Validate target role
   assertPlatformRole(newRole);
 
-  // Validate target is a platform user (Correction 6)
   const targetUser = await assertPlatformUser(targetUserId);
 
-  // Actor cannot change their own role
   if (actorId === targetUserId) {
     throw new Error('Platform Administrators cannot change their own role.');
   }
 
-  // Final-admin lockout if demoting a PLATFORM_ADMIN
   if (
     targetUser.role === UserRole.PLATFORM_ADMIN &&
     newRole !== UserRole.PLATFORM_ADMIN
@@ -381,16 +315,11 @@ export async function changePlatformUserRole(
   });
 }
 
-/**
- * Deactivates a platform user safely.
- * Enforces: cannot deactivate self, cannot remove last active PLATFORM_ADMIN.
- */
 export async function deactivatePlatformUser(
   actorId: string,
   targetUserId: string,
   actorContext?: { ipAddress?: string | null; userAgent?: string | null }
 ): Promise<User> {
-  // Validate target is a platform user (Correction 6)
   const targetUser = await assertPlatformUser(targetUserId);
 
   if (actorId === targetUserId) {
@@ -398,10 +327,9 @@ export async function deactivatePlatformUser(
   }
 
   if (!targetUser.isActive) {
-    return targetUser; // Already inactive — idempotent
+    return targetUser;
   }
 
-  // Final-admin lockout
   if (targetUser.role === UserRole.PLATFORM_ADMIN) {
     await assertNotLastActivePlatformAdmin(targetUserId);
   }
@@ -434,19 +362,15 @@ export async function deactivatePlatformUser(
   });
 }
 
-/**
- * Reactivates a deactivated platform user.
- */
 export async function reactivatePlatformUser(
   actorId: string,
   targetUserId: string,
   actorContext?: { ipAddress?: string | null; userAgent?: string | null }
 ): Promise<User> {
-  // Validate target is a platform user (Correction 6)
   const targetUser = await assertPlatformUser(targetUserId);
 
   if (targetUser.isActive) {
-    return targetUser; // Already active — idempotent
+    return targetUser;
   }
 
   return prisma.$transaction(async (tx) => {
@@ -477,9 +401,6 @@ export async function reactivatePlatformUser(
   });
 }
 
-/**
- * Cancels a pending platform invitation.
- */
 export async function cancelPlatformInvitation(
   actorId: string,
   invitationId: string,

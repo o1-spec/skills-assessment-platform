@@ -80,14 +80,12 @@ export function EvidenceAttachmentsSection({
 
     setErrorMessage(null);
 
-    // Validate size (10MB)
     if (file.size > MAX_EVIDENCE_FILE_SIZE_BYTES) {
       setErrorMessage('File size exceeds the 10MB limit.');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    // Validate MIME type
     if (!(ALLOWED_EVIDENCE_MIME_TYPES as readonly string[]).includes(file.type.toLowerCase())) {
       setErrorMessage(
         'File type not allowed. Supported formats: PDF, PNG, JPG, DOC, DOCX.'
@@ -189,7 +187,6 @@ export function EvidenceAttachmentsSection({
         </div>
       )}
 
-      {/* Attachments List */}
       {attachments.length > 0 && (
         <ul className="divide-y divide-gray-100 bg-white border border-gray-200 rounded-md overflow-hidden">
           {attachments.map((att) => {
@@ -244,7 +241,6 @@ export function EvidenceAttachmentsSection({
         <p className="text-xs text-gray-400 italic">No file attachments provided.</p>
       )}
 
-      {/* Upload button & file input for editable staff state */}
       {!isReadOnly && !isManager && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
           <input

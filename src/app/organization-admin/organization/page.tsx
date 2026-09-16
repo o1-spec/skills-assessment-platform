@@ -27,7 +27,6 @@ export default async function OrganizationPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Profile & Industry Template Settings */}
       {profile && (
         <OrgProfileActions
           initialProfile={profile}
@@ -35,9 +34,7 @@ export default async function OrganizationPage() {
         />
       )}
 
-      {/* Organization Notification Settings */}
       <TenantNotificationSettingsCard initialSettings={notificationSettings} />
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Organization Structure</h1>
@@ -61,7 +58,6 @@ export default async function OrganizationPage() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Active Departments', value: activeDepts.length, color: 'text-blue-600' },
@@ -76,7 +72,6 @@ export default async function OrganizationPage() {
         ))}
       </div>
 
-      {/* Departments */}
       <section className="mb-10">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Departments</h2>
         {departments.length === 0 ? (
@@ -134,7 +129,6 @@ export default async function OrganizationPage() {
         )}
       </section>
 
-      {/* Teams */}
       <section>
         <h2 className="text-lg font-semibold text-gray-800 mb-4">All Teams</h2>
         {teams.length === 0 ? (

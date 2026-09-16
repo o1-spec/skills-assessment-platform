@@ -39,9 +39,6 @@ export type StaffAssessmentDetail = Assessment & {
   >;
 };
 
-/**
- * Retrieves all assessments assigned to the given staff user within their tenant.
- */
 export async function getAssessmentsForStaff(
   userId: string,
   tenantId: string
@@ -96,9 +93,6 @@ export async function getAssessmentsForStaff(
   });
 }
 
-/**
- * Retrieves a single assessment detail for a staff user with strict ownership & tenant isolation.
- */
 export async function getStaffAssessmentById(
   assessmentId: string,
   userId: string,
@@ -164,11 +158,6 @@ export async function getStaffAssessmentById(
   };
 }
 
-/**
- * Saves draft progress for a staff assessment.
- * Allows incomplete data (unanswered competencies, missing evidence).
- * Transitions NOT_STARTED -> DRAFT.
- */
 export async function saveAssessmentDraft(
   userId: string,
   tenantId: string,
@@ -178,7 +167,6 @@ export async function saveAssessmentDraft(
     throw new Error('User and Tenant authorization required.');
   }
 
-  // 1. Fetch current assessment with tenant & user ownership
   const assessment = await prisma.assessment.findFirst({
     where: {
       id: input.assessmentId,
@@ -205,7 +193,6 @@ export async function saveAssessmentDraft(
     throw new Error('Assessment not found or does not belong to your account.');
   }
 
-  // 2. Prevent editing if already submitted or completed
   if (
     assessment.status === AssessmentStatus.PENDING_CORROBORATION ||
     assessment.status === AssessmentStatus.COMPLETED ||
@@ -214,17 +201,14 @@ export async function saveAssessmentDraft(
     throw new Error('Cannot edit an assessment that has already been submitted or completed.');
   }
 
-  // 3. Build a map of valid assessment items
   const validItemMap = new Map(assessment.items.map((i) => [i.id, i]));
 
-  // Validate each provided item
   for (const submittedItem of input.items) {
     const matchedItem = validItemMap.get(submittedItem.assessmentItemId);
     if (!matchedItem) {
       throw new Error(`Assessment item ${submittedItem.assessmentItemId} does not belong to this assessment.`);
     }
 
-    // Validate selfRating against database levels if supplied
     if (submittedItem.selfRating !== null && submittedItem.selfRating !== undefined) {
       const validLevels = matchedItem.competency.levels.map((l) => l.level);
       if (!validLevels.includes(submittedItem.selfRating)) {
@@ -235,7 +219,6 @@ export async function saveAssessmentDraft(
     }
   }
 
-  // 4. Update items and status in a transaction
   return prisma.$transaction(async (tx) => {
     for (const submittedItem of input.items) {
       await tx.assessmentItem.update({
@@ -249,7 +232,6 @@ export async function saveAssessmentDraft(
       });
     }
 
-    // Transition NOT_STARTED -> DRAFT if applicable
     const nextStatus =
       assessment.status === AssessmentStatus.NOT_STARTED
         ? AssessmentStatus.DRAFT
@@ -266,12 +248,6 @@ export async function saveAssessmentDraft(
   });
 }
 
-/**
- * Submits a completed staff assessment atomically.
- * Requires all items to have a valid selfRating.
- * Requires evidenceText if the chosen level includes an evidencePrompt.
- * Transitions to PENDING_CORROBORATION (if corroboration required) or COMPLETED (if not).
- */
 export async function submitAssessment(
   userId: string,
   tenantId: string,
@@ -282,7 +258,6 @@ export async function submitAssessment(
     throw new Error('User and Tenant authorization required.');
   }
 
-  // 1. Fetch current assessment with tenant & user ownership
   const assessment = await prisma.assessment.findFirst({
     where: {
       id: input.assessmentId,
@@ -309,7 +284,6 @@ export async function submitAssessment(
     throw new Error('Assessment not found or does not belong to your account.');
   }
 
-  // 2. Prevent submitting if already submitted/completed
   if (
     assessment.status === AssessmentStatus.PENDING_CORROBORATION ||
     assessment.status === AssessmentStatus.COMPLETED ||
@@ -318,12 +292,10 @@ export async function submitAssessment(
     throw new Error('This assessment has already been submitted.');
   }
 
-  // 3. Deadline check
   if (new Date(assessment.campaign.deadline).getTime() < Date.now()) {
     throw new Error('This assessment deadline has passed.');
   }
 
-  // 4. Validate that all items belonging to the assessment are supplied
   const existingItemMap = new Map(assessment.items.map((i) => [i.id, i]));
   const submittedItemMap = new Map(input.items.map((i) => [i.assessmentItemId, i]));
 
@@ -341,7 +313,6 @@ export async function submitAssessment(
       throw new Error(`Please select a rating for competency "${existingItem.competency.name}".`);
     }
 
-    // Validate that selfRating is a real CompetencyLevel in DB
     const matchedLevel = existingItem.competency.levels.find(
       (l) => l.level === submitted.selfRating
     );
@@ -352,7 +323,6 @@ export async function submitAssessment(
       );
     }
 
-    // If level has an evidencePrompt, require evidenceText
     if (matchedLevel.evidencePrompt && matchedLevel.evidencePrompt.trim().length > 0) {
       if (!submitted.evidenceText || submitted.evidenceText.trim().length === 0) {
         throw new Error(
@@ -368,7 +338,6 @@ export async function submitAssessment(
   const campaignName = assessment.campaign.name;
   const assessmentId = assessment.id;
 
-  // 5. Execute submission atomically
   const submittedAssessment = await prisma.$transaction(async (tx) => {
     for (const submitted of input.items) {
       await tx.assessmentItem.update({
@@ -378,7 +347,6 @@ export async function submitAssessment(
         data: {
           selfRating: submitted.selfRating,
           evidenceText: submitted.evidenceText ? submitted.evidenceText.trim() : null,
-          // If no manager corroboration required, employee's self-rating becomes the finalRating
           finalRating: requiresCorroboration ? null : submitted.selfRating,
         },
       });
@@ -421,7 +389,6 @@ export async function submitAssessment(
     return updated;
   });
 
-  // Post-submission notifications (decoupled, non-blocking)
   try {
     if (requiresCorroboration) {
       const staffUser = await prisma.user.findUnique({
@@ -461,7 +428,6 @@ export async function submitAssessment(
         });
       }
     } else {
-      // Direct completion without manager corroboration
       await createAndDispatchNotification({
         tenantId,
         recipientId: userId,

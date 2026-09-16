@@ -19,12 +19,10 @@ export default async function EditRoleProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  // Structural immutability: published roles cannot be edited
   if (roleProfile.status === RoleProfileStatus.PUBLISHED) {
     redirect(`/organization-admin/roles/${id}`);
   }
 
-  // Archived roles cannot be edited
   if (roleProfile.isArchived) {
     redirect(`/organization-admin/roles/${id}`);
   }
@@ -33,7 +31,6 @@ export default async function EditRoleProfilePage({ params }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Breadcrumb Navigation */}
       <div>
         <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
@@ -69,7 +66,6 @@ export default async function EditRoleProfilePage({ params }: PageProps) {
         </p>
       </div>
 
-      {/* Form Component */}
       <EditRoleForm roleProfile={roleProfile} competencies={competencies} />
     </div>
   );

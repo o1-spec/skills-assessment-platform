@@ -154,7 +154,6 @@ export function EditCampaignForm({
         </div>
       )}
 
-      {/* 1. Campaign Details Card */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-5">
         <h2 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
           1. Campaign Details
@@ -256,7 +255,6 @@ export function EditCampaignForm({
           </div>
         </div>
 
-      {/* 2. Role Profile Template Selection Card */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
         <div className="border-b border-gray-100 pb-3">
           <h2 className="text-base font-semibold text-gray-900">2. Role Profile Template</h2>
@@ -286,7 +284,6 @@ export function EditCampaignForm({
         </div>
       </div>
 
-      {/* 3. Competencies Selection Card */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-3 gap-2">
           <div>
@@ -319,7 +316,6 @@ export function EditCampaignForm({
           <p className="text-xs text-red-600">{state.fieldErrors.competencyIds[0]}</p>
         )}
 
-        {/* Technical Competencies */}
         <div className="space-y-3">
           <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wider">
             Technical Competencies
@@ -356,7 +352,6 @@ export function EditCampaignForm({
           </div>
         </div>
 
-        {/* Behavioral Competencies */}
         <div className="space-y-3 pt-2">
           <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wider">
             Behavioral Competencies
@@ -394,7 +389,6 @@ export function EditCampaignForm({
         </div>
       </div>
 
-      {/* 4. Campaign Scope & Audience Card */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
         <div className="border-b border-gray-100 pb-3">
           <h2 className="text-base font-semibold text-gray-900">4. Campaign Scope & Audience</h2>
@@ -403,7 +397,6 @@ export function EditCampaignForm({
           </p>
         </div>
 
-        {/* Scope Selector Options */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <label
             className={`flex flex-col p-4 rounded-lg border cursor-pointer transition-all ${
@@ -475,7 +468,6 @@ export function EditCampaignForm({
           </label>
         </div>
 
-        {/* Scope-dependent selectors */}
         {scope === CampaignScope.ORGANIZATION && (
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
             <div className="flex items-start">
@@ -626,7 +618,6 @@ export function EditCampaignForm({
         )}
       </div>
 
-      {/* Form Submission Actions */}
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-gray-200">
         <Link
           href={`/organization-admin/campaigns/${campaign.id}`}

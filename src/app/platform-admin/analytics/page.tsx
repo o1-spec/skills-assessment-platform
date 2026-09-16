@@ -13,7 +13,6 @@ export default async function PlatformAnalyticsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Platform Analytics &amp; Cross-Tenant Metrics</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -21,7 +20,6 @@ export default async function PlatformAnalyticsPage() {
         </p>
       </div>
 
-      {/* Privacy Notice Card */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 flex items-start gap-3.5">
         <div className="text-blue-600 mt-0.5 shrink-0">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -36,9 +34,7 @@ export default async function PlatformAnalyticsPage() {
         </div>
       </div>
 
-      {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Tenants */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Organizations</span>
           <div className="mt-2 flex items-baseline justify-between">
@@ -54,7 +50,6 @@ export default async function PlatformAnalyticsPage() {
           </div>
         </div>
 
-        {/* Users */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Accounts</span>
           <div className="mt-2 flex items-baseline justify-between">
@@ -70,7 +65,6 @@ export default async function PlatformAnalyticsPage() {
           </div>
         </div>
 
-        {/* Campaigns */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Assessment Campaigns</span>
           <div className="mt-2 flex items-baseline justify-between">
@@ -86,7 +80,6 @@ export default async function PlatformAnalyticsPage() {
           </div>
         </div>
 
-        {/* Assessments & Completion Rate */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Completion Rate</span>
           <div className="mt-2 flex items-baseline justify-between">
@@ -103,9 +96,7 @@ export default async function PlatformAnalyticsPage() {
         </div>
       </div>
 
-      {/* Two Column Section: Framework Adoption & Industry Template Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Framework Version Adoption */}
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Framework Version Adoption</h2>
@@ -131,7 +122,6 @@ export default async function PlatformAnalyticsPage() {
           )}
         </div>
 
-        {/* Industry Template Adoption */}
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Industry Starter Adoption</h2>
@@ -158,7 +148,6 @@ export default async function PlatformAnalyticsPage() {
         </div>
       </div>
 
-      {/* Role Breakdown Table */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
         <h2 className="text-base font-semibold text-gray-900">User Distribution by Role</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">

@@ -28,11 +28,6 @@ export const DEFAULT_TENANT_NOTIFICATION_SETTINGS: Omit<
   inAppEnabled: true,
 };
 
-/**
- * Parses and sanitizes a string or array of reminder offsets.
- * Deduplicates and sorts in descending order (e.g. "1, 3, 1" -> [3, 1]).
- * Enforces positive integers between 1 and 365, max 10 offsets.
- */
 export function normalizeReminderDays(input: string | number[]): {
   normalizedString: string;
   parsedArray: number[];
@@ -59,7 +54,6 @@ export function normalizeReminderDays(input: string | number[]): {
     throw new Error('Maximum of 10 reminder day offsets allowed.');
   }
 
-  // Deduplicate and sort descending
   const uniqueDescending = Array.from(new Set(validNumbers)).sort((a, b) => b - a);
 
   return {
@@ -68,9 +62,6 @@ export function normalizeReminderDays(input: string | number[]): {
   };
 }
 
-/**
- * Returns notification settings for the given tenant, or system defaults if not customized.
- */
 export async function getTenantNotificationSettings(
   tenantId: string
 ): Promise<TenantNotificationSettingsDTO> {
@@ -107,10 +98,6 @@ export async function getTenantNotificationSettings(
   };
 }
 
-/**
- * Updates notification settings for a specific tenant.
- * Audits TENANT_NOTIFICATION_SETTINGS_UPDATE.
- */
 export async function updateTenantNotificationSettings(
   tenantId: string,
   actorId: string,

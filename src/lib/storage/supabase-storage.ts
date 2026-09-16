@@ -89,8 +89,6 @@ class LocalFilesystemStorageClient implements StorageClient {
     await fs.writeFile(fullPath, buffer);
   }
 
-
-
   async deleteObject(storagePath: string): Promise<void> {
     const fullPath = this.getFullPath(storagePath);
     try {
@@ -111,7 +109,6 @@ class LocalFilesystemStorageClient implements StorageClient {
       throw new Error('Object not found in local storage.');
     }
 
-    // In local dev/fallback mode, route through a secure preview endpoint
     const expiresAt = Date.now() + expiresInSeconds * 1000;
     return `/api/evidence-attachments/download?path=${encodeURIComponent(storagePath)}&expires=${expiresAt}`;
   }
@@ -160,7 +157,6 @@ export function getStorageClient(): StorageClient {
       if (supabaseUrl && supabaseKey && supabaseUrl.startsWith('http')) {
         storageClientInstance = new SupabaseStorageClient(supabaseUrl, supabaseKey, activeBucket);
       } else {
-        // Local filesystem storage is allowed ONLY in development or test environments
         storageClientInstance = new LocalFilesystemStorageClient(activeBucket);
       }
     }
@@ -169,9 +165,6 @@ export function getStorageClient(): StorageClient {
   return storageClientInstance;
 }
 
-/**
- * For testing purposes only: resets the cached storage client instance.
- */
 export function _resetStorageClientForTesting(): void {
   storageClientInstance = null;
 }

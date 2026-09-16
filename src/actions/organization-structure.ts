@@ -21,10 +21,6 @@ import {
   updateUserTeamMembershipsSchema,
 } from '@/lib/validation/organization-structure';
 
-// -------------------------------------------------------
-// DEPARTMENTS
-// -------------------------------------------------------
-
 export async function createDepartmentAction(formData: FormData) {
   const user = await requireRole(['ORGANIZATION_ADMIN']);
   const tenantId = user.tenantId!;
@@ -83,10 +79,6 @@ export async function toggleDepartmentActiveAction(departmentId: string) {
     return { success: false, error: (e as Error).message };
   }
 }
-
-// -------------------------------------------------------
-// TEAMS
-// -------------------------------------------------------
 
 export async function createTeamAction(formData: FormData) {
   const user = await requireRole(['ORGANIZATION_ADMIN']);
@@ -150,10 +142,6 @@ export async function toggleTeamActiveAction(teamId: string) {
     return { success: false, error: (e as Error).message };
   }
 }
-
-// -------------------------------------------------------
-// MEMBERSHIPS
-// -------------------------------------------------------
 
 export async function addTeamMemberAction(teamId: string, userId: string) {
   const user = await requireRole(['ORGANIZATION_ADMIN']);

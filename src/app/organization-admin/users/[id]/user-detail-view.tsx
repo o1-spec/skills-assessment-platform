@@ -183,7 +183,6 @@ export function UserDetailView({
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto pb-12">
-      {/* Back Link */}
       <div className="flex items-center space-x-4">
         <Link
           href="/organization-admin/users"
@@ -196,7 +195,6 @@ export function UserDetailView({
         </Link>
       </div>
 
-      {/* Header Profile Card */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-xs p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="space-y-1">
@@ -274,7 +272,6 @@ export function UserDetailView({
         </div>
       )}
 
-      {/* Edit Form Card */}
       <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 shadow-xs p-6 space-y-5">
         <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
           Edit Member Profile & Assignments
@@ -335,7 +332,6 @@ export function UserDetailView({
             )}
           </div>
 
-          {/* Current Role Profile Selector */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
               Current Role Profile <span className="text-gray-400 font-normal">(Optional)</span>
@@ -363,7 +359,6 @@ export function UserDetailView({
             </p>
           </div>
 
-          {/* Manager Selector */}
           {role !== UserRole.ORGANIZATION_ADMIN && (
             <div>
               <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
@@ -411,7 +406,6 @@ export function UserDetailView({
         </div>
       </form>
 
-      {/* Team Memberships Card */}
       <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center justify-between">
           <div>

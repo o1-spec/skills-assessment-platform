@@ -24,25 +24,21 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
   const { tab = 'individual', teamId } = await searchParams;
   const activeTab = tab === 'team' || tab === 'organization' ? tab : 'individual';
 
-  // Individual Tab Data
   const assessments = await getGapAnalysisAssessmentsForTenant(user.tenantId);
   const totalAnalyzed = assessments.length;
   const totalGapsIdentified = assessments.reduce((acc, a) => acc + a.totalGapPoints, 0);
   const assessmentsWithGaps = assessments.filter((a) => a.belowTargetCount > 0).length;
 
-  // Team Tab Data
   const teams = await getTeamsForTenant(user.tenantId);
   const selectedTeamId = teamId || (teams.length > 0 ? teams[0].id : null);
   const teamAnalysis = selectedTeamId
     ? await getTeamGapAnalysis(selectedTeamId, user.tenantId)
     : null;
 
-  // Organization Tab Data
   const orgAnalysis = await getOrganizationGapAnalysis(user.tenantId);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Skill Gap Analysis</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -50,7 +46,6 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
         </p>
       </div>
 
-      {/* Tabs Navigation */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8" aria-label="Gap Analysis Views">
           <Link
@@ -86,10 +81,8 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
         </nav>
       </div>
 
-      {/* TAB CONTENT: INDIVIDUAL */}
       {activeTab === 'individual' && (
         <div className="space-y-6">
-          {/* Overview Metric Cards */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
               <div className="flex items-center justify-between">
@@ -166,7 +159,6 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
             </div>
           </div>
 
-          {/* Assessments Table */}
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-900">Completed Assessments</h2>
@@ -263,10 +255,8 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
         </div>
       )}
 
-      {/* TAB CONTENT: TEAM (OA-09) */}
       {activeTab === 'team' && (
         <div className="space-y-6">
-          {/* Team Selector Toolbar */}
           <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <label htmlFor="team-select" className="block text-xs font-bold uppercase text-gray-500 mb-1">
@@ -319,7 +309,6 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
             )}
           </div>
 
-          {/* Team Gap Breakdown Table */}
           {!teamAnalysis ? (
             <div className="bg-white p-8 rounded-lg border border-gray-200 text-center text-sm text-gray-500">
               Please select a team to view competency gap analysis.
@@ -430,10 +419,8 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
         </div>
       )}
 
-      {/* TAB CONTENT: ORGANIZATION-WIDE (OA-09) */}
       {activeTab === 'organization' && (
         <div className="space-y-6">
-          {/* Org Summary Metrics */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -472,7 +459,6 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
             </div>
           </div>
 
-          {/* Organization Competency Aggregation Table */}
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div>

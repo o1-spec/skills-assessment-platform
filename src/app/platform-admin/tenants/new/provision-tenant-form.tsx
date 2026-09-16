@@ -18,7 +18,6 @@ interface ProvisionedResult {
 }
 
 export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
-  // Form State
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
@@ -222,7 +221,6 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <Link
           href="/platform-admin/tenants"
@@ -258,7 +256,6 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Section 1: Organization Details */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-xs p-6 space-y-5">
             <h2 className="text-base font-bold text-gray-900 pb-2 border-b border-gray-100 flex items-center space-x-2">
               <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center">
@@ -341,7 +338,6 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
             </div>
           </div>
 
-          {/* Section 2: Subscription & Seat Allocation */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-xs p-6 space-y-5">
             <h2 className="text-base font-bold text-gray-900 pb-2 border-b border-gray-100 flex items-center space-x-2">
               <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center">
@@ -385,7 +381,6 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
             </div>
           </div>
 
-          {/* Section 3: Initial Organization Administrator */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-xs p-6 space-y-5">
             <h2 className="text-base font-bold text-gray-900 pb-2 border-b border-gray-100 flex items-center space-x-2">
               <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center">
@@ -429,7 +424,6 @@ export function ProvisionTenantForm({ activePlans }: ProvisionTenantFormProps) {
             </div>
           </div>
 
-          {/* Submission Bar */}
           <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
             <Link
               href="/platform-admin/tenants"

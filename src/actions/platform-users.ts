@@ -15,10 +15,6 @@ import {
 } from '@/services/platform-users';
 import { headers } from 'next/headers';
 
-// ---------------------------------------------------------------------------
-// HELPERS
-// ---------------------------------------------------------------------------
-
 async function getActorContext() {
   const h = await headers();
   return {
@@ -26,10 +22,6 @@ async function getActorContext() {
     userAgent: h.get('user-agent') ?? null,
   };
 }
-
-// ---------------------------------------------------------------------------
-// PLATFORM ADMIN ACTIONS (require PLATFORM_ADMIN role)
-// ---------------------------------------------------------------------------
 
 export async function invitePlatformUserAction(formData: FormData) {
   try {
@@ -112,10 +104,6 @@ export async function reactivatePlatformUserAction(targetUserId: string) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// PUBLIC ACTION — accept platform invitation (no auth required)
-// ---------------------------------------------------------------------------
-
 export async function acceptPlatformInvitationAction(formData: FormData) {
   try {
     const token = String(formData.get('token') ?? '').trim();
@@ -129,13 +117,11 @@ export async function acceptPlatformInvitationAction(formData: FormData) {
 
     const { user } = await acceptPlatformInvitation(token, password);
 
-    // Create session and redirect
     const sessionToken = await createSessionToken(user.id);
     await setSessionCookie(sessionToken);
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : 'Unexpected error.' };
   }
 
-  // Redirect outside try/catch so Next.js redirect() works correctly
   redirect('/platform-admin');
 }

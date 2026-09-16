@@ -21,9 +21,6 @@ export interface CalculatedCapabilityGap {
   status: CapabilityGapStatus;
 }
 
-/**
- * Pure calculation helper to compare current level against target level.
- */
 export function calculateGap(currentLevel: number, targetLevel: number): CalculatedGap {
   const rawGap = targetLevel - currentLevel;
   const gap = Math.max(rawGap, 0);
@@ -46,10 +43,6 @@ export function calculateGap(currentLevel: number, targetLevel: number): Calcula
   };
 }
 
-/**
- * Pure calculation helper with first-class NOT_ASSESSED support.
- * deficiency is null when finalRating is null, otherwise max(targetLevel - finalRating, 0).
- */
 export function calculateCapabilityGap(
   finalRating: number | null | undefined,
   targetLevel: number
@@ -157,9 +150,6 @@ export interface GapAnalysisDetail {
   metrics: GapAnalysisSummaryMetrics;
 }
 
-/**
- * Retrieves all completed assessments with linked role profiles for the tenant.
- */
 export async function getGapAnalysisAssessmentsForTenant(
   tenantId: string
 ): Promise<GapAnalysisListItem[]> {
@@ -235,7 +225,6 @@ export async function getGapAnalysisAssessmentsForTenant(
 
       for (const item of assessment.items) {
         const targetLevel = reqMap.get(item.competencyId);
-        // Only compare competencies present in the RoleProfile requirements
         if (targetLevel !== undefined && item.finalRating !== null) {
           totalCompared++;
           const calc = calculateGap(item.finalRating, targetLevel);
@@ -273,9 +262,6 @@ export async function getGapAnalysisAssessmentsForTenant(
     });
 }
 
-/**
- * Retrieves detailed gap analysis comparing an assessment's final ratings against its linked role profile requirements.
- */
 export async function getAssessmentGapAnalysis(
   assessmentId: string,
   tenantId: string
@@ -357,7 +343,6 @@ export async function getAssessmentGapAnalysis(
 
   for (const item of assessment.items) {
     const targetLevel = requirementMap.get(item.competencyId);
-    // Only compare competencies present in the RoleProfile requirements
     if (targetLevel === undefined) {
       continue;
     }
@@ -459,10 +444,6 @@ export interface TeamGapAnalysisSummary {
   competencies: TeamCompetencyGapAggregation[];
 }
 
-/**
- * Team-Level Gap Analysis (OA-09).
- * Evaluates active STAFF members of a specific team against their own assigned role profile targets.
- */
 export async function getTeamGapAnalysis(
   teamId: string,
   tenantId: string
@@ -499,7 +480,6 @@ export async function getTeamGapAnalysis(
 
   if (!team) return null;
 
-  // Filter for ACTIVE STAFF members only
   const activeStaffMembers = team.memberships
     .map((m) => m.user)
     .filter((u) => u.isActive && u.role === UserRole.STAFF);
@@ -507,11 +487,9 @@ export async function getTeamGapAnalysis(
   const staffWithoutRoleProfileCount = activeStaffMembers.filter((u) => !u.roleProfile).length;
   const staffWithRoleProfile = activeStaffMembers.filter((u) => !!u.roleProfile);
 
-  // Bulk resolve ratings for all active staff members
   const memberIds = activeStaffMembers.map((u) => u.id);
   const userRatingsMap = await getLatestVerifiedRatingsForUsers(memberIds, tenantId);
 
-  // Collect union of required competencies across team members
   const competencyMap = new Map<
     string,
     {
@@ -533,7 +511,6 @@ export async function getTeamGapAnalysis(
     }
   }
 
-  // Sort competencies: TECHNICAL first, then BEHAVIORAL, then alphabetically
   const sortedCompetencies = Array.from(competencyMap.values()).sort((a, b) => {
     if (a.type !== b.type) {
       return a.type === CompetencyType.TECHNICAL ? -1 : 1;
@@ -554,7 +531,7 @@ export async function getTeamGapAnalysis(
 
     for (const user of staffWithRoleProfile) {
       const req = user.roleProfile!.requirements.find((r) => r.competencyId === comp.id);
-      if (!req) continue; // Only count users who actually require this competency
+      if (!req) continue;
 
       employeesRequiringCount++;
       const ratingInfo = userRatingsMap.get(user.id)?.get(comp.id);
@@ -628,10 +605,6 @@ export interface OrganizationGapAnalysisSummary {
   competencies: OrganizationCompetencyGapAggregation[];
 }
 
-/**
- * Organization-Wide Gap Analysis (OA-09).
- * Aggregates all required competencies across active STAFF in the organization.
- */
 export async function getOrganizationGapAnalysis(
   tenantId: string
 ): Promise<OrganizationGapAnalysisSummary> {
@@ -672,7 +645,6 @@ export async function getOrganizationGapAnalysis(
   const staffIds = activeStaff.map((u) => u.id);
   const userRatingsMap = await getLatestVerifiedRatingsForUsers(staffIds, tenantId);
 
-  // Collect union of required competencies across all active staff with role profiles
   const competencyMap = new Map<
     string,
     {

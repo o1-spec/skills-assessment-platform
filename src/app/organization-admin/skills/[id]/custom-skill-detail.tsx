@@ -271,7 +271,6 @@ export function CustomSkillDetail({
         </div>
       </div>
 
-      {/* Weight Configuration Card */}
       <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-2xs space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -302,7 +301,6 @@ export function CustomSkillDetail({
         {weightSuccess && <p className="text-xs text-emerald-600 font-medium">{weightSuccess}</p>}
       </div>
 
-      {/* Informational Banners */}
       {isCanonical && (
         <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-start space-x-3 text-xs text-indigo-900">
           <div className="text-indigo-600 mt-0.5">
@@ -345,7 +343,6 @@ export function CustomSkillDetail({
         </div>
       )}
 
-      {/* Main Content / Form */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -391,7 +388,6 @@ export function CustomSkillDetail({
             />
           </div>
 
-          {/* Levels Ladder */}
           <div className="pt-4 border-t border-gray-200 space-y-4">
             <div className="flex items-center justify-between">
               <div>

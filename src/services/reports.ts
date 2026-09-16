@@ -11,10 +11,6 @@ import { getCampaignById, getCampaignMonitoringStats } from './campaigns';
 import { formatDate, formatAssessmentStatus, formatCampaignStatus } from '@/lib/format';
 import { CompetencyType } from '@prisma/client';
 
-/**
- * Sanitizes a string into a clean, safe filename with the given extension.
- * Replaces non-alphanumeric characters with hyphens, collapses duplicates, and lowercases.
- */
 export function sanitizeReportFilename(rawName: string, extension: string): string {
   const ext = extension.startsWith('.') ? extension.slice(1).toLowerCase() : extension.toLowerCase();
   const slug = rawName
@@ -25,9 +21,6 @@ export function sanitizeReportFilename(rawName: string, extension: string): stri
   return `${slug || 'report'}.${ext}`;
 }
 
-/**
- * Formats a Date into ISO date string for filenames (YYYY-MM-DD).
- */
 function getFilenameDate(): string {
   const d = new Date();
   const year = d.getFullYear();
@@ -41,10 +34,6 @@ export interface OrganizationGapCsvResult {
   csv: string;
 }
 
-/**
- * Generates Organization Gap Analysis CSV (OA-10, XC-04).
- * Reuses getOrganizationGapAnalysis to ensure complete consistency with UI.
- */
 export async function generateOrganizationGapCsv(tenantId: string): Promise<OrganizationGapCsvResult> {
   const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },
@@ -85,10 +74,6 @@ export interface TeamGapCsvResult {
   csv: string;
 }
 
-/**
- * Generates Team Gap Analysis CSV (OA-10, XC-04).
- * Reuses getTeamGapAnalysis to ensure complete consistency with UI.
- */
 export async function generateTeamGapCsv(
   tenantId: string,
   teamId: string
@@ -135,10 +120,6 @@ export interface IndividualGapCsvResult {
   csv: string;
 }
 
-/**
- * Generates Individual Assessment Gap CSV (OA-10, XC-04).
- * Reuses getAssessmentGapAnalysis to export an individual employee's gap analysis.
- */
 export async function generateIndividualGapCsv(
   tenantId: string,
   assessmentId: string
@@ -211,10 +192,6 @@ function autoFitExcelColumns(worksheet: ExcelJS.Worksheet) {
   });
 }
 
-/**
- * Generates Organization Gap Analysis Excel Workbook (.xlsx).
- * Produces genuine Excel document with structured sheets, styling, and metadata.
- */
 export async function generateOrganizationGapExcel(
   tenantId: string
 ): Promise<ExcelReportResult> {
@@ -238,7 +215,6 @@ export async function generateOrganizationGapExcel(
 
   const worksheet = workbook.addWorksheet('Organization Gap Analysis');
 
-  // Title block
   const titleRow = worksheet.addRow([`${tenantName} — Organization Capability Gap Analysis`]);
   titleRow.font = { bold: true, size: 14, color: { argb: 'FF111827' } };
 
@@ -247,9 +223,8 @@ export async function generateOrganizationGapExcel(
   ]);
   metaRow.font = { italic: true, size: 10, color: { argb: 'FF6B7280' } };
 
-  worksheet.addRow([]); // Blank spacer
+  worksheet.addRow([]);
 
-  // Table Headers
   const headerRow = worksheet.addRow([
     'Competency',
     'Type',
@@ -286,10 +261,6 @@ export async function generateOrganizationGapExcel(
   };
 }
 
-/**
- * Generates Team Gap Analysis Excel Workbook (.xlsx).
- * Strictly scoped to tenant and team.
- */
 export async function generateTeamGapExcel(
   tenantId: string,
   teamId: string
@@ -369,10 +340,6 @@ export async function generateTeamGapExcel(
   };
 }
 
-/**
- * Generates Individual Assessment Gap Excel Workbook (.xlsx).
- * Strictly scoped to tenant and assessment.
- */
 export async function generateIndividualGapExcel(
   tenantId: string,
   assessmentId: string
@@ -449,11 +416,6 @@ export interface CampaignSummaryPdfResult {
   pdfBuffer: Uint8Array;
 }
 
-
-/**
- * Generates a structured Assessment Campaign Summary PDF (OA-10).
- * Uses historical CampaignParticipant snapshot via getCampaignMonitoringStats.
- */
 export async function generateCampaignSummaryPdf(
   tenantId: string,
   campaignId: string
@@ -475,7 +437,6 @@ export async function generateCampaignSummaryPdf(
     'pdf'
   );
 
-  // Initialize PDF Document (A4 size: 595.28 x 841.89 points)
   const pdfDoc = await PDFDocument.create();
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -485,20 +446,18 @@ export async function generateCampaignSummaryPdf(
   const margin = 40;
   const contentWidth = pageWidth - margin * 2;
 
-  // Colors
-  const primaryColor = rgb(0.12, 0.23, 0.54); // Dark Navy Blue
-  const textColor = rgb(0.07, 0.09, 0.15); // Slate 900
-  const mutedColor = rgb(0.35, 0.40, 0.47); // Slate 500
-  const lightBg = rgb(0.96, 0.97, 0.98); // Light gray
-  const borderColor = rgb(0.88, 0.90, 0.93); // Border gray
-  const successColor = rgb(0.09, 0.64, 0.29); // Green
-  const dangerColor = rgb(0.86, 0.15, 0.15); // Red
-  const warningColor = rgb(0.85, 0.47, 0.02); // Amber
+  const primaryColor = rgb(0.12, 0.23, 0.54);
+  const textColor = rgb(0.07, 0.09, 0.15);
+  const mutedColor = rgb(0.35, 0.40, 0.47);
+  const lightBg = rgb(0.96, 0.97, 0.98);
+  const borderColor = rgb(0.88, 0.90, 0.93);
+  const successColor = rgb(0.09, 0.64, 0.29);
+  const dangerColor = rgb(0.86, 0.15, 0.15);
+  const warningColor = rgb(0.85, 0.47, 0.02);
 
   let currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
   let y = pageHeight - margin;
 
-  // Helper to ensure vertical space and add new page when needed
   const ensureSpace = (neededHeight: number): void => {
     if (y - neededHeight < margin + 40) {
       currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
@@ -523,7 +482,6 @@ export async function generateCampaignSummaryPdf(
     });
   };
 
-  // --- PAGE 1: FULL HEADER ---
   currentPage.drawText(orgName.toUpperCase(), {
     x: margin,
     y,
@@ -560,7 +518,6 @@ export async function generateCampaignSummaryPdf(
   });
   y -= 20;
 
-  // --- CAMPAIGN METADATA BOX ---
   const metaBoxHeight = 45;
   currentPage.drawRectangle({
     x: margin,
@@ -596,7 +553,6 @@ export async function generateCampaignSummaryPdf(
 
   y -= metaBoxHeight + 20;
 
-  // --- PROGRESS SUMMARY METRICS ---
   currentPage.drawText('Campaign Progress Summary', {
     x: margin,
     y,
@@ -648,7 +604,6 @@ export async function generateCampaignSummaryPdf(
 
   y -= statBoxHeight + 25;
 
-  // --- PARTICIPANTS TABLE ---
   currentPage.drawText(`Participants Progress (${stats.participants.length})`, {
     x: margin,
     y,
@@ -693,7 +648,6 @@ export async function generateCampaignSummaryPdf(
     stats.participants.forEach((p, idx) => {
       ensureSpace(20);
 
-      // Zebra striping
       if (idx % 2 === 1) {
         currentPage.drawRectangle({
           x: margin,
@@ -704,7 +658,6 @@ export async function generateCampaignSummaryPdf(
         });
       }
 
-      // Border underline
       currentPage.drawLine({
         start: { x: margin, y: y - 18 },
         end: { x: pageWidth - margin, y: y - 18 },
@@ -712,7 +665,6 @@ export async function generateCampaignSummaryPdf(
         color: borderColor,
       });
 
-      // Name (truncate if too long)
       const cleanName = p.name.length > 18 ? p.name.slice(0, 16) + '…' : p.name;
       currentPage.drawText(cleanName, {
         x: margin + 6,
@@ -722,7 +674,6 @@ export async function generateCampaignSummaryPdf(
         color: textColor,
       });
 
-      // Email
       const cleanEmail = p.email.length > 24 ? p.email.slice(0, 22) + '…' : p.email;
       currentPage.drawText(cleanEmail, {
         x: margin + 110,
@@ -732,7 +683,6 @@ export async function generateCampaignSummaryPdf(
         color: textColor,
       });
 
-      // Role profile
       const roleStr = p.roleProfileName || 'Unassigned';
       const cleanRole = roleStr.length > 20 ? roleStr.slice(0, 18) + '…' : roleStr;
       currentPage.drawText(cleanRole, {
@@ -743,7 +693,6 @@ export async function generateCampaignSummaryPdf(
         color: mutedColor,
       });
 
-      // Status
       let statusColor = mutedColor;
       if (p.assessmentStatus === 'COMPLETED') statusColor = successColor;
       else if (p.isOverdue) statusColor = dangerColor;
@@ -760,7 +709,6 @@ export async function generateCampaignSummaryPdf(
         color: statusColor,
       });
 
-      // Submitted date
       currentPage.drawText(formatDate(p.submittedAt), {
         x: margin + 420,
         y: y - 13,
@@ -769,7 +717,6 @@ export async function generateCampaignSummaryPdf(
         color: mutedColor,
       });
 
-      // Completed date
       currentPage.drawText(formatDate(p.completedAt), {
         x: margin + 475,
         y: y - 13,
@@ -782,7 +729,6 @@ export async function generateCampaignSummaryPdf(
     });
   }
 
-  // --- FOOTERS ON ALL PAGES ---
   const totalPages = pdfDoc.getPageCount();
   pdfDoc.getPages().forEach((page, pageIdx) => {
     page.drawLine({

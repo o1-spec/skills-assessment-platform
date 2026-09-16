@@ -17,7 +17,6 @@ export function StaffCareerPathView({
   availablePaths,
   selectedPathData,
 }: StaffCareerPathViewProps) {
-  // Scenario 1: Staff has no role profile assigned
   if (!userHasRoleProfile || !userRoleProfile) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-2xs">
@@ -34,7 +33,6 @@ export function StaffCareerPathView({
     );
   }
 
-  // Scenario 2: No published paths exist at all
   if (!selectedPathData && availablePaths.length === 0) {
     return (
       <div className="space-y-6">
@@ -60,7 +58,6 @@ export function StaffCareerPathView({
     );
   }
 
-  // Scenario 3: Published paths exist, but none currently selected/found
   if (!selectedPathData) {
     return (
       <div className="space-y-6">
@@ -101,7 +98,6 @@ export function StaffCareerPathView({
 
   return (
     <div className="space-y-8">
-      {/* Top Banner: User Assigned Role & Path Selector */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">
@@ -135,7 +131,6 @@ export function StaffCareerPathView({
         )}
       </div>
 
-      {/* Path Title & Description */}
       <div className="space-y-1">
         <h1 className="text-2xl font-bold text-gray-900">{selectedPathData.careerPath.name}</h1>
         {selectedPathData.careerPath.description && (
@@ -149,7 +144,6 @@ export function StaffCareerPathView({
         </div>
       )}
 
-      {/* Progression Steps Timeline */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-2xs space-y-4">
         <h2 className="text-base font-bold text-gray-900">Career Pathway Sequence</h2>
 
@@ -213,7 +207,6 @@ export function StaffCareerPathView({
         </div>
       </div>
 
-      {/* Next Role Progression & Verified Level Comparison */}
       {isRoleInCurrentPath && isHighestStep && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center text-emerald-900 shadow-2xs">
           <div className="mx-auto w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-2">
@@ -316,7 +309,6 @@ function renderGap(gap: number | null, status: StaffCareerProgressionStatus) {
       </span>
     );
   }
-  // gap < 0 (exceeds target)
   return (
     <span className="text-xs font-semibold text-purple-700">
       +{Math.abs(gap)} level{Math.abs(gap) > 1 ? 's' : ''} ahead

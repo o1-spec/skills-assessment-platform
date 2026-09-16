@@ -37,7 +37,6 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Available roles that aren't already selected in the path
   const availableToAdd = eligibleRoles.filter((r) => !selectedRoleIds.includes(r.id));
 
   const handleAddRole = () => {
@@ -138,7 +137,6 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
         </div>
       )}
 
-      {/* Path Metadata */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6 shadow-2xs">
         <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
           1. General Information
@@ -176,7 +174,6 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
         </div>
       </div>
 
-      {/* Ordered Role Progression */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-gray-900">
@@ -187,7 +184,6 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
           </p>
         </div>
 
-        {/* Selected Steps List */}
         <div className="space-y-3">
           {selectedRoleIds.length === 0 ? (
             <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-xs text-gray-500">
@@ -253,7 +249,6 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
           )}
         </div>
 
-        {/* Add Role Selector */}
         <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3">
           <select
             value={selectedToAdd}
@@ -284,7 +279,6 @@ export function CareerPathForm({ initialData, eligibleRoles }: CareerPathFormPro
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
         <Link
           href={isEditing && initialData ? `/organization-admin/career-paths/${initialData.id}` : '/organization-admin/career-paths'}

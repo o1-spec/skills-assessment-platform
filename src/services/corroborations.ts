@@ -44,9 +44,6 @@ export type ManagerCorroborationDetail = Assessment & {
   >;
 };
 
-/**
- * Retrieves summary statistics for the manager overview dashboard.
- */
 export async function getManagerOverviewStats(
   managerId: string,
   tenantId: string
@@ -102,9 +99,6 @@ export async function getManagerOverviewStats(
   };
 }
 
-/**
- * Retrieves all assessments awaiting manager review from direct reports within the tenant.
- */
 export async function getPendingCorroborationsForManager(
   managerId: string,
   tenantId: string
@@ -152,9 +146,6 @@ export async function getPendingCorroborationsForManager(
   });
 }
 
-/**
- * Retrieves a single assessment for manager corroboration with strict direct-report and tenant isolation.
- */
 export async function getManagerCorroborationById(
   assessmentId: string,
   managerId: string,
@@ -205,11 +196,6 @@ export async function getManagerCorroborationById(
   });
 }
 
-/**
- * Submits a manager corroboration review atomically.
- * Validates direct-report relation, level validity, and required justification when ratings are adjusted.
- * Sets finalRating on AssessmentItems, creates Corroboration records, and marks Assessment COMPLETED.
- */
 export async function submitCorroboration(
   managerId: string,
   tenantId: string,
@@ -220,7 +206,6 @@ export async function submitCorroboration(
     throw new Error('Manager and Tenant authorization required.');
   }
 
-  // 1. Fetch assessment with direct-report & tenant verification
   const assessment = await prisma.assessment.findFirst({
     where: {
       id: input.assessmentId,
@@ -252,7 +237,6 @@ export async function submitCorroboration(
     throw new Error('Assessment not found, not assigned to your direct reports, or belongs to another organization.');
   }
 
-  // 2. Status verification
   if (assessment.status !== AssessmentStatus.PENDING_CORROBORATION) {
     throw new Error('This assessment is not pending manager review.');
   }
@@ -261,7 +245,6 @@ export async function submitCorroboration(
     throw new Error('This assessment campaign does not require manager corroboration.');
   }
 
-  // 3. Validate items completeness and rules
   const existingItemMap = new Map(assessment.items.map((i) => [i.id, i]));
   const submittedItemMap = new Map(input.items.map((i) => [i.assessmentItemId, i]));
 
@@ -275,7 +258,6 @@ export async function submitCorroboration(
       throw new Error(`Missing manager review for competency "${existingItem.competency.name}".`);
     }
 
-    // Verify rating exists as a valid CompetencyLevel
     const validLevel = existingItem.competency.levels.find(
       (l) => l.level === submitted.rating
     );
@@ -286,7 +268,6 @@ export async function submitCorroboration(
       );
     }
 
-    // Justification Rule: REQUIRED if manager rating differs from staff selfRating
     const isRatingChanged = existingItem.selfRating !== submitted.rating;
     if (isRatingChanged) {
       if (!submitted.justification || submitted.justification.trim().length === 0) {
@@ -303,12 +284,10 @@ export async function submitCorroboration(
   const assessmentId = assessment.id;
   const campaignName = assessment.campaign.name;
 
-  // 4. Atomically persist Corroborations, update finalRating, and mark Assessment COMPLETED
   const completedAssessment = await prisma.$transaction(async (tx) => {
     for (const submitted of input.items) {
       const existingItem = existingItemMap.get(submitted.assessmentItemId)!;
 
-      // Create single Corroboration record (unique constraint on assessmentItemId)
       await tx.corroboration.create({
         data: {
           assessmentItemId: existingItem.id,
@@ -318,7 +297,6 @@ export async function submitCorroboration(
         },
       });
 
-      // Update AssessmentItem finalRating while leaving selfRating completely unchanged
       await tx.assessmentItem.update({
         where: {
           id: existingItem.id,
@@ -329,7 +307,6 @@ export async function submitCorroboration(
       });
     }
 
-    // Mark Assessment as COMPLETED
     const updated = await tx.assessment.update({
       where: {
         id: assessmentId,
@@ -361,7 +338,6 @@ export async function submitCorroboration(
     return updated;
   });
 
-  // Post-corroboration notification to staff member (decoupled, non-blocking)
   try {
     await createAndDispatchNotification({
       tenantId,

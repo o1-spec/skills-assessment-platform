@@ -27,7 +27,6 @@ export default async function ManagerOverviewPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Manager Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -35,9 +34,7 @@ export default async function ManagerOverviewPage() {
         </p>
       </div>
 
-      {/* Summary Metric Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        {/* Pending Reviews Card */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -78,7 +75,6 @@ export default async function ManagerOverviewPage() {
           </div>
         </div>
 
-        {/* Direct Reports Card */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -106,7 +102,6 @@ export default async function ManagerOverviewPage() {
           </div>
         </div>
 
-        {/* Completed Reviews Card */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -135,7 +130,6 @@ export default async function ManagerOverviewPage() {
         </div>
       </div>
 
-      {/* SECTION: Direct Reports Summary */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
@@ -223,7 +217,6 @@ export default async function ManagerOverviewPage() {
         )}
       </div>
 
-      {/* SECTION: Team Competency Matrix (MG-05) */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
@@ -305,7 +298,6 @@ export default async function ManagerOverviewPage() {
         )}
       </div>
 
-      {/* SECTION: Team Gap Aggregation */}
       {gapAggregation.length > 0 && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -420,7 +412,6 @@ function MatrixCellBadge({
     );
   }
 
-  // Extra verified skill outside role target
   return (
     <span
       className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"

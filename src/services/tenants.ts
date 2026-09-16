@@ -24,10 +24,6 @@ export type TenantWithStats = Tenant & {
   } | null;
 };
 
-/**
- * Asserts that a tenant has at least one seat available for a new active user.
- * Throws an Error if the seat limit is reached.
- */
 export async function assertTenantHasAvailableSeat(tenantId: string): Promise<void> {
   const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },
@@ -57,9 +53,6 @@ export async function assertTenantHasAvailableSeat(tenantId: string): Promise<vo
   }
 }
 
-/**
- * Retrieves all tenants with subscription plan, seat stats, and active framework adoption for Platform Admin.
- */
 export async function getTenantsForPlatformAdmin(): Promise<TenantWithStats[]> {
   const tenants = await prisma.tenant.findMany({
     include: {
@@ -98,7 +91,6 @@ export async function getTenantsForPlatformAdmin(): Promise<TenantWithStats[]> {
     },
   });
 
-  // Calculate active users count per tenant
   const tenantIds = tenants.map((t) => t.id);
   const activeUserCounts = await prisma.user.groupBy({
     by: ['tenantId'],
@@ -126,9 +118,6 @@ export async function getTenantsForPlatformAdmin(): Promise<TenantWithStats[]> {
   }));
 }
 
-/**
- * Retrieves a single tenant by ID with full subscription, adoption, and user metrics for Platform Admin.
- */
 export async function getTenantByIdForPlatformAdmin(id: string): Promise<TenantWithStats | null> {
   if (!id) return null;
 
@@ -184,10 +173,6 @@ export async function getTenantByIdForPlatformAdmin(id: string): Promise<TenantW
   };
 }
 
-/**
- * Provisions a new tenant, assigns a subscription plan + seat limit,
- * sets status to PENDING_ONBOARDING, and creates an initial Org Admin invitation.
- */
 export async function provisionTenant(
   input: Omit<ProvisionTenantInput, 'billingCycle'> & { billingCycle?: BillingCycle },
   createdById?: string,
@@ -196,7 +181,6 @@ export async function provisionTenant(
   const slug = input.slug.toLowerCase().trim();
   const adminEmail = input.adminEmail.toLowerCase().trim();
 
-  // 1. Check unique slug
   const existingSlug = await prisma.tenant.findUnique({
     where: { slug },
   });
@@ -204,7 +188,6 @@ export async function provisionTenant(
     throw new Error(`An organization with the identifier "${slug}" already exists.`);
   }
 
-  // 2. Validate Subscription Plan
   const plan = await prisma.subscriptionPlan.findUnique({
     where: { id: input.planId },
   });
@@ -215,12 +198,10 @@ export async function provisionTenant(
     throw new Error('Selected subscription plan is currently inactive and cannot be assigned to new organizations.');
   }
 
-  // 3. Validate seat limit
   if (input.seatLimit <= 0) {
     throw new Error('Seat limit must be at least 1.');
   }
 
-  // 4. Check active admin email collision
   const existingUser = await prisma.user.findUnique({
     where: { email: adminEmail },
   });
@@ -228,14 +209,12 @@ export async function provisionTenant(
     throw new Error(`An active user with email "${adminEmail}" already exists.`);
   }
 
-  // 5. Generate invitation token
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashInvitationToken(rawToken);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   const result = await prisma.$transaction(
     async (tx) => {
-      // Create Tenant
       const tenant = await tx.tenant.create({
         data: {
           name: input.name.trim(),
@@ -251,7 +230,6 @@ export async function provisionTenant(
         },
       });
 
-      // Create initial Admin Invitation
       const invitation = await tx.tenantInvitation.create({
         data: {
           tenantId: tenant.id,
@@ -264,7 +242,6 @@ export async function provisionTenant(
         },
       });
 
-      // Audit Log: USER_INVITE
       await logAuditEvent({
         tx,
         tenantId: tenant.id,
@@ -283,7 +260,6 @@ export async function provisionTenant(
         },
       });
 
-      // Audit Log: TENANT_PROVISION
       await logAuditEvent({
         tx,
         tenantId: tenant.id,
@@ -326,7 +302,6 @@ export async function provisionTenant(
     }
   );
 
-  // Dispatch initial org admin invitation email safely (DB transaction committed first)
   try {
     await sendInvitationEmail({
       to: adminEmail,
@@ -343,9 +318,6 @@ export async function provisionTenant(
   return result;
 }
 
-/**
- * Updates a tenant's subscription plan, seat limit, and optional billing cycle.
- */
 export async function updateTenantPlanAndSeatLimit(
   tenantId: string,
   input: UpdateTenantPlanInput
@@ -391,9 +363,6 @@ export async function updateTenantPlanAndSeatLimit(
   });
 }
 
-/**
- * Updates a tenant's status (ACTIVE, SUSPENDED, PENDING_ONBOARDING, ARCHIVED).
- */
 export async function updateTenantStatus(
   tenantId: string,
   status: TenantStatus,
@@ -446,20 +415,12 @@ export async function updateTenantStatus(
   return updated;
 }
 
-/**
- * Terminal archival of a tenant.
- * Sets status to ARCHIVED, audits the action, and preserves all historical data.
- */
 export async function archiveTenant(
   tenantId: string,
   actor?: AuditActorContext
 ): Promise<Tenant> {
   return updateTenantStatus(tenantId, TenantStatus.ARCHIVED, actor);
 }
-
-// ---------------------------------------------------------------------------
-// ORGANIZATION PROFILE SETTINGS
-// ---------------------------------------------------------------------------
 
 export type OrganizationProfileWithTemplate = Tenant & {
   industryTemplate: {
@@ -470,9 +431,6 @@ export type OrganizationProfileWithTemplate = Tenant & {
   } | null;
 };
 
-/**
- * Returns the organization profile with industry template details.
- */
 export async function getOrganizationProfile(
   tenantId: string
 ): Promise<OrganizationProfileWithTemplate | null> {
@@ -493,9 +451,6 @@ export async function getOrganizationProfile(
   });
 }
 
-/**
- * Returns all active IndustryTemplates for org admin template selection.
- */
 export async function getIndustryTemplatesForOrgAdmin() {
   return prisma.industryTemplate.findMany({
     where: { isActive: true },
@@ -509,10 +464,6 @@ export async function getIndustryTemplatesForOrgAdmin() {
   });
 }
 
-/**
- * Validates a logo URL: must be https:// or empty/null.
- * Rejects http://, data:, javascript:, file://, protocol-relative (//).
- */
 function validateLogoUrl(logoUrl: string | null | undefined): string | null {
   if (!logoUrl || !logoUrl.trim()) return null;
   const trimmed = logoUrl.trim();
@@ -525,11 +476,6 @@ function validateLogoUrl(logoUrl: string | null | undefined): string | null {
   return trimmed;
 }
 
-/**
- * Updates the organization's profile fields: name, logoUrl, industryTemplateId.
- * Does NOT modify competencies, role profiles, campaigns, or assessments.
- * Template change = context preference only (Correction 7).
- */
 export async function updateOrganizationProfile(
   tenantId: string,
   actorId: string,
@@ -551,7 +497,6 @@ export async function updateOrganizationProfile(
     industryTemplateId?: string | null;
   } = {};
 
-  // Validate name
   if (data.name !== undefined) {
     const trimmedName = data.name.trim();
     if (trimmedName.length === 0) throw new Error('Organization name cannot be empty.');
@@ -559,12 +504,10 @@ export async function updateOrganizationProfile(
     updateData.name = trimmedName;
   }
 
-  // Validate logo URL
   if (data.logoUrl !== undefined) {
     updateData.logoUrl = validateLogoUrl(data.logoUrl);
   }
 
-  // Validate industry template
   if (data.industryTemplateId !== undefined) {
     if (data.industryTemplateId !== null) {
       const template = await prisma.industryTemplate.findFirst({
@@ -607,17 +550,6 @@ export async function updateOrganizationProfile(
   });
 }
 
-/**
- * Applies missing competencies from the selected industry template to the tenant.
- * This is an EXPLICIT, separate action — changing industryTemplateId alone does nothing.
- *
- * Safety guarantees (Correction 7):
- * - Only adds competencies that do NOT already exist (matched by frameworkCompetencyId)
- * - Preserves existing tenant competency weights and customizations
- * - Does NOT delete, deactivate, or overwrite existing competencies
- * - Does NOT modify RoleProfiles, campaigns, or assessments
- * - Deduplicates by frameworkCompetencyId, NOT display name
- */
 export async function applyIndustryTemplateCompetencies(
   tenantId: string,
   industryTemplateId: string,
@@ -649,7 +581,6 @@ export async function applyIndustryTemplateCompetencies(
   const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
   if (!tenant) throw new Error('Organization not found.');
 
-  // Fetch existing tenant competencies keyed by frameworkCompetencyId
   const existingCompetencies = await prisma.competency.findMany({
     where: {
       tenantId,
@@ -667,13 +598,11 @@ export async function applyIndustryTemplateCompetencies(
   for (const templateComp of template.competencies) {
     const fwComp = templateComp.frameworkCompetency;
 
-    // Skip if tenant already has this competency (deduplicate by frameworkCompetencyId)
     if (existingFrameworkIds.has(fwComp.id)) {
       skipped++;
       continue;
     }
 
-    // Create the competency with the template's weight
     const newComp = await prisma.competency.create({
       data: {
         tenantId,
@@ -687,7 +616,6 @@ export async function applyIndustryTemplateCompetencies(
       },
     });
 
-    // Copy competency levels
     for (const lvl of fwComp.levels) {
       await prisma.competencyLevel.create({
         data: {
@@ -699,12 +627,10 @@ export async function applyIndustryTemplateCompetencies(
       });
     }
 
-    // Track the new frameworkCompetencyId to avoid duplicates within this batch
     existingFrameworkIds.add(fwComp.id);
     added++;
   }
 
-  // Audit the template application
   await logAuditEvent({
     tenantId,
     actorId,

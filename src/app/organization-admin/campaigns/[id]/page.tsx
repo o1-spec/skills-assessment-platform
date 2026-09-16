@@ -38,7 +38,6 @@ export default async function CampaignDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Breadcrumb Navigation */}
       <div>
         <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
@@ -105,7 +104,6 @@ export default async function CampaignDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Campaign Details Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 font-medium">Deadline</div>
@@ -144,7 +142,6 @@ export default async function CampaignDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Linked Role Profile Details if any */}
       {campaign.roleProfile && (
         <div className="bg-indigo-50/50 rounded-lg border border-indigo-100 p-4">
           <div className="flex items-center justify-between">
@@ -165,10 +162,8 @@ export default async function CampaignDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* Interactive Monitoring Dashboard */}
       <CampaignMonitoringView campaign={campaign} stats={stats} />
 
-      {/* Competencies Section */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
         <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
           <div>
@@ -186,7 +181,6 @@ export default async function CampaignDetailPage({ params }: PageProps) {
           <p className="text-sm text-gray-400 italic">No competencies assigned to this campaign.</p>
         ) : (
           <div className="space-y-6">
-            {/* Technical */}
             {technicalComps.length > 0 && (
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-3">
@@ -222,7 +216,6 @@ export default async function CampaignDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Behavioral */}
             {behavioralComps.length > 0 && (
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-3">

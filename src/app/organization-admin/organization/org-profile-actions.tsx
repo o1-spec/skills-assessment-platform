@@ -178,7 +178,6 @@ export function OrgProfileActions({ initialProfile, templates }: OrgProfileActio
         </div>
       </form>
 
-      {/* Explicit Industry Template Competency Adoption */}
       {selectedTemplateId && currentTemplate && (
         <div className="mt-8 pt-8 border-t border-gray-100">
           <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-5 sm:p-6">

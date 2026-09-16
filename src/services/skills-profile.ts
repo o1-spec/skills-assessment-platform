@@ -105,18 +105,6 @@ export interface StaffPersonalGapAnalysis {
   };
 }
 
-/**
- * Bulk resolves the most recent verified final rating for a set of users across all their completed assessments.
- *
- * Enforces:
- * 1. Only COMPLETED assessments are analyzed.
- * 2. AssessmentItem.finalRating is used (never selfRating).
- * 3. Most recent completed assessment item wins for any duplicate competency evaluation.
- * 4. Deterministic ordering: completedAt DESC.
- * 5. Strict competencyId provenance (no name matching).
- *
- * Returns Map<userId, Map<competencyId, VerifiedCompetencyRating>>
- */
 export async function getLatestVerifiedRatingsForUsers(
   userIds: string[],
   tenantId: string
@@ -167,7 +155,6 @@ export async function getLatestVerifiedRatingsForUsers(
         continue;
       }
 
-      // First encountered is the latest completed rating for this competencyId
       if (!userRatingsMap.has(item.competencyId)) {
         userRatingsMap.set(item.competencyId, {
           competencyId: item.competencyId,
@@ -183,9 +170,6 @@ export async function getLatestVerifiedRatingsForUsers(
   return resultMap;
 }
 
-/**
- * Resolves the latest verified ratings for a single user.
- */
 export async function getLatestVerifiedRatingsForUser(
   userId: string,
   tenantId: string
@@ -194,9 +178,6 @@ export async function getLatestVerifiedRatingsForUser(
   return multiMap.get(userId) ?? new Map<string, VerifiedCompetencyRating>();
 }
 
-/**
- * Builds the visual skills profile (SF-06) for a staff member.
- */
 export async function getStaffSkillsProfile(
   userId: string,
   tenantId: string
@@ -229,10 +210,8 @@ export async function getStaffSkillsProfile(
 
   if (!user) return null;
 
-  // Retrieve user's latest verified ratings
   const ratingsMap = await getLatestVerifiedRatingsForUser(userId, tenantId);
 
-  // Find most recent completed assessment date
   const latestCompletedAssessment = await prisma.assessment.findFirst({
     where: {
       userId,
@@ -247,9 +226,6 @@ export async function getStaffSkillsProfile(
     },
   });
 
-  // Collect all competencies relevant to this user:
-  // 1. Role requirements (if user has a role profile)
-  // 2. Any additional competencies that have a verified rating
   const competencyMap = new Map<
     string,
     {
@@ -284,7 +260,6 @@ export async function getStaffSkillsProfile(
     }
   }
 
-  // Check if any verified ratings are outside current role profile
   const extraCompetencyIds = Array.from(ratingsMap.keys()).filter((id) => !competencyMap.has(id));
   if (extraCompetencyIds.length > 0) {
     const extraCompetencies = await prisma.competency.findMany({
@@ -360,7 +335,6 @@ export async function getStaffSkillsProfile(
     }
   }
 
-  // Sort alphabetically by competency name within sections
   technical.sort((a, b) => a.competencyName.localeCompare(b.competencyName));
   behavioral.sort((a, b) => a.competencyName.localeCompare(b.competencyName));
 
@@ -382,9 +356,6 @@ export async function getStaffSkillsProfile(
   };
 }
 
-/**
- * Builds the personal gap-to-target analysis (SF-08) for a staff member.
- */
 export async function getStaffPersonalGapAnalysis(
   userId: string,
   tenantId: string
@@ -512,18 +483,6 @@ export async function getStaffPersonalGapAnalysis(
   };
 }
 
-/**
- * Retrieves chronological historical progression and trends over time for a staff member.
- *
- * Rules:
- * 1. COMPLETED assessments only.
- * 2. Uses AssessmentItem.finalRating only (never selfRating, never draft/unverified).
- * 3. Matched strictly by competencyId.
- * 4. Chronological order by completedAt (or updatedAt).
- * 5. Distinct technical vs behavioral groupings.
- * 6. Handles single completed assessment record with clear indicator (isSingleAssessment).
- * 7. Handles no completed history gracefully.
- */
 export async function getStaffSkillsHistory(
   userId: string,
   tenantId: string
@@ -538,7 +497,6 @@ export async function getStaffSkillsHistory(
     };
   }
 
-  // Find all COMPLETED assessments for this user in this tenant
   const completedAssessments = await prisma.assessment.findMany({
     where: {
       userId,
@@ -580,7 +538,6 @@ export async function getStaffSkillsHistory(
     };
   }
 
-  // Map competencyId -> records
   const competencyMap = new Map<
     string,
     {
@@ -632,7 +589,6 @@ export async function getStaffSkillsHistory(
   const behavioral: CompetencyProgression[] = [];
 
   for (const entry of competencyMap.values()) {
-    // Sort records chronologically ascending
     const sortedRecords = [...entry.records].sort(
       (a, b) => a.completedAt.getTime() - b.completedAt.getTime()
     );
@@ -679,18 +635,6 @@ export async function getStaffSkillsHistory(
   };
 }
 
-/**
- * Builds the aspirational gap-to-target analysis for a staff member against a target role profile.
- *
- * Rules:
- * 1. Target role must belong to same tenant.
- * 2. Target role must be PUBLISHED.
- * 3. Target role must NOT be archived.
- * 4. Strictly temporary analysis: NEVER mutates user.roleProfileId or role assignments.
- * 5. Reuses latest completed verified ratings (getLatestVerifiedRatingsForUser).
- * 6. Competencies on aspirational role not in current role are assessed if historical rating exists,
- *    otherwise NOT_ASSESSED.
- */
 export async function getStaffAspirationalGapAnalysis(
   userId: string,
   tenantId: string,
@@ -698,14 +642,12 @@ export async function getStaffAspirationalGapAnalysis(
 ): Promise<StaffPersonalGapAnalysis | null> {
   if (!userId || !tenantId || !aspirationalRoleId) return null;
 
-  // 1. Verify user exists and belongs to tenant
   const user = await prisma.user.findFirst({
     where: { id: userId, tenantId },
     select: { id: true, name: true, email: true, roleProfileId: true },
   });
   if (!user) return null;
 
-  // 2. Verify target role profile: same tenant, PUBLISHED, NOT archived
   const aspirationalRole = await prisma.roleProfile.findFirst({
     where: {
       id: aspirationalRoleId,
@@ -734,7 +676,6 @@ export async function getStaffAspirationalGapAnalysis(
 
   if (!aspirationalRole) return null;
 
-  // 3. User's latest verified ratings across completed assessments
   const ratingsMap = await getLatestVerifiedRatingsForUser(userId, tenantId);
 
   const requirementsList: PersonalGapRequirementItem[] = [];
@@ -783,7 +724,6 @@ export async function getStaffAspirationalGapAnalysis(
     });
   }
 
-  // NOTE: user.roleProfileId remains untouched
   return {
     userId: user.id,
     userName: user.name,
@@ -807,9 +747,6 @@ export async function getStaffAspirationalGapAnalysis(
   };
 }
 
-/**
- * Returns all published, unarchived role profiles in the tenant that can be selected as aspirational roles.
- */
 export async function getAspirationalTargetRolesForStaff(
   tenantId: string
 ): Promise<Array<{ id: string; name: string; description: string | null }>> {

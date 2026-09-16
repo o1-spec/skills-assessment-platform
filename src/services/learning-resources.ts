@@ -56,9 +56,6 @@ export interface StaffLearningRecommendationsResult {
   recommendations: StaffCompetencyRecommendation[];
 }
 
-/**
- * Lists all learning resources for a tenant with optional filtering.
- */
 export async function getLearningResourcesForTenant(
   tenantId: string,
   options?: {
@@ -124,9 +121,6 @@ export async function getLearningResourcesForTenant(
   return resources as LearningResourceWithMappings[];
 }
 
-/**
- * Retrieves a single learning resource by ID for a tenant.
- */
 export async function getLearningResourceById(
   tenantId: string,
   id: string
@@ -160,10 +154,6 @@ export async function getLearningResourceById(
   return resource as LearningResourceWithMappings | null;
 }
 
-/**
- * Validates that all mapped competencies belong to the authenticated tenant
- * and that any specified target levels exist on those competencies.
- */
 async function validateMappingsForTenant(
   tenantId: string,
   mappings: Array<{ competencyId: string; targetLevel?: number | null }>
@@ -205,9 +195,6 @@ async function validateMappingsForTenant(
   }
 }
 
-/**
- * Creates a new learning resource with competency mappings.
- */
 export async function createLearningResource(
   tenantId: string,
   input: CreateLearningResourceInput,
@@ -215,7 +202,6 @@ export async function createLearningResource(
 ): Promise<LearningResourceWithMappings> {
   const validated = createLearningResourceSchema.parse(input);
 
-  // Validate tenant ownership and level existence
   await validateMappingsForTenant(tenantId, validated.mappings);
 
   const resource = await prisma.$transaction(async (tx) => {
@@ -232,7 +218,6 @@ export async function createLearningResource(
     });
 
     if (validated.mappings && validated.mappings.length > 0) {
-      // Deduplicate mappings by competencyId + targetLevel
       const seen = new Set<string>();
       const validMappings = [];
       for (const m of validated.mappings) {
@@ -290,9 +275,6 @@ export async function createLearningResource(
   return resource as LearningResourceWithMappings;
 }
 
-/**
- * Updates an existing learning resource and synchronizes its mappings.
- */
 export async function updateLearningResource(
   tenantId: string,
   id: string,
@@ -324,7 +306,6 @@ export async function updateLearningResource(
       },
     });
 
-    // Replace mappings
     await tx.competencyLearningResource.deleteMany({
       where: { learningResourceId: id },
     });
@@ -387,9 +368,6 @@ export async function updateLearningResource(
   return updated as LearningResourceWithMappings;
 }
 
-/**
- * Toggles the active status of a learning resource.
- */
 export async function toggleLearningResourceActive(
   tenantId: string,
   id: string,
@@ -430,9 +408,6 @@ export async function toggleLearningResourceActive(
   return updated;
 }
 
-/**
- * Deletes a learning resource. Cascades to mappings safely without touching assessments.
- */
 export async function deleteLearningResource(
   tenantId: string,
   id: string,
@@ -466,22 +441,6 @@ export async function deleteLearningResource(
   });
 }
 
-/**
- * Generates personalized learning recommendations for a staff member based on their
- * verified capability gaps (OA-12 & SM-05).
- *
- * Recommendation Rules:
- * 1. For BELOW_TARGET requirements (verifiedLevel < targetLevel):
- *    Recommend active resources mapped to this competency where:
- *      targetLevel is null (general/unrestricted) OR
- *      targetLevel > currentVerifiedLevel AND targetLevel <= roleTargetLevel.
- *    (Material already achieved, i.e. targetLevel <= currentVerifiedLevel, is excluded).
- * 2. For NOT_ASSESSED requirements (no verified rating yet):
- *    Recommend active resources mapped to this competency where:
- *      targetLevel is null OR targetLevel <= roleTargetLevel.
- * 3. Requirements with MEETS_TARGET or EXCEEDS_TARGET produce zero recommendations.
- * 4. Deactivating or deleting a resource stops recommendations without modifying assessment data.
- */
 export async function getStaffLearningRecommendations(
   userId: string,
   tenantId: string
@@ -523,7 +482,6 @@ export async function getStaffLearningRecommendations(
     };
   }
 
-  // Fetch all active mapped learning resources for this tenant
   const targetCompIds = gapRequirements.map((r) => r.competencyId);
   const activeResources = await prisma.learningResource.findMany({
     where: {
@@ -547,23 +505,20 @@ export async function getStaffLearningRecommendations(
   const recommendations: StaffCompetencyRecommendation[] = [];
 
   for (const req of gapRequirements) {
-    const verifiedLevel = req.currentLevel; // number or null
+    const verifiedLevel = req.currentLevel;
     const targetLevel = req.targetLevel;
 
-    // Filter resources matching the level criteria for this competency
     const matchingResources = activeResources
       .filter((res) => {
         const mapping = res.mappings.find((m) => m.competencyId === req.competencyId);
         if (!mapping) return false;
 
-        const mapLevel = mapping.targetLevel; // null or number
+        const mapLevel = mapping.targetLevel;
 
         if (req.status === 'BELOW_TARGET') {
-          // Must be general or between (verifiedLevel + 1) and targetLevel
           if (mapLevel === null) return true;
           return verifiedLevel !== null && mapLevel > verifiedLevel && mapLevel <= targetLevel;
         } else {
-          // NOT_ASSESSED: general or entry through targetLevel
           if (mapLevel === null) return true;
           return mapLevel <= targetLevel;
         }

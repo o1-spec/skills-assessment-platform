@@ -22,13 +22,11 @@ export function PlansDirectoryView({ initialPlans }: PlansDirectoryViewProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Create Form State
   const [createName, setCreateName] = useState('');
   const [createDescription, setCreateDescription] = useState('');
   const [createDefaultSeats, setCreateDefaultSeats] = useState(25);
   const [createIsActive, setCreateIsActive] = useState(true);
 
-  // Edit Form State
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editDefaultSeats, setEditDefaultSeats] = useState(25);
@@ -149,7 +147,6 @@ export function PlansDirectoryView({ initialPlans }: PlansDirectoryViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Subscription Plans</h1>
@@ -179,7 +176,6 @@ export function PlansDirectoryView({ initialPlans }: PlansDirectoryViewProps) {
         </div>
       )}
 
-      {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {plans.map((plan) => (
           <div
@@ -253,7 +249,6 @@ export function PlansDirectoryView({ initialPlans }: PlansDirectoryViewProps) {
         ))}
       </div>
 
-      {/* Create Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-xs">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-5 border border-gray-100">
@@ -346,7 +341,6 @@ export function PlansDirectoryView({ initialPlans }: PlansDirectoryViewProps) {
         </div>
       )}
 
-      {/* Edit Modal */}
       {editingPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-xs">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-5 border border-gray-100">

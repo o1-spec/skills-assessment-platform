@@ -161,7 +161,6 @@ export function LearningResourceForm({ initialData, availableCompetencies, mode 
         </div>
       )}
 
-      {/* Basic details */}
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">
           Resource Information
@@ -262,7 +261,6 @@ export function LearningResourceForm({ initialData, availableCompetencies, mode 
         </div>
       </div>
 
-      {/* Competency & Level Mappings */}
       <div className="space-y-4">
         <div className="flex items-center justify-between border-b border-gray-100 pb-2">
           <div>
@@ -349,7 +347,6 @@ export function LearningResourceForm({ initialData, availableCompetencies, mode 
         )}
       </div>
 
-      {/* Form actions */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div>
           {mode === 'edit' && (

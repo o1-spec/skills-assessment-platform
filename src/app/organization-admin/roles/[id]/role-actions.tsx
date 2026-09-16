@@ -87,7 +87,6 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
       )}
 
       <div className="flex flex-wrap items-center gap-2.5">
-        {/* Edit Button (only for DRAFT and not archived) */}
         {isDraft && !isArchived && (
           <Link
             href={`/organization-admin/roles/${roleProfile.id}/edit`}
@@ -100,7 +99,6 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
           </Link>
         )}
 
-        {/* Publish Button (only for DRAFT and not archived) */}
         {isDraft && !isArchived && (
           <button
             type="button"
@@ -115,7 +113,6 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
           </button>
         )}
 
-        {/* Archive Button */}
         {!isArchived && (
           <button
             type="button"
@@ -130,7 +127,6 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
           </button>
         )}
 
-        {/* Unarchive Button */}
         {isArchived && (
           <button
             type="button"
@@ -146,7 +142,6 @@ export function RoleActions({ roleProfile }: RoleActionsProps) {
         )}
       </div>
 
-      {/* Confirmation Modal for Archiving */}
       {showArchiveConfirm && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500/75 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 space-y-4">

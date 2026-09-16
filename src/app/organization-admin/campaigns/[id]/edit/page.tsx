@@ -25,7 +25,6 @@ export default async function EditCampaignDraftPage({ params }: PageProps) {
     notFound();
   }
 
-  // Active or Closed campaigns cannot be edited
   if (campaign.status !== CampaignStatus.DRAFT) {
     redirect(`/organization-admin/campaigns/${campaign.id}`);
   }
@@ -39,7 +38,6 @@ export default async function EditCampaignDraftPage({ params }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Breadcrumb Navigation */}
       <div>
         <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
@@ -78,7 +76,6 @@ export default async function EditCampaignDraftPage({ params }: PageProps) {
         </p>
       </div>
 
-      {/* Edit Form */}
       <EditCampaignForm
         campaign={campaign}
         roleProfiles={roleProfiles}

@@ -86,7 +86,6 @@ export default async function InterviewQuestionsPage() {
                     </span>
                   </div>
 
-                  {/* Competency tags preview */}
                   <div className="pt-2 flex flex-wrap gap-1.5">
                     {set.questions.map((q) => (
                       <span

@@ -39,7 +39,7 @@ export interface PlatformAnalyticsData {
     submitted: number;
     pendingCorroboration: number;
     completed: number;
-    completionRate: number; // percentage rounded to 1 decimal place
+    completionRate: number;
   };
   frameworkAdoptionDistribution: Array<{
     frameworkVersionId: string;
@@ -58,13 +58,7 @@ export interface PlatformAnalyticsData {
   };
 }
 
-/**
- * Returns macro-level operational analytics across all tenants.
- * Uses performant database aggregate queries without loading individual employee records into memory.
- * Adheres strictly to privacy boundaries: no individual employee names, emails, evidence, or ratings.
- */
 export async function getPlatformAnalytics(): Promise<PlatformAnalyticsData> {
-  // 1. Tenant Status Aggregation
   const tenantGroup = await prisma.tenant.groupBy({
     by: ['status'],
     _count: { _all: true },
@@ -83,7 +77,6 @@ export async function getPlatformAnalytics(): Promise<PlatformAnalyticsData> {
     totalTenants += item._count._all;
   }
 
-  // 2. User Aggregates & Role Distribution
   const [activeUsersCount, inactiveUsersCount, platformUsersCount, tenantUsersCount] =
     await Promise.all([
       prisma.user.count({ where: { isActive: true } }),
@@ -109,7 +102,6 @@ export async function getPlatformAnalytics(): Promise<PlatformAnalyticsData> {
     roleMap[item.role] = item._count._all;
   }
 
-  // 3. Campaign Aggregates
   const campaignGroup = await prisma.assessmentCampaign.groupBy({
     by: ['status'],
     _count: { _all: true },
@@ -127,7 +119,6 @@ export async function getPlatformAnalytics(): Promise<PlatformAnalyticsData> {
     totalCampaigns += item._count._all;
   }
 
-  // 4. Assessment Aggregates & Completion Rate
   const assessmentGroup = await prisma.assessment.groupBy({
     by: ['status'],
     _count: { _all: true },
@@ -152,7 +143,6 @@ export async function getPlatformAnalytics(): Promise<PlatformAnalyticsData> {
       ? Math.round((assessmentMap[AssessmentStatus.COMPLETED] / totalAssessments) * 1000) / 10
       : 0;
 
-  // 5. Framework Adoption Distribution across active tenants
   const adoptions = await prisma.tenantFrameworkAdoption.findMany({
     where: {
       isActive: true,
@@ -188,7 +178,6 @@ export async function getPlatformAnalytics(): Promise<PlatformAnalyticsData> {
     })
   );
 
-  // 6. Industry Template Usage across tenants
   const templateUsageGroup = await prisma.tenant.groupBy({
     by: ['industryTemplateId'],
     where: {

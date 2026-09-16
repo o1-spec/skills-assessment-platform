@@ -41,10 +41,6 @@ export interface GetNotificationsOptions {
   offset?: number;
 }
 
-/**
- * Validates that an href is a safe, internal application path.
- * Disallows external URLs, protocols, protocol-relative URLs, or javascript schemes.
- */
 export function sanitizeNotificationHref(href?: string | null): string | null {
   if (!href) return null;
   const trimmed = href.trim();
@@ -59,15 +55,9 @@ export function sanitizeNotificationHref(href?: string | null): string | null {
   return null;
 }
 
-/**
- * Atomically creates a Notification row with optional deduplication.
- * Dispatches an email via the server email abstraction.
- * If email fails, the in-app notification remains intact with emailStatus = FAILED.
- */
 export async function createAndDispatchNotification(
   input: CreateNotificationInput
 ): Promise<Notification> {
-  // 1. Check recipient user and tenant
   const recipient = await prisma.user.findUnique({
     where: { id: input.recipientId },
     select: {
@@ -93,7 +83,6 @@ export async function createAndDispatchNotification(
   const tenantId = input.tenantId !== undefined ? input.tenantId : recipient.tenantId;
   const safeHref = sanitizeNotificationHref(input.href);
 
-  // 2. If dedupeKey supplied, check if notification already exists
   if (input.dedupeKey) {
     const existing = await prisma.notification.findUnique({
       where: { dedupeKey: input.dedupeKey },
@@ -103,7 +92,6 @@ export async function createAndDispatchNotification(
     }
   }
 
-  // 3. Create persistent Notification record
   let notification: Notification;
   try {
     notification = await prisma.notification.create({
@@ -121,7 +109,6 @@ export async function createAndDispatchNotification(
       },
     });
   } catch (createErr: unknown) {
-    // Catch unique constraint race condition on dedupeKey gracefully
     if (
       input.dedupeKey &&
       typeof createErr === 'object' &&
@@ -137,7 +124,6 @@ export async function createAndDispatchNotification(
     throw createErr;
   }
 
-  // 4. Attempt email delivery safely without throwing or rolling back
   try {
     if (tenantId) {
       const tenantSettings = await getTenantNotificationSettings(tenantId);
@@ -207,9 +193,6 @@ export async function createAndDispatchNotification(
   return notification;
 }
 
-/**
- * Retrieves notifications for an authenticated user with strict recipient verification.
- */
 export async function getNotificationsForUser(
   userId: string,
   tenantId?: string | null,
@@ -272,9 +255,6 @@ export async function getNotificationsForUser(
   return { notifications, total, unreadCount };
 }
 
-/**
- * Returns the unread notification count for an authenticated user.
- */
 export async function getUnreadNotificationCount(
   userId: string,
   tenantId?: string | null
@@ -290,10 +270,6 @@ export async function getUnreadNotificationCount(
   });
 }
 
-/**
- * Marks a single notification as read.
- * Strictly verifies that recipientId matches the authenticated userId.
- */
 export async function markNotificationRead(
   notificationId: string,
   userId: string
@@ -314,7 +290,7 @@ export async function markNotificationRead(
   }
 
   if (notification.readAt) {
-    return notification; // Already read
+    return notification;
   }
 
   return prisma.notification.update({
@@ -323,9 +299,6 @@ export async function markNotificationRead(
   });
 }
 
-/**
- * Marks all unread notifications as read for the authenticated user.
- */
 export async function markAllNotificationsRead(
   userId: string,
   tenantId?: string | null
@@ -346,20 +319,11 @@ export async function markAllNotificationsRead(
   return result.count;
 }
 
-// ---------------------------------------------------------------------------
-// AUTOMATED REMINDER SERVICES & HELPERS
-// ---------------------------------------------------------------------------
-
-/**
- * Calculates how many business days (weekdays: Monday-Friday) have passed
- * strictly between startDate and endDate.
- */
 export function calculateBusinessDaysPassed(startDate: Date, endDate: Date): number {
   if (endDate.getTime() <= startDate.getTime()) return 0;
 
   let count = 0;
   const current = new Date(startDate);
-  // Advance to the beginning of next day to start counting
   current.setDate(current.getDate() + 1);
   current.setHours(0, 0, 0, 0);
 
@@ -367,7 +331,7 @@ export function calculateBusinessDaysPassed(startDate: Date, endDate: Date): num
   end.setHours(23, 59, 59, 999);
 
   while (current.getTime() <= end.getTime()) {
-    const dayOfWeek = current.getDay(); // 0 = Sun, 6 = Sat
+    const dayOfWeek = current.getDay();
     if (dayOfWeek !== 0 && dayOfWeek !== 6) {
       count++;
     }
@@ -377,9 +341,6 @@ export function calculateBusinessDaysPassed(startDate: Date, endDate: Date): num
   return count;
 }
 
-/**
- * Parses configurable reminder days (e.g. "3,1" -> [3, 1]).
- */
 export function getAssessmentReminderDays(): number[] {
   const envValue = process.env.ASSESSMENT_REMINDER_DAYS;
   if (!envValue || !envValue.trim()) {
@@ -392,9 +353,6 @@ export function getAssessmentReminderDays(): number[] {
   return parsed.length > 0 ? parsed : [3, 1];
 }
 
-/**
- * Parses configurable corroboration overdue business days threshold (default: 5).
- */
 export function getCorroborationOverdueBusinessDays(): number {
   const envValue = process.env.CORROBORATION_OVERDUE_BUSINESS_DAYS;
   if (!envValue || !envValue.trim()) {
@@ -411,12 +369,6 @@ export interface ReminderJobResult {
   errors: string[];
 }
 
-/**
- * Runs upcoming-deadline assessment reminder notifications.
- * Identifies active campaigns where deadline matches configured threshold (e.g. 3 or 1 days away),
- * excludes submitted/completed assessments, inactive staff, and suspended tenants.
- * Creates ASSESSMENT_DUE_REMINDER with dedupeKey.
- */
 export async function runAssessmentReminderNotifications(
   options?: { now?: Date; reminderDays?: number[] }
 ): Promise<ReminderJobResult> {
@@ -425,8 +377,6 @@ export async function runAssessmentReminderNotifications(
   const result: ReminderJobResult = { processed: 0, created: 0, skipped: 0, errors: [] };
 
   for (const daysThreshold of reminderDays) {
-    // Find active campaigns whose deadline is roughly `daysThreshold` days ahead
-    // Window: from (daysThreshold - 1) days to (daysThreshold) days, or calendar day match
     const lowerBound = new Date(now.getTime() + (daysThreshold - 1) * 24 * 60 * 60 * 1000);
     const upperBound = new Date(now.getTime() + daysThreshold * 24 * 60 * 60 * 1000);
 
@@ -470,7 +420,6 @@ export async function runAssessmentReminderNotifications(
       result.processed++;
       const dedupeKey = `assessment-due:${assessment.id}:${daysThreshold}`;
 
-      // Check if already sent
       const existing = await prisma.notification.findUnique({
         where: { dedupeKey },
       });
@@ -510,13 +459,6 @@ export async function runAssessmentReminderNotifications(
   return result;
 }
 
-/**
- * Runs overdue corroboration reminders for managers.
- * Identifies assessments in PENDING_CORROBORATION whose submission date exceeds
- * the configured business-days threshold (default: 5 business days).
- * Excludes completed assessments, inactive managers, and suspended tenants.
- * Creates CORROBORATION_OVERDUE with dedupeKey.
- */
 export async function runCorroborationReminderNotifications(
   options?: { now?: Date; thresholdBusinessDays?: number }
 ): Promise<ReminderJobResult> {

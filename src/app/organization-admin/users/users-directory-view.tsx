@@ -42,12 +42,10 @@ export function UsersDirectoryView({
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Seat metrics
   const seatLimit = seatUsage.seatLimit;
   const activeCount = users.filter((u) => u.isActive).length;
   const seatPercent = seatLimit ? Math.min(100, Math.round((activeCount / seatLimit) * 100)) : 0;
 
-  // Filter users
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
       u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -142,7 +140,6 @@ export function UsersDirectoryView({
 
   return (
     <div className="space-y-6">
-      {/* Page Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
@@ -166,7 +163,6 @@ export function UsersDirectoryView({
         </div>
       </div>
 
-      {/* Seat Usage Banner */}
       <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -236,7 +232,6 @@ export function UsersDirectoryView({
         </div>
       )}
 
-      {/* Pending Invitations Section (if any) */}
       {pendingInvitations.length > 0 && (
         <div className="bg-amber-50/60 rounded-lg border border-amber-200 shadow-xs overflow-hidden">
           <div className="px-5 py-3 border-b border-amber-200/80 flex items-center justify-between">
@@ -308,7 +303,6 @@ export function UsersDirectoryView({
         </div>
       )}
 
-      {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-4 justify-between items-center">
         <div className="w-full sm:w-80 relative">
           <input
@@ -329,7 +323,6 @@ export function UsersDirectoryView({
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-          {/* Role Filter */}
           <div className="flex items-center space-x-1.5">
             <span className="text-xs text-gray-500 font-medium">Role:</span>
             <select
@@ -344,7 +337,6 @@ export function UsersDirectoryView({
             </select>
           </div>
 
-          {/* Status Filter */}
           <div className="flex items-center space-x-1.5">
             <span className="text-xs text-gray-500 font-medium">Status:</span>
             <select
@@ -360,7 +352,6 @@ export function UsersDirectoryView({
         </div>
       </div>
 
-      {/* Users Table */}
       <div className="bg-white shadow-xs rounded-lg border border-gray-200 overflow-hidden">
         {filteredUsers.length === 0 ? (
           <div className="py-12 text-center text-gray-500">

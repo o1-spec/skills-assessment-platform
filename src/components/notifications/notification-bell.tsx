@@ -62,7 +62,6 @@ export function NotificationBell() {
     };
   }, []);
 
-  // Handle outside clicks to close dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -184,7 +183,6 @@ export function NotificationBell() {
           role="region"
           aria-label="Notifications"
         >
-          {/* Header */}
           <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="font-semibold text-gray-900 text-sm">Notifications</span>
@@ -207,7 +205,6 @@ export function NotificationBell() {
             )}
           </div>
 
-          {/* List */}
           <div className="max-h-80 overflow-y-auto divide-y divide-gray-100">
             {notifications.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
@@ -236,7 +233,6 @@ export function NotificationBell() {
                     className={`p-3.5 hover:bg-gray-50/80 cursor-pointer transition-colors relative flex items-start space-x-3 ${isUnread ? 'bg-blue-50/30' : ''
                       }`}
                   >
-                    {/* Unread indicator dot */}
                     <div className="pt-1 shrink-0">
                       {isUnread ? (
                         <span className="block h-2 w-2 rounded-full bg-blue-600 ring-2 ring-blue-100" />
@@ -284,7 +280,6 @@ export function NotificationBell() {
             )}
           </div>
 
-          {/* Footer */}
           <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 text-center">
             <Link
               href="/notifications"

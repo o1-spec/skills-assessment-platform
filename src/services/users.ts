@@ -37,9 +37,6 @@ export type PendingInvitationWithRelations = TenantInvitation & {
   } | null;
 };
 
-/**
- * Retrieves all users in a tenant with their manager, role profile, and report counts.
- */
 export async function getUsersForTenant(tenantId: string): Promise<TenantUserWithRelations[]> {
   if (!tenantId) return [];
 
@@ -76,9 +73,6 @@ export async function getUsersForTenant(tenantId: string): Promise<TenantUserWit
   });
 }
 
-/**
- * Retrieves a single user belonging to a specific tenant.
- */
 export async function getUserByIdForTenant(
   tenantId: string,
   userId: string
@@ -115,9 +109,6 @@ export async function getUserByIdForTenant(
   });
 }
 
-/**
- * Retrieves all active managers for a tenant (used for manager select dropdowns).
- */
 export async function getManagersForTenant(
   tenantId: string,
   excludeUserId?: string
@@ -142,9 +133,6 @@ export async function getManagersForTenant(
   });
 }
 
-/**
- * Retrieves published role profiles available for assignment in this tenant.
- */
 export async function getPublishedRoleProfilesForUserAssignment(tenantId: string) {
   if (!tenantId) return [];
 
@@ -165,9 +153,6 @@ export async function getPublishedRoleProfilesForUserAssignment(tenantId: string
   });
 }
 
-/**
- * Retrieves pending invitations for a tenant (unaccepted, unexpired, uncancelled).
- */
 export async function getPendingInvitationsForTenant(
   tenantId: string
 ): Promise<PendingInvitationWithRelations[]> {
@@ -208,9 +193,6 @@ export async function getPendingInvitationsForTenant(
   });
 }
 
-/**
- * Cancels a pending invitation for a tenant without deleting historical audit.
- */
 export async function cancelTenantInvitation(
   tenantId: string,
   invitationId: string
@@ -242,9 +224,6 @@ export async function cancelTenantInvitation(
   });
 }
 
-/**
- * Updates a tenant user's details, application role, role profile, and manager.
- */
 export async function updateTenantUser(
   tenantId: string,
   currentUserId: string,
@@ -257,7 +236,6 @@ export async function updateTenantUser(
   },
   actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
 ): Promise<User> {
-  // 1. Verify target user belongs to this tenant
   const targetUser = await prisma.user.findFirst({
     where: {
       id: targetUserId,
@@ -269,12 +247,10 @@ export async function updateTenantUser(
     throw new Error('User not found in this organization.');
   }
 
-  // 2. Self-protection: Org Admin cannot demote themselves
   if (currentUserId === targetUserId && data.role && data.role !== UserRole.ORGANIZATION_ADMIN) {
     throw new Error('Organization Admins cannot change or demote their own application role.');
   }
 
-  // 3. Application role validation
   if (data.role) {
     if (
       data.role !== UserRole.ORGANIZATION_ADMIN &&
@@ -284,7 +260,6 @@ export async function updateTenantUser(
       throw new Error('Invalid application role.');
     }
 
-    // 4. Manager Safety Rule: Demoting a MANAGER with direct reports is rejected
     if (targetUser.role === UserRole.MANAGER && data.role === UserRole.STAFF) {
       const directReportsCount = await prisma.user.count({
         where: {
@@ -301,7 +276,6 @@ export async function updateTenantUser(
     }
   }
 
-  // 5. Manager validation if assigning a new manager
   if (data.managerId !== undefined) {
     if (data.managerId !== null) {
       if (data.managerId === targetUserId) {
@@ -323,7 +297,6 @@ export async function updateTenantUser(
     }
   }
 
-  // 6. Role Profile validation if assigning
   if (data.roleProfileId !== undefined) {
     if (data.roleProfileId !== null) {
       const roleProfile = await prisma.roleProfile.findFirst({
@@ -396,9 +369,6 @@ export async function updateTenantUser(
   });
 }
 
-/**
- * Deactivates a tenant user safely without deleting historical data.
- */
 export async function deactivateTenantUser(
   tenantId: string,
   currentUserId: string,
@@ -416,12 +386,10 @@ export async function deactivateTenantUser(
     throw new Error('User not found in this organization.');
   }
 
-  // Self-protection
   if (currentUserId === targetUserId) {
     throw new Error('Organization Admins cannot deactivate their own account.');
   }
 
-  // Manager Safety Rule: Cannot deactivate a manager with active direct reports
   if (targetUser.role === UserRole.MANAGER) {
     const directReportsCount = await prisma.user.count({
       where: {
@@ -466,9 +434,6 @@ export async function deactivateTenantUser(
   });
 }
 
-/**
- * Reactivates a deactivated tenant user after asserting available seat capacity.
- */
 export async function reactivateTenantUser(
   tenantId: string,
   targetUserId: string,
@@ -489,7 +454,6 @@ export async function reactivateTenantUser(
     return targetUser;
   }
 
-  // Enforce seat limit before reactivation
   await assertTenantHasAvailableSeat(tenantId);
 
   return prisma.$transaction(async (tx) => {
@@ -521,9 +485,6 @@ export async function reactivateTenantUser(
   });
 }
 
-/**
- * Returns seat usage metrics for a tenant.
- */
 export async function getTenantSeatUsage(tenantId: string) {
   const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },

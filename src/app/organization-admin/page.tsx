@@ -31,7 +31,6 @@ export default async function OrganizationAdminOverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Role Profiles Card */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
           <div className="p-5">
             <div className="flex items-center">
@@ -56,7 +55,6 @@ export default async function OrganizationAdminOverviewPage() {
           </div>
         </div>
 
-        {/* Campaigns Card */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
           <div className="p-5">
             <div className="flex items-center">
@@ -86,7 +84,6 @@ export default async function OrganizationAdminOverviewPage() {
           </div>
         </div>
 
-        {/* Gap Analysis Card */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
           <div className="p-5">
             <div className="flex items-center">
@@ -116,7 +113,6 @@ export default async function OrganizationAdminOverviewPage() {
           </div>
         </div>
 
-        {/* Organization Info Card */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
           <div className="p-5">
             <div className="flex items-center">

@@ -51,10 +51,6 @@ export interface InterviewQuestionSetWithDetails extends InterviewQuestionSet {
   >;
 }
 
-/**
- * Deterministically generates interview questions for a published, unarchived role profile
- * without requiring an external AI provider (OA-11).
- */
 export async function generateDraftInterviewQuestions(
   tenantId: string,
   roleProfileId: string
@@ -130,7 +126,6 @@ export async function generateDraftInterviewQuestions(
         followUp = `Follow-up / Probe: What technical trade-offs, architecture constraints, or debugging challenges did you navigate during this work?`;
       }
     } else {
-      // BEHAVIORAL
       primaryQuestion = `Can you share an experience demonstrating ${comp.name}? How did your specific actions reflect the expected standard: "${levelDescription}"?`;
 
       if (rawPrompt) {
@@ -164,9 +159,6 @@ export async function generateDraftInterviewQuestions(
   };
 }
 
-/**
- * Lists all interview question sets for a tenant.
- */
 export async function getInterviewQuestionSetsForTenant(
   tenantId: string
 ): Promise<InterviewQuestionSetWithDetails[]> {
@@ -210,9 +202,6 @@ export async function getInterviewQuestionSetsForTenant(
   return sets as InterviewQuestionSetWithDetails[];
 }
 
-/**
- * Retrieves a single interview question set by ID with full details.
- */
 export async function getInterviewQuestionSetById(
   tenantId: string,
   id: string
@@ -256,9 +245,6 @@ export async function getInterviewQuestionSetById(
   return set as InterviewQuestionSetWithDetails | null;
 }
 
-/**
- * Saves a generated/edited interview question set snapshot.
- */
 export async function createInterviewQuestionSet(
   tenantId: string,
   input: SaveInterviewQuestionSetInput,
@@ -266,7 +252,6 @@ export async function createInterviewQuestionSet(
 ): Promise<InterviewQuestionSetWithDetails> {
   const validated = saveInterviewQuestionSetSchema.parse(input);
 
-  // Validate role profile
   const roleProfile = await prisma.roleProfile.findFirst({
     where: {
       id: validated.roleProfileId,
@@ -286,7 +271,6 @@ export async function createInterviewQuestionSet(
     throw new Error('Cannot create interview question set for an archived role profile');
   }
 
-  // Validate any specified competencies belong to the tenant
   const compIds = validated.questions
     .map((q) => q.competencyId)
     .filter((id): id is string => Boolean(id));
@@ -382,9 +366,6 @@ export async function createInterviewQuestionSet(
   return questionSet as InterviewQuestionSetWithDetails;
 }
 
-/**
- * Updates an existing interview question set (editing questions, follow-ups, reordering).
- */
 export async function updateInterviewQuestionSet(
   tenantId: string,
   id: string,
@@ -401,7 +382,6 @@ export async function updateInterviewQuestionSet(
 
   const validated = updateInterviewQuestionSetSchema.parse(input);
 
-  // Validate competencies
   const compIds = validated.questions
     .map((q) => q.competencyId)
     .filter((cid): cid is string => Boolean(cid));
@@ -427,7 +407,6 @@ export async function updateInterviewQuestionSet(
       },
     });
 
-    // Replace questions
     await tx.interviewQuestion.deleteMany({
       where: { questionSetId: id },
     });
@@ -498,9 +477,6 @@ export async function updateInterviewQuestionSet(
   return updated as InterviewQuestionSetWithDetails;
 }
 
-/**
- * Deletes an interview question set.
- */
 export async function deleteInterviewQuestionSet(
   tenantId: string,
   id: string,
@@ -534,9 +510,6 @@ export async function deleteInterviewQuestionSet(
   });
 }
 
-/**
- * Generates an interview guide PDF document for the specified question set (OA-11 export).
- */
 export async function generateInterviewQuestionSetPdf(
   tenantId: string,
   id: string
@@ -551,7 +524,6 @@ export async function generateInterviewQuestionSetPdf(
 
   const orgName = tenant?.name || 'Organization';
 
-  // Initialize PDF Document (A4 size: 595.28 x 841.89 points)
   const pdfDoc = await PDFDocument.create();
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -562,7 +534,6 @@ export async function generateInterviewQuestionSetPdf(
   const margin = 40;
   const contentWidth = pageWidth - margin * 2;
 
-  // Colors
   const primaryColor = rgb(0.12, 0.23, 0.54);
   const textColor = rgb(0.07, 0.09, 0.15);
   const mutedColor = rgb(0.35, 0.4, 0.47);
@@ -601,7 +572,6 @@ export async function generateInterviewQuestionSetPdf(
     }
   };
 
-  // Wrap text helper
   const wrapText = (text: string, maxWidth: number, font: PDFFont, fontSize: number): string[] => {
     const words = text.split(/\s+/);
     const lines: string[] = [];
@@ -623,7 +593,6 @@ export async function generateInterviewQuestionSetPdf(
     return lines;
   };
 
-  // --- PAGE 1: TITLE & METADATA ---
   currentPage.drawText(orgName.toUpperCase(), {
     x: margin,
     y,
@@ -665,7 +634,6 @@ export async function generateInterviewQuestionSetPdf(
   });
   y -= 25;
 
-  // --- QUESTIONS LOOP ---
   for (let idx = 0; idx < set.questions.length; idx++) {
     const q = set.questions[idx];
     const comp = q.competency;
@@ -678,7 +646,6 @@ export async function generateInterviewQuestionSetPdf(
 
     ensureSpace(itemHeight);
 
-    // Question box background
     currentPage.drawRectangle({
       x: margin,
       y: y - itemHeight + 16,
@@ -689,7 +656,6 @@ export async function generateInterviewQuestionSetPdf(
       borderWidth: 0.5,
     });
 
-    // Question number & Competency tag
     const tagText = comp
       ? `${comp.name} (Level ${q.targetLevel || '-'}) • ${comp.type}`
       : 'General Question';
@@ -703,7 +669,6 @@ export async function generateInterviewQuestionSetPdf(
       color: tagColor,
     });
 
-    // Primary Question Text
     let currentY = y - 28;
     for (const line of qLines) {
       currentPage.drawText(line, {
@@ -716,7 +681,6 @@ export async function generateInterviewQuestionSetPdf(
       currentY -= 14;
     }
 
-    // Follow up probe if present
     if (followUpLines.length > 0) {
       currentY -= 4;
       for (const line of followUpLines) {
@@ -734,7 +698,6 @@ export async function generateInterviewQuestionSetPdf(
     y -= itemHeight + 8;
   }
 
-  // Final footer on all pages
   const totalPages = pdfDoc.getPageCount();
   for (let i = 0; i < totalPages; i++) {
     const page = pdfDoc.getPage(i);

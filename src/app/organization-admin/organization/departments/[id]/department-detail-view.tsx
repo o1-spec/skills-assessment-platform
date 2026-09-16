@@ -66,7 +66,6 @@ export default function DepartmentDetailView({ department }: { department: Depar
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span
@@ -127,7 +126,6 @@ export default function DepartmentDetailView({ department }: { department: Depar
           </div>
         </div>
 
-        {/* Description */}
         <div className="px-6 py-5">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
@@ -149,7 +147,6 @@ export default function DepartmentDetailView({ department }: { department: Depar
           )}
         </div>
 
-        {/* Teams */}
         <div className="px-6 pb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Teams</h2>

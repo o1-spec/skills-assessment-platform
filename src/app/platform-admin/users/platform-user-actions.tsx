@@ -10,10 +10,6 @@ import {
   reactivatePlatformUserAction,
 } from '@/actions/platform-users';
 
-// ---------------------------------------------------------------------------
-// INVITE FORM
-// ---------------------------------------------------------------------------
-
 export function InvitePlatformUserForm() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -106,10 +102,6 @@ export function InvitePlatformUserForm() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// USER ROW ACTIONS
-// ---------------------------------------------------------------------------
-
 export function PlatformUserActions({
   user,
   currentUserId,
@@ -178,10 +170,6 @@ export function PlatformUserActions({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// INVITATION CANCEL BUTTON
-// ---------------------------------------------------------------------------
 
 export function CancelInvitationButton({ invitationId }: { invitationId: string }) {
   const [pending, startTransition] = useTransition();

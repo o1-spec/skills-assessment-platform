@@ -61,7 +61,6 @@ export async function createCampaignAction(
       ? CampaignScope.TEAM
       : CampaignScope.INDIVIDUAL;
 
-  // Extract selected competencies, teams & participants
   const competencyIds = formData
     .getAll('competencyIds')
     .filter((id): id is string => typeof id === 'string' && id.trim().length > 0);

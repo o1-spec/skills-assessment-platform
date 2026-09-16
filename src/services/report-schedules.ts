@@ -34,10 +34,6 @@ export interface UpdateReportScheduleInput {
   auditContext?: AuditActorContext;
 }
 
-/**
- * Calculates the next run timestamp based on recurrence frequency.
- * Stored and evaluated in UTC.
- */
 export function calculateNextRunAt(
   frequency: ScheduleFrequency,
   fromDate: Date = new Date()
@@ -62,9 +58,6 @@ export function calculateNextRunAt(
   return next;
 }
 
-/**
- * Creates a scheduled capability report.
- */
 export async function createReportSchedule(
   input: CreateReportScheduleInput
 ): Promise<ReportSchedule> {
@@ -89,7 +82,6 @@ export async function createReportSchedule(
     throw new Error(`Invalid frequency: ${frequency}`);
   }
 
-  // Verify tenant exists
   const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },
   });
@@ -97,7 +89,6 @@ export async function createReportSchedule(
     throw new Error('Tenant not found');
   }
 
-  // Verify creator belongs to tenant
   const creator = await prisma.user.findFirst({
     where: { id: createdById, tenantId },
   });
@@ -105,7 +96,6 @@ export async function createReportSchedule(
     throw new Error('Creator not found or unauthorized');
   }
 
-  // Validate team scope
   if (scopeType === ScheduleScopeType.TEAM) {
     if (!scopeId) {
       throw new Error('Team ID is required for team scoped reports');
@@ -118,7 +108,6 @@ export async function createReportSchedule(
     }
   }
 
-  // Validate recipients: must all exist, belong to tenant, and be active
   if (!recipientUserIds || recipientUserIds.length === 0) {
     throw new Error('At least one recipient is required');
   }
@@ -181,9 +170,6 @@ export async function createReportSchedule(
   });
 }
 
-/**
- * Updates an existing report schedule.
- */
 export async function updateReportSchedule(
   input: UpdateReportScheduleInput
 ): Promise<ReportSchedule> {
@@ -202,7 +188,6 @@ export async function updateReportSchedule(
     throw new Error(`Invalid frequency: ${frequency}`);
   }
 
-  // Validate recipients if updated
   if (recipientUserIds !== undefined) {
     if (recipientUserIds.length === 0) {
       throw new Error('At least one recipient is required');
@@ -265,9 +250,6 @@ export async function updateReportSchedule(
   });
 }
 
-/**
- * Activates or deactivates a report schedule.
- */
 export async function toggleReportScheduleActive(params: {
   scheduleId: string;
   tenantId: string;
@@ -310,9 +292,6 @@ export async function toggleReportScheduleActive(params: {
   });
 }
 
-/**
- * Retrieves all report schedules for a tenant.
- */
 export async function getReportSchedulesForTenant(tenantId: string) {
   if (!tenantId) return [];
 
@@ -345,9 +324,6 @@ export async function getReportSchedulesForTenant(tenantId: string) {
   });
 }
 
-/**
- * Retrieves a single report schedule by id.
- */
 export async function getReportScheduleById(scheduleId: string, tenantId: string) {
   if (!scheduleId || !tenantId) return null;
 
@@ -377,20 +353,6 @@ export async function getReportScheduleById(scheduleId: string, tenantId: string
   });
 }
 
-/**
- * Executes due report schedules.
- * Scanned by background cron worker.
- *
- * Rules:
- * 1. Checks active schedules where nextRunAt <= now.
- * 2. Idempotency guard: claims schedule run and advances nextRunAt atomically.
- * 3. Scope validation: team must belong to tenant and remain valid.
- * 4. Recipient safety: re-resolves active users; excludes deactivated or foreign accounts.
- * 5. Excel generation: reuses generateOrganizationGapExcel and generateTeamGapExcel.
- * 6. Email delivery: sends Excel attachment via sendEmail.
- * 7. Failure isolation: failure of one schedule never crashes others.
- * 8. Audit event: logs REPORT_SCHEDULE_RUN with metadata without binary payload.
- */
 export async function executeDueReportSchedules(
   now: Date = new Date()
 ): Promise<{ processed: number; succeeded: number; failed: number; errors: string[] }> {
@@ -410,7 +372,6 @@ export async function executeDueReportSchedules(
     processed++;
     const nextNextRun = calculateNextRunAt(schedule.frequency, now);
 
-    // Atomically claim the run to prevent duplicate processing if cron retried
     const claim = await prisma.reportSchedule.updateMany({
       where: {
         id: schedule.id,
@@ -423,12 +384,10 @@ export async function executeDueReportSchedules(
     });
 
     if (claim.count === 0) {
-      // Already claimed by concurrent worker
       continue;
     }
 
     try {
-      // 1. Validate team scope if applicable
       if (schedule.scopeType === ScheduleScopeType.TEAM) {
         if (!schedule.scopeId) {
           throw new Error('Schedule scope is TEAM but no scopeId is defined');
@@ -443,7 +402,6 @@ export async function executeDueReportSchedules(
         }
       }
 
-      // 2. Re-resolve active tenant recipients (exclude deactivated or cross-tenant users)
       const recipientLinks = await prisma.reportScheduleRecipient.findMany({
         where: {
           scheduleId: schedule.id,
@@ -467,7 +425,6 @@ export async function executeDueReportSchedules(
         throw new Error('No active recipients found for scheduled report');
       }
 
-      // 3. Generate capability Excel report using existing reporting engine
       let excelResult: { filename: string; buffer: Buffer } | null = null;
       if (schedule.reportType === ReportType.ORGANIZATION_GAP) {
         excelResult = await generateOrganizationGapExcel(schedule.tenantId);
@@ -479,7 +436,6 @@ export async function executeDueReportSchedules(
         throw new Error('Failed to generate capability Excel workbook');
       }
 
-      // 4. Send email attachment to each active recipient
       for (const recipient of recipientLinks) {
         await sendEmail({
           to: recipient.user.email,
@@ -497,7 +453,6 @@ export async function executeDueReportSchedules(
         });
       }
 
-      // 5. Update schedule execution status
       await prisma.reportSchedule.update({
         where: { id: schedule.id },
         data: {
@@ -507,7 +462,6 @@ export async function executeDueReportSchedules(
         },
       });
 
-      // 6. Record audit event
       await logAuditEvent({
         tenantId: schedule.tenantId,
         action: AuditAction.REPORT_SCHEDULE_RUN,
@@ -529,7 +483,6 @@ export async function executeDueReportSchedules(
       const errorMessage = err instanceof Error ? err.message : 'Unknown execution failure';
       errors.push(`Schedule ${schedule.id} (${schedule.name}): ${errorMessage}`);
 
-      // Record failure on schedule record
       await prisma.reportSchedule.update({
         where: { id: schedule.id },
         data: {
@@ -539,7 +492,6 @@ export async function executeDueReportSchedules(
         },
       });
 
-      // Record failure in audit log
       await logAuditEvent({
         tenantId: schedule.tenantId,
         action: AuditAction.REPORT_SCHEDULE_RUN,

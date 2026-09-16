@@ -81,7 +81,6 @@ export function SkillsLibraryView({
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Organization Skill Library (OA-02)</h1>
@@ -108,7 +107,6 @@ export function SkillsLibraryView({
         </div>
       </div>
 
-      {/* Active Framework Adoption Banner */}
       <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-start space-x-3.5">
           <div className="h-10 w-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
@@ -166,7 +164,6 @@ export function SkillsLibraryView({
         </div>
       )}
 
-      {/* Section 1: Technical Competencies */}
       <div className="space-y-3">
         <div className="flex items-center justify-between border-b pb-2">
           <h2 className="text-base font-bold text-gray-900">
@@ -195,7 +192,6 @@ export function SkillsLibraryView({
         )}
       </div>
 
-      {/* Section 2: Behavioral Competencies */}
       <div className="space-y-3 pt-4">
         <div className="flex items-center justify-between border-b pb-2">
           <h2 className="text-base font-bold text-gray-900">
@@ -224,7 +220,6 @@ export function SkillsLibraryView({
         )}
       </div>
 
-      {/* Adopt Framework Version Modal */}
       {showAdoptModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 space-y-4">

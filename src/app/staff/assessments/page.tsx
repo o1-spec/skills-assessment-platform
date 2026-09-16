@@ -16,7 +16,6 @@ export default async function StaffAssessmentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">My Assessments</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -24,7 +23,6 @@ export default async function StaffAssessmentsPage() {
         </p>
       </div>
 
-      {/* Assessment List */}
       {assessments.length === 0 ? (
         <div className="text-center bg-white rounded-lg border border-dashed border-gray-300 p-12">
           <svg
@@ -122,7 +120,6 @@ export default async function StaffAssessmentsPage() {
                   </div>
                 </div>
 
-                {/* Progress bar and metadata */}
                 <div className="space-y-2 border-t border-gray-100 pt-4">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-medium text-gray-700">
@@ -144,7 +141,6 @@ export default async function StaffAssessmentsPage() {
                   </div>
                 </div>
 
-                {/* Footer Badges & Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
                   <div className="flex items-center space-x-3 text-xs text-gray-500">
                     {assessment.campaign.requiresCorroboration ? (

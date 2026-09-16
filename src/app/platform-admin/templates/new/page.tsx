@@ -8,7 +8,6 @@ export const dynamic = 'force-dynamic';
 export default async function NewIndustryTemplatePage() {
   await requireRole(UserRole.PLATFORM_ADMIN);
 
-  // Fetch only PUBLISHED framework versions with complete category and competency hierarchies
   const publishedFrameworks = await prisma.frameworkVersion.findMany({
     where: {
       status: FrameworkStatus.PUBLISHED,

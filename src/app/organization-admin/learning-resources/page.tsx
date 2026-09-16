@@ -113,7 +113,6 @@ export default async function LearningResourcesPage() {
                     </span>
                   </div>
 
-                  {/* Mappings preview */}
                   <div className="pt-2">
                     <span className="text-xs font-medium text-gray-500 mr-2">Mapped Skills:</span>
                     {res.mappings.length === 0 ? (

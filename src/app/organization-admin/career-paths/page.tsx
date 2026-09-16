@@ -78,7 +78,6 @@ export default async function CareerPathsPage() {
                     <p className="text-sm text-gray-600 line-clamp-2">{path.description}</p>
                   )}
 
-                  {/* Steps sequence preview */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-2">
                     {path.steps.map((step, idx) => (
                       <span key={step.id} className="inline-flex items-center space-x-1.5 text-xs text-gray-700">

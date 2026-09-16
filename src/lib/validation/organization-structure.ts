@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Department
 export const createDepartmentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').trim(),
   description: z.string().max(500, 'Description must be at most 500 characters').trim().optional(),
@@ -11,7 +10,6 @@ export const updateDepartmentSchema = z.object({
   description: z.string().max(500).trim().optional().nullable(),
 });
 
-// Team
 export const createTeamSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').trim(),
   description: z.string().max(500).trim().optional(),
@@ -26,12 +24,10 @@ export const updateTeamSchema = z.object({
   managerId: z.string().cuid().optional().nullable(),
 });
 
-// Team memberships (set all at once for a user)
 export const updateUserTeamMembershipsSchema = z.object({
   teamIds: z.array(z.string().cuid()).max(50, 'Too many teams selected'),
 });
 
-// CSV row input (raw parsed row — no IDs, only names)
 export const csvRowInputSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),

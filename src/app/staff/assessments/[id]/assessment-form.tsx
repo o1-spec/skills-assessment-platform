@@ -18,7 +18,6 @@ interface AssessmentFormProps {
 const initialActionState: AssessmentFormActionState = {};
 
 export function AssessmentForm({ assessment }: AssessmentFormProps) {
-  // Local state for answers: map of itemId -> { selfRating: number | null, evidenceText: string }
   const [answers, setAnswers] = useState<
     Record<string, { selfRating: number | null; evidenceText: string }>
   >(() => {
@@ -36,7 +35,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
   const [draftSuccessMessage, setDraftSuccessMessage] = useState<string | null>(null);
   const [clientValidationErrors, setClientValidationErrors] = useState<string[]>([]);
 
-  // Server action states
   const [draftState, draftAction, isDraftPending] = useActionState(
     saveAssessmentDraftAction,
     initialActionState
@@ -48,12 +46,10 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
 
   const [, startTransition] = useTransition();
 
-  // Progress metrics
   const totalItems = assessment.items.length;
   const answeredItems = Object.values(answers).filter((a) => a.selfRating !== null).length;
   const progressPercent = totalItems > 0 ? Math.round((answeredItems / totalItems) * 100) : 0;
 
-  // Group competencies
   const technicalItems = assessment.items.filter(
     (i) => i.competency.type === CompetencyType.TECHNICAL
   );
@@ -61,7 +57,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
     (i) => i.competency.type === CompetencyType.BEHAVIORAL
   );
 
-  // Handle rating selection
   const handleRatingChange = (itemId: string, level: number) => {
     setDraftSuccessMessage(null);
     setAnswers((prev) => ({
@@ -73,7 +68,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
     }));
   };
 
-  // Handle evidence change
   const handleEvidenceChange = (itemId: string, text: string) => {
     setDraftSuccessMessage(null);
     setAnswers((prev) => ({
@@ -85,7 +79,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
     }));
   };
 
-  // Payload serializer
   const getPayloadItems = () => {
     return Object.entries(answers).map(([itemId, val]) => ({
       assessmentItemId: itemId,
@@ -94,7 +87,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
     }));
   };
 
-  // Trigger Save Draft
   const handleSaveDraft = (e: React.FormEvent) => {
     e.preventDefault();
     setDraftSuccessMessage(null);
@@ -109,7 +101,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
     });
   };
 
-  // Validate before opening submit confirmation modal
   const handleOpenSubmitModal = () => {
     setDraftSuccessMessage(null);
     const errors: string[] = [];
@@ -141,7 +132,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
     setIsSubmitModalOpen(true);
   };
 
-  // Trigger Final Submission
   const handleConfirmSubmit = () => {
     const formData = new FormData();
     formData.append('assessmentId', assessment.id);
@@ -155,7 +145,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Sticky Progress Bar Header */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm sticky top-0 z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -219,7 +208,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
         </div>
       </div>
 
-      {/* Alert Notices */}
       {draftState?.error && (
         <div className="rounded-md bg-red-50 p-4 border border-red-200">
           <div className="text-sm font-medium text-red-800">{draftState.error}</div>
@@ -253,9 +241,7 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
         </div>
       )}
 
-      {/* Competencies Form Sections */}
       <form onSubmit={handleSaveDraft} className="space-y-8">
-        {/* Technical Competencies */}
         {technicalItems.length > 0 && (
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-2">
@@ -274,7 +260,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
           </div>
         )}
 
-        {/* Behavioral Competencies */}
         {behavioralItems.length > 0 && (
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-2">
@@ -295,7 +280,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
           </div>
         )}
 
-        {/* Bottom Actions */}
         <div className="pt-6 border-t border-gray-200 flex items-center justify-between">
           <Link
             href="/staff/assessments"
@@ -326,7 +310,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
         </div>
       </form>
 
-      {/* Submit Confirmation Modal */}
       {isSubmitModalOpen && (
         <div
           className="fixed inset-0 z-50 overflow-y-auto bg-gray-500/75 flex items-center justify-center p-4"
@@ -382,7 +365,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
     </div>
   );
 
-  // Helper renderer for a single competency card
   function renderCompetencyCard(item: StaffAssessmentDetail['items'][number], num: number) {
     const currentAnswer = answers[item.id] || { selfRating: null, evidenceText: '' };
     const isAnswered = currentAnswer.selfRating !== null;
@@ -397,7 +379,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
           isAnswered ? 'border-gray-300 shadow-sm' : 'border-amber-200 shadow-sm'
         } p-6 space-y-5`}
       >
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-100 pb-3">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold text-gray-400">#{num}</span>
@@ -426,7 +407,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
           <p className="text-xs text-gray-600">{item.competency.description}</p>
         )}
 
-        {/* Level Radio Options */}
         <div className="space-y-2.5">
           <div className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Select Your Capability Level:
@@ -466,7 +446,6 @@ export function AssessmentForm({ assessment }: AssessmentFormProps) {
           </div>
         </div>
 
-        {/* Evidence Section */}
         <div className="space-y-2 pt-2 border-t border-gray-100">
           <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Supporting Evidence & Examples

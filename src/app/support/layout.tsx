@@ -11,7 +11,6 @@ export default async function SupportLayout({ children }: { children: React.Reac
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <SupportImpersonationBanner />
-      {/* Top bar */}
       <header className="border-b border-slate-800 bg-slate-900/70 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">

@@ -132,7 +132,6 @@ export function NotificationsView({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Header Bar */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
@@ -156,12 +155,9 @@ export function NotificationsView({
         </div>
       </header>
 
-      {/* Main Container */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
         <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-          {/* Controls header */}
           <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50">
-            {/* Filter tabs */}
             <div className="flex space-x-2" role="tablist">
               <button
                 type="button"
@@ -200,7 +196,6 @@ export function NotificationsView({
               </button>
             </div>
 
-            {/* Actions */}
             {unreadCount > 0 && (
               <button
                 type="button"
@@ -217,7 +212,6 @@ export function NotificationsView({
             )}
           </div>
 
-          {/* List */}
           {isLoading && notifications.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3" />
@@ -254,7 +248,6 @@ export function NotificationsView({
                       isUnread ? 'bg-blue-50/30' : ''
                     }`}
                   >
-                    {/* Unread indicator */}
                     <div className="pt-1.5 shrink-0">
                       {isUnread ? (
                         <span className="block h-2.5 w-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100" />
@@ -263,7 +256,6 @@ export function NotificationsView({
                       )}
                     </div>
 
-                    {/* Body */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1 flex-wrap gap-y-1">
                         {getTypeBadge(item.type)}
@@ -288,7 +280,6 @@ export function NotificationsView({
                       </p>
                     </div>
 
-                    {/* Actions */}
                     <div className="shrink-0 flex items-center space-x-2 pt-1">
                       {item.href && (
                         <span className="text-xs font-semibold text-blue-600 group-hover:underline">

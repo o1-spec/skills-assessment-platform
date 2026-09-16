@@ -125,7 +125,6 @@ export default function TeamDetailView({
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-8">
-        {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className={`w-3 h-3 rounded-full ${team.isActive ? 'bg-green-500' : 'bg-gray-300'}`} />
@@ -189,7 +188,6 @@ export default function TeamDetailView({
           </div>
         </div>
 
-        {/* Details & Edit Fields */}
         <div className="px-6 py-5 space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
@@ -292,7 +290,6 @@ export default function TeamDetailView({
         </div>
       </div>
 
-      {/* Team Members */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

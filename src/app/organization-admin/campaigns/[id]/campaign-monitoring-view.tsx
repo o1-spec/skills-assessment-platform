@@ -42,10 +42,8 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
     });
   };
 
-  // Filter participants
   const filteredParticipants: ParticipantMonitoringRecord[] = stats.participants.filter(
     (p: ParticipantMonitoringRecord) => {
-      // Search query filter
       const matchesSearch =
         searchQuery.trim() === '' ||
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,7 +51,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
 
       if (!matchesSearch) return false;
 
-      // Status filter
       if (statusFilter === 'ALL') return true;
       if (statusFilter === 'OVERDUE') return p.isOverdue;
       if (statusFilter === 'NOT_STARTED') return p.assessmentStatus === AssessmentStatus.NOT_STARTED;
@@ -86,7 +83,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
         </div>
       )}
 
-      {/* DRAFT Warning and Action Banner */}
       {isDraft && (
         <div className="rounded-lg bg-amber-50 p-5 border border-amber-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -119,7 +115,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
         </div>
       )}
 
-      {/* Campaign Metadata & Bound Framework Callout */}
       <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-100 pb-3">
           <div className="flex items-center space-x-3">
@@ -151,7 +146,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
           )}
         </div>
 
-        {/* If team scoped, show team tags */}
         {campaign.scope === CampaignScope.TEAM && campaign.campaignTeams.length > 0 && (
           <div className="space-y-1.5">
             <span className="text-xs font-medium text-gray-500">Included Teams:</span>
@@ -175,7 +169,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
         )}
       </div>
 
-      {/* Progress Bar & High-Level Monitoring Stats */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
@@ -190,7 +183,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
           </div>
         </div>
 
-        {/* Visual Progress Bar */}
         <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
           <div
             className={`h-3 rounded-full transition-all duration-500 ${
@@ -206,7 +198,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
           />
         </div>
 
-        {/* 5-Key Stat Metrics Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">
           <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
             <span className="block text-xl font-bold text-gray-900">{stats.totalParticipants}</span>
@@ -241,7 +232,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
         </div>
       </div>
 
-      {/* Interactive Participant Roster Table with Search & Status Filters */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden space-y-4 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-100 pb-4">
           <div>
@@ -252,7 +242,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            {/* Search Input */}
             <input
               type="text"
               placeholder="Search by name or email..."
@@ -261,7 +250,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
               className="px-3 py-1.5 border border-gray-300 rounded-md text-xs placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             />
 
-            {/* Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -277,7 +265,6 @@ export function CampaignMonitoringView({ campaign, stats }: CampaignMonitoringVi
           </div>
         </div>
 
-        {/* Table Content */}
         {filteredParticipants.length === 0 ? (
           <p className="text-sm text-gray-400 italic py-6 text-center">
             {stats.participants.length === 0

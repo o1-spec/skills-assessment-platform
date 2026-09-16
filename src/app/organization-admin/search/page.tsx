@@ -24,7 +24,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Organization Search</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -32,7 +31,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </p>
       </div>
 
-      {/* Search Input Bar */}
       <form method="GET" className="relative">
         <div className="relative">
           <input
@@ -56,7 +54,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </div>
       </form>
 
-      {/* Results or Prompt */}
       {query.length < 2 ? (
         <div className="bg-white border border-gray-200 rounded-xl p-8 text-center text-gray-500">
           <svg className="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,7 +73,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             Found {results.totalMatches} match{results.totalMatches !== 1 ? 'es' : ''} for &ldquo;{query}&rdquo;
           </div>
 
-          {/* Competencies */}
           {results.competencies.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -107,7 +103,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </div>
           )}
 
-          {/* Role Profiles */}
           {results.roles.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -138,7 +133,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </div>
           )}
 
-          {/* People */}
           {results.people.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">

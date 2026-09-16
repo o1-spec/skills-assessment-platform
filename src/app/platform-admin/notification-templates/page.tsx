@@ -20,7 +20,6 @@ export default async function NotificationTemplatesPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Notification Templates</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -28,7 +27,6 @@ export default async function NotificationTemplatesPage() {
         </p>
       </div>
 
-      {/* Variable Reference Card */}
       <div className="bg-slate-900 text-slate-100 rounded-xl p-5 shadow-sm space-y-3">
         <div className="flex items-center gap-2">
           <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -48,7 +46,6 @@ export default async function NotificationTemplatesPage() {
         </div>
       </div>
 
-      {/* Templates List */}
       <div className="space-y-6">
         {templates.map((tpl) => (
           <div

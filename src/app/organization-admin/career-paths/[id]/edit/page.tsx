@@ -20,7 +20,6 @@ export default async function EditCareerPathPage({
     notFound();
   }
 
-  // Published career paths are structurally immutable
   if (careerPath.status === CareerPathStatus.PUBLISHED) {
     redirect(`/organization-admin/career-paths/${id}`);
   }

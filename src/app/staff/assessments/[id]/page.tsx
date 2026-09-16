@@ -41,7 +41,6 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Breadcrumb Navigation */}
       <div>
         <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
@@ -89,7 +88,6 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Meta Stats Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <div>
           <div className="text-xs text-gray-500 font-medium">Competencies</div>
@@ -115,7 +113,6 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Read-Only Informational Banners */}
       {isPendingReview && (
         <div className="rounded-md bg-purple-50 p-4 border border-purple-200">
           <div className="flex">
@@ -186,12 +183,10 @@ export default async function StaffAssessmentDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* Main Content: Interactive Form vs. Read-Only Summary */}
       {!isReadOnly ? (
         <AssessmentForm assessment={assessment} />
       ) : (
         <div className="space-y-6">
-          {/* Read-Only Competencies View */}
           <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-6 shadow-sm">
             <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
               <div>

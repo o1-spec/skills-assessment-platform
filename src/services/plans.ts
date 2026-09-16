@@ -8,9 +8,6 @@ export type SubscriptionPlanWithStats = SubscriptionPlan & {
   };
 };
 
-/**
- * Retrieves all subscription plans ordered by defaultSeatLimit.
- */
 export async function getSubscriptionPlans(): Promise<SubscriptionPlanWithStats[]> {
   return prisma.subscriptionPlan.findMany({
     include: {
@@ -24,9 +21,6 @@ export async function getSubscriptionPlans(): Promise<SubscriptionPlanWithStats[
   });
 }
 
-/**
- * Retrieves only active subscription plans available for tenant provisioning.
- */
 export async function getActiveSubscriptionPlans(): Promise<SubscriptionPlan[]> {
   return prisma.subscriptionPlan.findMany({
     where: {
@@ -38,9 +32,6 @@ export async function getActiveSubscriptionPlans(): Promise<SubscriptionPlan[]> 
   });
 }
 
-/**
- * Retrieves a single subscription plan by ID.
- */
 export async function getSubscriptionPlanById(id: string): Promise<SubscriptionPlanWithStats | null> {
   if (!id) return null;
   return prisma.subscriptionPlan.findUnique({
@@ -56,9 +47,6 @@ export async function getSubscriptionPlanById(id: string): Promise<SubscriptionP
 import { logAuditEvent, AuditAction, AuditActorContext } from './audit';
 import { UserRole } from '@prisma/client';
 
-/**
- * Creates a new subscription plan with uniqueness check.
- */
 export async function createSubscriptionPlan(
   input: CreateSubscriptionPlanInput,
   actor?: AuditActorContext
@@ -106,9 +94,6 @@ export async function createSubscriptionPlan(
   });
 }
 
-/**
- * Updates an existing subscription plan.
- */
 export async function updateSubscriptionPlan(
   id: string,
   input: UpdateSubscriptionPlanInput,
@@ -122,7 +107,6 @@ export async function updateSubscriptionPlan(
     throw new Error('Subscription plan not found.');
   }
 
-  // Check unique name if name changed
   if (input.name && input.name.trim() !== plan.name) {
     const existing = await prisma.subscriptionPlan.findUnique({
       where: { name: input.name.trim() },
@@ -169,9 +153,6 @@ export async function updateSubscriptionPlan(
   });
 }
 
-/**
- * Toggles a subscription plan active state.
- */
 export async function toggleSubscriptionPlanActive(id: string, isActive: boolean): Promise<SubscriptionPlan> {
   const plan = await prisma.subscriptionPlan.findUnique({
     where: { id },
@@ -187,9 +168,6 @@ export async function toggleSubscriptionPlanActive(id: string, isActive: boolean
   });
 }
 
-/**
- * Safely deletes a subscription plan if no tenants are assigned.
- */
 export async function deleteSubscriptionPlan(id: string): Promise<SubscriptionPlan> {
   const plan = await prisma.subscriptionPlan.findUnique({
     where: { id },

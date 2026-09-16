@@ -14,7 +14,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 async function handleCron(request: NextRequest): Promise<NextResponse> {
   const cronSecret = process.env.CRON_SECRET;
 
-  // Verify CRON_SECRET is configured
   if (!cronSecret || cronSecret.trim().length === 0) {
     return NextResponse.json(
       { error: 'CRON_SECRET is not configured on the server.' },
@@ -22,7 +21,6 @@ async function handleCron(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Check Authorization header or x-cron-secret
   const authHeader = request.headers.get('authorization');
   const customHeader = request.headers.get('x-cron-secret');
 

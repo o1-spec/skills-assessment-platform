@@ -4,9 +4,6 @@ import { prisma } from '@/lib/db';
 import { UserRole, RoleProfileStatus } from '@prisma/client';
 import { GeneratedInvitation, sendInvitationEmail } from './invitations';
 
-/**
- * Raw CSV column names expected in the import file.
- */
 export const CSV_COLUMNS = ['name', 'email', 'role', 'manager_email', 'role_profile_name', 'team_name'] as const;
 
 export type CsvRawRow = {
@@ -29,7 +26,6 @@ export type CsvRowResult =
       managerId: string | null;
       roleProfileId: string | null;
       teamId: string | null;
-      // Resolved display values for preview
       resolvedManagerName: string | null;
       resolvedRoleProfileName: string | null;
       resolvedTeamName: string | null;
@@ -43,10 +39,6 @@ export type CsvRowResult =
       errors: string[];
     };
 
-/**
- * Parses raw CSV text and returns typed rows with row numbers.
- * Rejects if the file has zero data rows or missing required columns.
- */
 export function parseUserImportCsv(csvContent: string): { rows: CsvRawRow[]; parseError?: string } {
   const result = Papa.parse<Record<string, string>>(csvContent.trim(), {
     header: true,
@@ -66,7 +58,6 @@ export function parseUserImportCsv(csvContent: string): { rows: CsvRawRow[]; par
     return { rows: [], parseError: 'The CSV file contains no data rows.' };
   }
 
-  // Check required columns
   const headers = Object.keys(result.data[0] || {});
   const missingRequired = (['name', 'email', 'role'] as const).filter(
     (col) => !headers.includes(col)
@@ -93,15 +84,10 @@ export function parseUserImportCsv(csvContent: string): { rows: CsvRawRow[]; par
 
 const VALID_ROLES = new Set<string>(['STAFF', 'MANAGER', 'ORGANIZATION_ADMIN']);
 
-/**
- * Validates all CSV rows against the tenant's data.
- * Returns per-row results. Batch emails must be unique within the file.
- */
 export async function validateUserImportRows(
   tenantId: string,
   rows: CsvRawRow[]
 ): Promise<CsvRowResult[]> {
-  // Pre-fetch all active managers, role profiles, teams for this tenant
   const [managers, roleProfiles, teams, liveInvitations] = await Promise.all([
     prisma.user.findMany({
       where: { tenantId, role: UserRole.MANAGER, isActive: true },
@@ -126,7 +112,6 @@ export async function validateUserImportRows(
     }),
   ]);
 
-  // Also fetch ALL users across the platform for email uniqueness (global email uniqueness)
   const allGlobalUsers = await prisma.user.findMany({
     select: { email: true },
   });
@@ -137,15 +122,13 @@ export async function validateUserImportRows(
   const roleProfileByName = new Map(roleProfiles.map((rp) => [rp.name.toLowerCase(), rp]));
   const teamByName = new Map(teams.map((t) => [t.name.toLowerCase(), t]));
 
-  // Track emails seen in this batch for duplicate detection
-  const batchEmails = new Map<string, number>(); // email -> first rowNumber
+  const batchEmails = new Map<string, number>();
 
   const results: CsvRowResult[] = [];
 
   for (const row of rows) {
     const errors: string[] = [];
 
-    // Required field validation
     if (!row.name) errors.push('Name is required.');
     if (!row.email) {
       errors.push('Email is required.');
@@ -159,7 +142,6 @@ export async function validateUserImportRows(
       errors.push(`Invalid role "${row.role}". Must be one of: STAFF, MANAGER, ORGANIZATION_ADMIN.`);
     }
 
-    // Duplicate in this batch
     if (row.email) {
       const firstSeen = batchEmails.get(row.email);
       if (firstSeen !== undefined) {
@@ -169,17 +151,14 @@ export async function validateUserImportRows(
       }
     }
 
-    // Email conflict: existing user (any state, globally)
     if (row.email && globalEmailSet.has(row.email)) {
       errors.push('An account with this email already exists.');
     }
 
-    // Email conflict: live pending invitation in this tenant
     if (row.email && livePendingEmails.has(row.email)) {
       errors.push('A pending invitation for this email already exists in this organization.');
     }
 
-    // Manager resolution
     let resolvedManagerId: string | null = null;
     let resolvedManagerName: string | null = null;
     if (row.manager_email) {
@@ -194,7 +173,6 @@ export async function validateUserImportRows(
       }
     }
 
-    // Role Profile resolution
     let resolvedRoleProfileId: string | null = null;
     let resolvedRoleProfileName: string | null = null;
     if (row.role_profile_name) {
@@ -207,7 +185,6 @@ export async function validateUserImportRows(
       }
     }
 
-    // Team resolution
     let resolvedTeamId: string | null = null;
     let resolvedTeamName: string | null = null;
     if (row.team_name) {
@@ -251,12 +228,6 @@ export async function validateUserImportRows(
   return results;
 }
 
-/**
- * Creates invitations for all validated rows atomically.
- * Caller MUST ensure all rows have status 'VALID' before calling.
- * Uses individual createTenantUserInvitation calls (not a raw $transaction)
- * so all business rules are enforced consistently per-row.
- */
 export async function bulkCreateUserInvitations(
   tenantId: string,
   createdById: string,
@@ -266,11 +237,6 @@ export async function bulkCreateUserInvitations(
 
   const invitations: GeneratedInvitation[] = [];
 
-  // We wrap in a transaction to make creation atomic.
-  // createTenantUserInvitation is called outside tx but its checks already ran during validate.
-  // For atomicity we use a serial approach - if any fails, we throw and nothing is committed.
-  // Note: createTenantUserInvitation internally calls prisma (not tx) - for true atomicity
-  // we do the creates inside a transaction using raw create + invitation team creates.
   await prisma.$transaction(
     async (tx) => {
       for (const row of validRows) {
@@ -315,7 +281,6 @@ export async function bulkCreateUserInvitations(
     { timeout: 30000 }
   );
 
-  // Dispatch invitation emails outside the transaction for atomicity and resilience
   try {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },

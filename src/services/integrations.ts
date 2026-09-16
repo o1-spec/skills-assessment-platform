@@ -60,11 +60,6 @@ export const KNOWN_PROVIDERS: Array<{
   },
 ];
 
-/**
- * Returns all integration provider configurations.
- * Merges known providers with database records.
- * Never exposes or transmits raw secrets to clients.
- */
 export async function getAllIntegrationConfigurations(): Promise<IntegrationSummaryDTO[]> {
   const dbRecords = await prisma.integrationConfiguration.findMany();
   const dbMap = new Map(dbRecords.map((r) => [`${r.providerType}_${r.providerName}`, r]));
@@ -94,11 +89,6 @@ export async function getAllIntegrationConfigurations(): Promise<IntegrationSumm
   });
 }
 
-/**
- * Updates or creates an integration configuration.
- * Enforces secret safety: rejects sensitive keys in JSON metadata.
- * Audits INTEGRATION_CONFIG_UPDATE.
- */
 export async function updateIntegrationConfiguration(
   actorId: string,
   input: {

@@ -41,17 +41,14 @@ export function FrameworkEditor({
   const router = useRouter();
   const isDraft = framework.status === 'DRAFT';
 
-  // Global actions state
   const [isPublishing, setIsPublishing] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  // Modals state
   const [activeModal, setActiveModal] = useState<ModalState | null>(null);
 
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
 
-  // Form states
   const [catName, setCatName] = useState('');
   const [catDesc, setCatDesc] = useState('');
   const [catType, setCatType] = useState<CompetencyType>(CompetencyType.TECHNICAL);
@@ -69,7 +66,6 @@ export function FrameworkEditor({
   const [cloneVersion, setCloneVersion] = useState('');
   const [cloneDesc, setCloneDesc] = useState('');
 
-  // Handlers
   async function handlePublish() {
     if (
       !confirm(
@@ -225,7 +221,6 @@ export function FrameworkEditor({
     }
   }
 
-  // Filter root categories by type
   const technicalCategories = framework.categories.filter(
     (c) => c.type === CompetencyType.TECHNICAL
   );
@@ -235,7 +230,6 @@ export function FrameworkEditor({
 
   return (
     <div className="space-y-6">
-      {/* Top Breadcrumb & Metadata Header */}
       <div>
         <div className="flex items-center space-x-2 text-xs text-gray-500 mb-2">
           <Link href="/platform-admin/frameworks" className="hover:text-gray-900 transition-colors">
@@ -319,7 +313,6 @@ export function FrameworkEditor({
         </div>
       </div>
 
-      {/* Published Immutability Banner */}
       {!isDraft && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start space-x-3">
           <div className="text-blue-600 mt-0.5">
@@ -338,14 +331,12 @@ export function FrameworkEditor({
         </div>
       )}
 
-      {/* Global Error Notice */}
       {globalError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-xs text-red-700">
           <strong>Error:</strong> {globalError}
         </div>
       )}
 
-      {/* Section 1: Technical Framework (PA-03) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between border-b border-gray-200 pb-2">
           <div>
@@ -435,7 +426,6 @@ export function FrameworkEditor({
         )}
       </div>
 
-      {/* Section 2: Behavioral / Business Framework (PA-04) */}
       <div className="space-y-4 pt-6">
         <div className="flex items-center justify-between border-b border-gray-200 pb-2">
           <div>
@@ -527,7 +517,6 @@ export function FrameworkEditor({
         )}
       </div>
 
-      {/* Modal Dialog */}
       {activeModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 space-y-4">
@@ -557,7 +546,6 @@ export function FrameworkEditor({
                 </div>
               )}
 
-              {/* Category Forms */}
               {(activeModal.type === 'createRootCategory' ||
                 activeModal.type === 'createSubcategory' ||
                 activeModal.type === 'editCategory') && (
@@ -607,7 +595,6 @@ export function FrameworkEditor({
                 </>
               )}
 
-              {/* Competency Forms */}
               {(activeModal.type === 'createCompetency' || activeModal.type === 'editCompetency') && (
                 <>
                   <div>
@@ -640,7 +627,6 @@ export function FrameworkEditor({
                 </>
               )}
 
-              {/* Level Forms */}
               {(activeModal.type === 'createLevel' || activeModal.type === 'editLevel') && (
                 <>
                   <div>
@@ -689,7 +675,6 @@ export function FrameworkEditor({
                 </>
               )}
 
-              {/* Clone Form */}
               {activeModal.type === 'cloneFramework' && (
                 <>
                   <div>
@@ -745,9 +730,6 @@ export function FrameworkEditor({
   );
 }
 
-/**
- * Renders a root category with nested subcategories, competencies, and variable-length level ladders.
- */
 function CategoryTreeCard({
   category,
   isDraft,
@@ -777,7 +759,6 @@ function CategoryTreeCard({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      {/* Category Header */}
       <div className={`p-4 border-b ${isTechnical ? 'bg-blue-50/40 border-blue-100' : 'bg-purple-50/40 border-purple-100'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
@@ -823,7 +804,6 @@ function CategoryTreeCard({
       </div>
 
       <div className="p-4 space-y-6">
-        {/* Direct Competencies of Root Category */}
         {category.competencies && category.competencies.length > 0 && (
           <div className="space-y-4">
             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -846,7 +826,6 @@ function CategoryTreeCard({
           </div>
         )}
 
-        {/* Subcategories */}
         {category.children && category.children.length > 0 && (
           <div className="space-y-4">
             {category.children.map((subCat) => (
@@ -888,7 +867,6 @@ function CategoryTreeCard({
                   )}
                 </div>
 
-                {/* Subcategory Competencies */}
                 {subCat.competencies && subCat.competencies.length > 0 ? (
                   <div className="grid grid-cols-1 gap-4">
                     {subCat.competencies.map((comp) => (
@@ -925,9 +903,6 @@ function CategoryTreeCard({
   );
 }
 
-/**
- * Renders an individual competency card with its variable-length level ladder.
- */
 function CompetencyCard({
   competency,
   isDraft,
@@ -986,7 +961,6 @@ function CompetencyCard({
         )}
       </div>
 
-      {/* Level Ladder */}
       {levels.length > 0 ? (
         <div className="pt-2 border-t border-gray-100 space-y-2">
           <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">

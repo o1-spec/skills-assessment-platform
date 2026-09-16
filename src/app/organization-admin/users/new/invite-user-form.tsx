@@ -44,7 +44,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Result state: displayed once invitation is created
   const [invitationResult, setInvitationResult] = useState<{
     id: string;
     email: string;
@@ -105,7 +104,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto pb-12">
-      {/* Back Link */}
       <div className="flex items-center space-x-4">
         <Link
           href="/organization-admin/users"
@@ -125,7 +123,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
         </p>
       </div>
 
-      {/* Seat Capacity Notice */}
       {seatUsage.seatLimit !== null && (
         <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-lg flex items-center justify-between text-xs text-blue-800">
           <span>
@@ -147,7 +144,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
       )}
 
       {invitationResult ? (
-        /* One-Time Invitation Result Card */
         <div className="bg-white rounded-lg border border-emerald-300 shadow-sm p-6 space-y-5">
           <div className="flex items-center space-x-3">
             <div className="h-10 w-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
@@ -224,7 +220,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
           </div>
         </div>
       ) : (
-        /* Invitation Form */
         <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 shadow-xs p-6 space-y-5">
           <div className="space-y-4">
             <div>
@@ -270,7 +265,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
               </select>
             </div>
 
-            {/* Current Role Profile Selector */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
                 Current Role Profile <span className="text-gray-400 font-normal">(Optional)</span>
@@ -298,7 +292,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
               </p>
             </div>
 
-            {/* Manager Selector */}
             {role !== UserRole.ORGANIZATION_ADMIN && (
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
@@ -328,7 +321,6 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
               </div>
             )}
 
-            {/* Team Selector */}
             {teams && teams.length > 0 && (
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">

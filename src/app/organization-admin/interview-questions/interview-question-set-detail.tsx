@@ -147,7 +147,6 @@ export function InterviewQuestionSetDetail({ questionSet }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-xs text-gray-500 mb-1">
@@ -215,7 +214,6 @@ export function InterviewQuestionSetDetail({ questionSet }: Props) {
         </div>
       )}
 
-      {/* Main Content card */}
       <div className="bg-white p-6 sm:p-8 rounded-xl border border-gray-200 shadow-2xs space-y-6">
         {isEditing && (
           <div className="space-y-4 border-b border-gray-100 pb-4">
@@ -245,7 +243,6 @@ export function InterviewQuestionSetDetail({ questionSet }: Props) {
               </button>
             </div>
 
-            {/* Custom Question Dialog */}
             {isAddingCustom && (
               <div className="p-4 rounded-lg bg-indigo-50/70 border border-indigo-200 space-y-3">
                 <h3 className="text-xs font-bold text-indigo-900 uppercase">Add Custom Interview Question</h3>
@@ -291,7 +288,6 @@ export function InterviewQuestionSetDetail({ questionSet }: Props) {
           </div>
         )}
 
-        {/* Question Cards List */}
         <div className="space-y-4">
           {questions.map((q, idx) => (
             <div
@@ -395,7 +391,6 @@ export function InterviewQuestionSetDetail({ questionSet }: Props) {
           ))}
         </div>
 
-        {/* Footer actions */}
         <div className="flex items-center justify-between pt-6 border-t border-gray-100">
           <button
             type="button"

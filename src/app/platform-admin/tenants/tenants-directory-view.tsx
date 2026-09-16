@@ -27,7 +27,6 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Organization Directory</h1>
@@ -47,7 +46,6 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
         </Link>
       </div>
 
-      {/* Filter Bar */}
       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative flex-1 w-full">
           <svg
@@ -89,7 +87,6 @@ export function TenantsDirectoryView({ initialTenants }: TenantsDirectoryViewPro
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

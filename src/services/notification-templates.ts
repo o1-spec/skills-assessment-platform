@@ -27,10 +27,6 @@ export interface NotificationTemplateDefinition {
   body: string;
 }
 
-/**
- * Built-in safe defaults for all notification types and channels.
- * Guarantees that even if a custom template is missing or reset, the notification engine never fails.
- */
 export const DEFAULT_NOTIFICATION_TEMPLATES: Record<
   string,
   NotificationTemplateDefinition
@@ -114,10 +110,6 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: Record<
   },
 };
 
-/**
- * Validates template text against the allowed whitelist of variables.
- * Disallows unknown placeholders or script injection.
- */
 export function validateTemplateVariables(text?: string | null): void {
   if (!text) return;
 
@@ -134,9 +126,6 @@ export function validateTemplateVariables(text?: string | null): void {
   }
 }
 
-/**
- * Replaces whitelisted {{variable}} placeholders with provided values safely.
- */
 export function renderTemplate(text: string, variables: Record<string, string | number | null | undefined>): string {
   if (!text) return '';
 
@@ -150,10 +139,6 @@ export function renderTemplate(text: string, variables: Record<string, string | 
   });
 }
 
-/**
- * Resolves a notification template for a given type and channel.
- * Returns custom database template if active, otherwise safe built-in fallback.
- */
 export async function getNotificationTemplate(
   type: NotificationType,
   channel: NotificationChannel
@@ -194,9 +179,6 @@ export async function getNotificationTemplate(
   };
 }
 
-/**
- * Returns all notification template definitions (custom or default) across all types and channels.
- */
 export async function getAllNotificationTemplates() {
   const customTemplates = await prisma.notificationTemplate.findMany();
   const customMap = new Map(customTemplates.map((t) => [`${t.type}_${t.channel}`, t]));
@@ -227,10 +209,6 @@ export async function getAllNotificationTemplates() {
   return results;
 }
 
-/**
- * Updates or creates a customized notification template.
- * Audits NOTIFICATION_TEMPLATE_UPDATE.
- */
 export async function updateNotificationTemplate(
   actorId: string,
   input: {
@@ -246,7 +224,6 @@ export async function updateNotificationTemplate(
     throw new Error('Template body cannot be empty.');
   }
 
-  // Validate variables in all parts
   validateTemplateVariables(input.subject);
   validateTemplateVariables(input.title);
   validateTemplateVariables(input.body);
@@ -291,10 +268,6 @@ export async function updateNotificationTemplate(
   return updated;
 }
 
-/**
- * Resets a notification template back to the system built-in default.
- * Audits NOTIFICATION_TEMPLATE_RESET.
- */
 export async function resetNotificationTemplate(
   actorId: string,
   type: NotificationType,

@@ -38,16 +38,10 @@ export type InvitationDetail = TenantInvitation & {
   } | null;
 };
 
-/**
- * Generates a SHA-256 hash of a raw invitation token.
- */
 export function hashInvitationToken(rawToken: string): string {
   return crypto.createHash('sha256').update(rawToken.trim()).digest('hex');
 }
 
-/**
- * Sends a standardized invitation email with the secure acceptance URL.
- */
 export async function sendInvitationEmail(params: {
   to: string;
   name: string;
@@ -103,22 +97,16 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-/**
- * Asserts no email conflict: rejects any existing user account (active or inactive),
- * and rejects a live pending invitation for the same tenant+email.
- */
 async function assertNoEmailConflict(
   tenantId: string,
   email: string,
   excludeInvitationId?: string
 ): Promise<void> {
-  // Reject any existing account (active or inactive)
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new Error(`An account with this email already exists.`);
   }
 
-  // Reject a live pending invitation for the same tenant + email
   const now = new Date();
   const livePending = await prisma.tenantInvitation.findFirst({
     where: {
@@ -137,9 +125,6 @@ async function assertNoEmailConflict(
   }
 }
 
-/**
- * Creates an initial Organization Admin invitation for a tenant during provisioning.
- */
 export async function createTenantAdminInvitation(
   tenantId: string,
   input: {
@@ -159,7 +144,7 @@ export async function createTenantAdminInvitation(
 
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashInvitationToken(rawToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   const invitation = await prisma.tenantInvitation.create({
     data: {
@@ -191,7 +176,6 @@ export async function createTenantAdminInvitation(
 
   const invitationUrl = `/accept-invitation?token=${rawToken}`;
 
-  // Dispatch invitation email safely (DB transaction/creation is committed first)
   try {
     await sendInvitationEmail({
       to: email,
@@ -217,10 +201,6 @@ export async function createTenantAdminInvitation(
   };
 }
 
-/**
- * Creates a standard tenant user invitation created by an Organization Admin.
- * Optionally assigns the invitee to one or more teams (stored in TenantInvitationTeam).
- */
 export async function createTenantUserInvitation(
   tenantId: string,
   createdById: string,
@@ -237,7 +217,6 @@ export async function createTenantUserInvitation(
   const email = input.email.toLowerCase().trim();
   const name = input.name.trim();
 
-  // 1. Role validation: must be a tenant role (never PLATFORM_ADMIN)
   if (
     input.role !== UserRole.ORGANIZATION_ADMIN &&
     input.role !== UserRole.MANAGER &&
@@ -246,17 +225,14 @@ export async function createTenantUserInvitation(
     throw new Error('Invalid role. Allowed roles are Organization Admin, Manager, or Staff.');
   }
 
-  // 2. Verify tenant exists and is ACTIVE
   const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
   if (!tenant) throw new Error('Organization not found.');
   if (tenant.status !== TenantStatus.ACTIVE) {
     throw new Error('Cannot invite users to a suspended or inactive organization.');
   }
 
-  // 3. Reject existing account or duplicate pending invitation
   await assertNoEmailConflict(tenantId, email);
 
-  // 4. Validate Manager if provided
   if (input.managerId) {
     const manager = await prisma.user.findUnique({ where: { id: input.managerId } });
     if (!manager || manager.tenantId !== tenantId) {
@@ -268,7 +244,6 @@ export async function createTenantUserInvitation(
     }
   }
 
-  // 5. Validate Role Profile if provided
   if (input.roleProfileId) {
     const roleProfile = await prisma.roleProfile.findFirst({
       where: {
@@ -283,7 +258,6 @@ export async function createTenantUserInvitation(
     }
   }
 
-  // 6. Validate Teams if provided
   const resolvedTeamIds: string[] = [];
   if (input.teamIds && input.teamIds.length > 0) {
     for (const teamId of input.teamIds) {
@@ -298,10 +272,9 @@ export async function createTenantUserInvitation(
     }
   }
 
-  // 7. Generate secure token
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashInvitationToken(rawToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   const invitation = await prisma.tenantInvitation.create({
     data: {
@@ -317,7 +290,6 @@ export async function createTenantUserInvitation(
     },
   });
 
-  // 8. Store team assignments (read at accept time — never re-supplied by client)
   if (resolvedTeamIds.length > 0) {
     await prisma.tenantInvitationTeam.createMany({
       data: resolvedTeamIds.map((teamId) => ({ invitationId: invitation.id, teamId })),
@@ -346,7 +318,6 @@ export async function createTenantUserInvitation(
 
   const invitationUrl = `/accept-invitation?token=${rawToken}`;
 
-  // Dispatch employee invitation email safely
   try {
     const roleLabel =
       input.role === UserRole.ORGANIZATION_ADMIN
@@ -382,9 +353,6 @@ export async function createTenantUserInvitation(
   };
 }
 
-/**
- * Retrieves a valid, unaccepted, unexpired, uncancelled invitation by raw token.
- */
 export async function getInvitationByRawToken(rawToken: string): Promise<InvitationDetail | null> {
   if (!rawToken || !rawToken.trim()) return null;
 
@@ -409,11 +377,6 @@ export async function getInvitationByRawToken(rawToken: string): Promise<Invitat
   return invitation;
 }
 
-/**
- * Accepts an invitation: creates user from server-derived invitation values,
- * enforces seat limit at acceptance time, creates TeamMembership rows from
- * stored TenantInvitationTeam data (never from client input).
- */
 export async function acceptTenantInvitation(
   input: AcceptInvitationInput
 ): Promise<{ user: { id: string; email: string; name: string; role: UserRole }; tenant: Tenant }> {
@@ -421,7 +384,6 @@ export async function acceptTenantInvitation(
 
   return prisma.$transaction(
     async (tx) => {
-      // 1. Fetch invitation with stored team assignments
       const invitation = await tx.tenantInvitation.findUnique({
         where: { tokenHash },
         include: {
@@ -445,7 +407,6 @@ export async function acceptTenantInvitation(
         throw new Error('This organization is currently suspended.');
       }
 
-      // 2. Check seat limits at acceptance time
       if (tenant.seatLimit !== null) {
         const activeUsersCount = await tx.user.count({
           where: { tenantId: tenant.id, isActive: true },
@@ -457,7 +418,6 @@ export async function acceptTenantInvitation(
         }
       }
 
-      // 3. Check for existing account (any state)
       const existingUser = await tx.user.findUnique({
         where: { email: invitation.email.toLowerCase().trim() },
       });
@@ -465,10 +425,8 @@ export async function acceptTenantInvitation(
         throw new Error(`An account with email "${invitation.email}" already exists.`);
       }
 
-      // 4. Hash password securely
       const passwordHash = await bcrypt.hash(input.password, 10);
 
-      // 5. Create User using server-derived invitation values only
       const user = await tx.user.create({
         data: {
           name: invitation.name,
@@ -482,7 +440,6 @@ export async function acceptTenantInvitation(
         },
       });
 
-      // 6. Create TeamMembership rows from stored TenantInvitationTeam (never from client)
       const invitationTeamIds = invitation.teams.map((t) => t.teamId);
       if (invitationTeamIds.length > 0) {
         await tx.teamMembership.createMany({
@@ -491,13 +448,11 @@ export async function acceptTenantInvitation(
         });
       }
 
-      // 7. Mark invitation as accepted
       await tx.tenantInvitation.update({
         where: { id: invitation.id },
         data: { acceptedAt: new Date() },
       });
 
-      // 8. Update tenant status if pending onboarding
       let updatedTenant = tenant;
       if (tenant.status === TenantStatus.PENDING_ONBOARDING) {
         updatedTenant = await tx.tenant.update({
@@ -515,7 +470,5 @@ export async function acceptTenantInvitation(
   );
 }
 
-
-// Backward-compatible alias
 export const acceptTenantAdminInvitation = acceptTenantInvitation;
 

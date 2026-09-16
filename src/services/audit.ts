@@ -7,9 +7,6 @@ if (typeof window !== 'undefined') {
 
 export { AuditAction };
 
-/**
- * Audit actor context passed from authenticated actions.
- */
 export interface AuditActorContext {
   actorId?: string | null;
   actorRole?: UserRole | null;
@@ -17,9 +14,6 @@ export interface AuditActorContext {
   userAgent?: string | null;
 }
 
-/**
- * Parameters for recording an audit event.
- */
 export interface LogAuditEventParams {
   tx?: Prisma.TransactionClient;
   tenantId?: string | null;
@@ -35,17 +29,12 @@ export interface LogAuditEventParams {
   userAgent?: string | null;
 }
 
-/**
- * Deliberate, bounded check for sensitive keys that must NEVER be persisted in audit details.
- * Prevents over-broad substring matching (e.g. matching "file" inside "roleProfileId").
- */
 export function isSensitiveKey(key: string): boolean {
   if (!key || typeof key !== 'string') return false;
 
   const lower = key.toLowerCase();
   const normalized = lower.replace(/[-_]/g, '');
 
-  // 1. Explicit allowlist for ordinary identifiers that might contain substrings like 'file' or 'content'
   if (
     normalized.endsWith('profileid') ||
     normalized.includes('roleprofile') ||
@@ -63,22 +52,16 @@ export function isSensitiveKey(key: string): boolean {
     return false;
   }
 
-  // 2. Passwords: password, passwordHash, currentPassword, newPassword, confirmPassword
   if (normalized.includes('password')) return true;
 
-  // 3. Tokens: token, rawToken, tokenHash, invitationToken, sessionToken, accessToken, refreshToken
   if (normalized.includes('token')) return true;
 
-  // 4. Secrets: secret, authSecret, clientSecret, cronSecret
   if (normalized.includes('secret')) return true;
 
-  // 5. Authorization: authorization, authorizationHeader, bearer
   if (normalized.includes('authorization') || normalized.includes('bearer')) return true;
 
-  // 6. Cookies: cookie, sessionCookie
   if (normalized.includes('cookie')) return true;
 
-  // 7. API / Service Keys: apiKey, serviceRoleKey, serviceKey, resendApiKey
   if (
     normalized.includes('apikey') ||
     normalized.includes('servicerolekey') ||
@@ -87,10 +70,8 @@ export function isSensitiveKey(key: string): boolean {
     return true;
   }
 
-  // 8. Database / Connection Strings: databaseUrl, connectionString
   if (normalized.includes('databaseurl') || normalized.includes('connectionstring')) return true;
 
-  // 9. Specific file payload/body contents (NOT filenames or profiles):
   if (
     normalized.includes('filecontent') ||
     normalized.includes('attachmentcontent') ||
@@ -106,9 +87,6 @@ export function isSensitiveKey(key: string): boolean {
   return false;
 }
 
-/**
- * Recursively scrubs sensitive values from an audit details object.
- */
 export function sanitizeAuditDetails(data: unknown): unknown {
   if (data === null || data === undefined) {
     return null;
@@ -122,11 +100,9 @@ export function sanitizeAuditDetails(data: unknown): unknown {
     const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       if (isSensitiveKey(key)) {
-        // Redact / scrub sensitive field completely
         continue;
       }
 
-      // Truncate excessively long strings (e.g. evidence text) to max 500 chars in audit logs
       if (typeof value === 'string' && value.length > 500) {
         sanitized[key] = `${value.substring(0, 500)}... [truncated]`;
       } else {
@@ -139,13 +115,9 @@ export function sanitizeAuditDetails(data: unknown): unknown {
   return data;
 }
 
-/**
- * Records an immutable AuditLog entry.
- * Can be executed inside an existing Prisma transaction via params.tx.
- */
 export async function logAuditEvent(params: LogAuditEventParams): Promise<AuditLog> {
   const db = params.tx || prisma;
-  
+
   let detailsObj: Record<string, unknown> | null = null;
   if (params.details && typeof params.details === 'object' && !Array.isArray(params.details)) {
     detailsObj = { ...(params.details as Record<string, unknown>) };
@@ -175,8 +147,8 @@ export async function logAuditEvent(params: LogAuditEventParams): Promise<AuditL
     }
   }
 
-  const sanitizedDetails = detailsObj || params.details 
-    ? (sanitizeAuditDetails(detailsObj || params.details) as Prisma.InputJsonValue) 
+  const sanitizedDetails = detailsObj || params.details
+    ? (sanitizeAuditDetails(detailsObj || params.details) as Prisma.InputJsonValue)
     : Prisma.DbNull;
 
   const resourceType = params.resourceType || params.entityType || 'UNKNOWN';
@@ -222,10 +194,6 @@ export interface PaginatedAuditLogs {
   totalPages: number;
 }
 
-/**
- * Platform Admin global audit query.
- * Cross-tenant, sorted newest first (createdAt DESC), paginated (default 50).
- */
 export async function getAuditLogsForPlatformAdmin(options: {
   page?: number;
   limit?: number;
@@ -306,10 +274,6 @@ export async function getAuditLogsForPlatformAdmin(options: {
   };
 }
 
-/**
- * Organization Admin tenant-scoped audit query.
- * Strictly derives tenantId from caller session. Cross-tenant logs are inaccessible.
- */
 export async function getAuditLogsForTenant(
   tenantId: string,
   options: {
@@ -394,9 +358,6 @@ export async function getAuditLogsForTenant(
   };
 }
 
-/**
- * Helper to extract client IP and userAgent from request headers.
- */
 export function extractClientRequestContext(headersObj: Headers | Record<string, string | string[] | undefined>): {
   ipAddress?: string;
   userAgent?: string;

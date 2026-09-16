@@ -52,7 +52,6 @@ export async function authenticateUser(email: string, password: string): Promise
     return null;
   }
 
-  // Deny access if user belongs to a suspended or archived tenant
   if (user.tenant && (user.tenant.status === 'SUSPENDED' || user.tenant.status === 'ARCHIVED')) {
     return null;
   }
@@ -114,12 +113,10 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
     return null;
   }
 
-  // Deny access if user belongs to a suspended or archived tenant
   if (user.tenant && (user.tenant.status === 'SUSPENDED' || user.tenant.status === 'ARCHIVED')) {
     return null;
   }
 
-  // Handle support impersonation context
   let effectiveTenantId = user.tenantId;
   let effectiveTenant = user.tenant;
   let impersonation: ImpersonationState | null = null;

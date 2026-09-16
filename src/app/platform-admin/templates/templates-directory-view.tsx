@@ -56,7 +56,6 @@ export function TemplatesDirectoryView({ initialTemplates }: TemplatesDirectoryV
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Industry Templates</h1>
@@ -83,7 +82,6 @@ export function TemplatesDirectoryView({ initialTemplates }: TemplatesDirectoryV
         </div>
       )}
 
-      {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-4 justify-between items-center">
         <div className="w-full sm:w-80 relative">
           <input
@@ -122,7 +120,6 @@ export function TemplatesDirectoryView({ initialTemplates }: TemplatesDirectoryV
         </div>
       </div>
 
-      {/* Templates Table */}
       <div className="bg-white shadow-xs rounded-lg border border-gray-200 overflow-hidden">
         {filteredTemplates.length === 0 ? (
           <div className="py-12 text-center text-gray-500">

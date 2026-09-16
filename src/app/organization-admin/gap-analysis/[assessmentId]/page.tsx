@@ -27,7 +27,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Breadcrumb Navigation */}
       <div>
         <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
@@ -85,7 +84,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Meta Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <div>
           <div className="text-xs text-gray-500 font-medium">Employee</div>
@@ -109,7 +107,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Summary Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 font-medium">Total Compared</div>
@@ -138,7 +135,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Technical Competencies Gap Breakdown */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
         <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
           <div>
@@ -166,7 +162,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Behavioral Competencies Gap Breakdown */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
         <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
           <div>
@@ -225,7 +220,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
               : 'border-gray-200 bg-gray-50/30'
           } space-y-3`}
       >
-        {/* Card Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-200 pb-2.5">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold text-gray-400">#{num}</span>
@@ -249,9 +243,7 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Level Comparison Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Current Level Box */}
           <div className="p-3 bg-white rounded border border-gray-200 text-xs space-y-1">
             <div className="flex items-center justify-between font-bold text-gray-900">
               <span>Assessed Final Level:</span>
@@ -268,7 +260,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Target Level Box */}
           <div className="p-3 bg-white rounded border border-indigo-100 text-xs space-y-1">
             <div className="flex items-center justify-between font-bold text-indigo-900">
               <span>Required Role Benchmark:</span>
@@ -286,7 +277,6 @@ export default async function GapAnalysisDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Gap Progress Bar */}
         <div className="pt-2 border-t border-gray-100">
           <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
             <span>

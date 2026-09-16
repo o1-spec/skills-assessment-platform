@@ -80,9 +80,6 @@ export interface ManagerDashboardData {
   gapAggregation: ManagerTeamGapAggregation[];
 }
 
-/**
- * Retrieves the list of active direct reports for a manager within a tenant.
- */
 async function getActiveDirectReportsForManager(managerId: string, tenantId: string) {
   return prisma.user.findMany({
     where: {
@@ -108,9 +105,6 @@ async function getActiveDirectReportsForManager(managerId: string, tenantId: str
   });
 }
 
-/**
- * Builds the complete Manager Dashboard and Competency Matrix (MG-05).
- */
 export async function getManagerDashboardData(
   managerId: string,
   tenantId: string
@@ -135,12 +129,9 @@ export async function getManagerDashboardData(
   const directReports = await getActiveDirectReportsForManager(managerId, tenantId);
   const reportIds = directReports.map((r) => r.id);
 
-  // Bulk resolve all latest verified ratings for all direct reports
   const userRatingsMap = await getLatestVerifiedRatingsForUsers(reportIds, tenantId);
 
-  // 1. Build Direct Reports Summary List
   const summaryList: ManagerDirectReportSummaryItem[] = [];
-  // Also collect all relevant competencies for the dynamic matrix
   const competencyMap = new Map<string, ManagerMatrixCompetencyColumn>();
 
   for (const report of directReports) {
@@ -160,7 +151,6 @@ export async function getManagerDashboardData(
 
     if (report.roleProfile) {
       for (const req of report.roleProfile.requirements) {
-        // Collect competency into dynamic column list
         if (!competencyMap.has(req.competencyId)) {
           competencyMap.set(req.competencyId, {
             id: req.competency.id,
@@ -185,7 +175,6 @@ export async function getManagerDashboardData(
       }
     }
 
-    // Also include any other competencies assessed for this user
     for (const rating of ratings.values()) {
       if (!competencyMap.has(rating.competencyId)) {
         const comp = await prisma.competency.findUnique({
@@ -219,7 +208,6 @@ export async function getManagerDashboardData(
     });
   }
 
-  // Sorted dynamic competency columns: TECHNICAL first, then BEHAVIORAL, then alphabetical
   const sortedCompetencies = Array.from(competencyMap.values()).sort((a, b) => {
     if (a.type !== b.type) {
       return a.type === CompetencyType.TECHNICAL ? -1 : 1;
@@ -227,7 +215,6 @@ export async function getManagerDashboardData(
     return a.name.localeCompare(b.name);
   });
 
-  // 2. Build Matrix Rows
   const matrixRows: ManagerMatrixRow[] = [];
   for (const report of directReports) {
     const ratings = userRatingsMap.get(report.id) ?? new Map();
@@ -267,7 +254,6 @@ export async function getManagerDashboardData(
     });
   }
 
-  // 3. Build Manager Gap Aggregation across all direct reports
   const gapAggregation: ManagerTeamGapAggregation[] = [];
   for (const comp of sortedCompetencies) {
     let employeesRequiringCount = 0;
@@ -279,7 +265,7 @@ export async function getManagerDashboardData(
 
     for (const report of directReports) {
       const req = report.roleProfile?.requirements.find((r) => r.competencyId === comp.id);
-      if (!req) continue; // Only count employees who actually require this competency
+      if (!req) continue;
 
       employeesRequiringCount++;
       const ratingInfo = userRatingsMap.get(report.id)?.get(comp.id);
@@ -327,10 +313,6 @@ export async function getManagerDashboardData(
   };
 }
 
-/**
- * Allows a manager to view the full read-only capability detail of their direct report.
- * Strictly verifies that directReportId is an active direct report of managerId.
- */
 export async function getManagerDirectReportDetail(
   managerId: string,
   directReportId: string,
@@ -341,7 +323,6 @@ export async function getManagerDirectReportDetail(
 } | null> {
   if (!managerId || !directReportId || !tenantId) return null;
 
-  // Enforce manager authorization
   const report = await prisma.user.findFirst({
     where: {
       id: directReportId,

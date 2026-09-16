@@ -5,10 +5,6 @@ if (typeof window !== 'undefined') {
   throw new Error('This module can only be executed on the server.');
 }
 
-/**
- * MFA Status per specification:
- * Documented as NOT IMPLEMENTED to avoid building unverified custom TOTP cryptography.
- */
 export const MFA_IMPLEMENTATION_STATUS = {
   status: 'NOT_IMPLEMENTED',
   reason: 'OPTIONAL_COULD_REQUIREMENT_PRESERVED_SECURITY',
@@ -25,10 +21,6 @@ export interface TenantSsoStatus {
   message: string;
 }
 
-/**
- * Checks if a tenant has enterprise SSO enabled and configured.
- * Does NOT break existing password authentication.
- */
 export async function getTenantSsoStatus(tenantId: string): Promise<TenantSsoStatus> {
   if (!tenantId) {
     return {

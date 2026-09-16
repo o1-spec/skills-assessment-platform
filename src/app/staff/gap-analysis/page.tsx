@@ -27,7 +27,6 @@ export default async function StaffPersonalGapAnalysisPage({
 
   const aspirationalRoles = await getAspirationalTargetRolesForStaff(user.tenantId);
 
-  // Selected aspirational role fallback
   const selectedAspirationalRoleId =
     roleId || (aspirationalRoles.length > 0 ? aspirationalRoles[0].id : undefined);
 
@@ -47,7 +46,6 @@ export default async function StaffPersonalGapAnalysisPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Personal Gap Analysis</h1>
@@ -56,7 +54,6 @@ export default async function StaffPersonalGapAnalysisPage({
           </p>
         </div>
 
-        {/* Target Selector */}
         <div className="inline-flex rounded-lg bg-gray-100 p-1 border border-gray-200">
           <Link
             href="/staff/gap-analysis?target=current"
@@ -83,7 +80,6 @@ export default async function StaffPersonalGapAnalysisPage({
         </div>
       </div>
 
-      {/* Aspirational Role Selector Banner */}
       {isAspirational && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
@@ -129,7 +125,6 @@ export default async function StaffPersonalGapAnalysisPage({
         </div>
       )}
 
-      {/* Empty State: Current Role not assigned */}
       {!isAspirational && (!analysis || !analysis.hasRoleProfile || !analysis.roleProfile) && (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center max-w-lg mx-auto">
           <div className="h-12 w-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3">
@@ -158,7 +153,6 @@ export default async function StaffPersonalGapAnalysisPage({
         </div>
       )}
 
-      {/* Empty State: No aspirational roles found in organization */}
       {isAspirational && aspirationalRoles.length === 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center max-w-lg mx-auto">
           <p className="text-gray-500">
@@ -167,10 +161,8 @@ export default async function StaffPersonalGapAnalysisPage({
         </div>
       )}
 
-      {/* Active Analysis Content */}
       {analysis && analysis.roleProfile && (
         <>
-          {/* Summary Metrics Cards */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
               <div className="text-xs font-medium text-gray-500 uppercase">Requirements</div>
@@ -221,7 +213,6 @@ export default async function StaffPersonalGapAnalysisPage({
             </div>
           </div>
 
-          {/* Breakdown Table */}
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-900">

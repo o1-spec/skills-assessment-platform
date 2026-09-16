@@ -133,7 +133,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-      {/* Header & Back */}
       <div>
         <Link
           href="/organization-admin/users"
@@ -161,7 +160,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
         </div>
       </div>
 
-      {/* Stepper */}
       <div className="flex items-center gap-3 border-b border-gray-200 pb-4 text-xs font-medium">
         <span
           className={`flex items-center gap-1.5 ${
@@ -209,7 +207,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
         </span>
       </div>
 
-      {/* Global Error Banner */}
       {globalError && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-start gap-3">
           <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -222,7 +219,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
         </div>
       )}
 
-      {/* STEP 1: UPLOAD */}
       {step === 'UPLOAD' && (
         <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xs space-y-6">
           <div className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-8 text-center bg-gray-50/50 transition-colors">
@@ -271,10 +267,8 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
         </div>
       )}
 
-      {/* STEP 2: PREVIEW */}
       {step === 'PREVIEW' && (
         <div className="space-y-6">
-          {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Rows</span>
@@ -299,7 +293,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
             </div>
           )}
 
-          {/* Validation Table */}
           <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-sm font-bold text-gray-900">Parsed Records</h2>
@@ -380,7 +373,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
               </table>
             </div>
 
-            {/* If there are error details, list them clearly below table */}
             {hasErrors && (
               <div className="p-6 bg-red-50/50 border-t border-red-100 space-y-2">
                 <div className="text-xs font-bold text-red-900 uppercase tracking-wide">
@@ -402,7 +394,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
             )}
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-between pt-2">
             <button
               type="button"
@@ -430,7 +421,6 @@ Carol Manager,carol.mgr@example.com,MANAGER,,,`;
         </div>
       )}
 
-      {/* STEP 3: RESULT */}
       {step === 'RESULT' && (
         <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xs space-y-6">
           <div className="text-center space-y-2">

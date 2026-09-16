@@ -100,7 +100,6 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
         </button>
       </div>
 
-      {/* CREATE SCHEDULE FORM */}
       {isCreateOpen && (
         <div className="bg-white rounded-lg border border-blue-200 shadow-sm p-6 space-y-5">
           <div className="border-b border-gray-100 pb-3">
@@ -258,7 +257,6 @@ export function ScheduleListClient({ schedules, users, teams }: ScheduleListClie
         </div>
       )}
 
-      {/* SCHEDULES LIST */}
       {schedules.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500 text-sm">
           No automated report schedules configured yet. Click <strong>+ New Schedule</strong> to set up scheduled capability reports.

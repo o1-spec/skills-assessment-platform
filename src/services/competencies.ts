@@ -20,10 +20,6 @@ export type CompetencyWithLevels = Competency & {
   };
 };
 
-/**
- * Retrieves all competencies belonging to the specified tenant (active and inactive),
- * including all ordered competency level descriptors and canonical provenance.
- */
 export async function getCompetenciesForTenant(tenantId: string): Promise<CompetencyWithLevels[]> {
   if (!tenantId) {
     return [];
@@ -61,10 +57,6 @@ export async function getCompetenciesForTenant(tenantId: string): Promise<Compet
   });
 }
 
-/**
- * Retrieves ONLY ACTIVE competencies belonging to the specified tenant.
- * Used for new configuration workflows (creating role profiles, configuring campaigns).
- */
 export async function getActiveCompetenciesForTenant(tenantId: string): Promise<CompetencyWithLevels[]> {
   if (!tenantId) {
     return [];
@@ -103,9 +95,6 @@ export async function getActiveCompetenciesForTenant(tenantId: string): Promise<
   });
 }
 
-/**
- * Retrieves a single competency by ID for a tenant with its levels, canonical metadata, and usage counts.
- */
 export async function getTenantCompetencyById(
   tenantId: string,
   id: string
@@ -155,9 +144,6 @@ export async function getTenantCompetencyById(
   };
 }
 
-/**
- * Creates a custom organization competency with dynamic level descriptors.
- */
 export async function createCustomCompetency(
   tenantId: string,
   input: CreateCustomCompetencyInput,
@@ -226,10 +212,6 @@ export async function createCustomCompetency(
   });
 }
 
-/**
- * Updates a custom organization competency.
- * Reject structural edits if canonical or if already referenced in role profiles or assessments.
- */
 export async function updateCustomCompetency(
   tenantId: string,
   id: string,
@@ -269,7 +251,6 @@ export async function updateCustomCompetency(
   }
 
   return prisma.$transaction(async (tx) => {
-    // Delete existing levels and replace with new levels
     await tx.competencyLevel.deleteMany({
       where: { competencyId: id },
     });
@@ -321,9 +302,6 @@ export async function updateCustomCompetency(
   });
 }
 
-/**
- * Toggles the active status of any tenant competency (canonical or custom).
- */
 export async function toggleCompetencyActive(
   tenantId: string,
   id: string,
@@ -363,9 +341,6 @@ export async function toggleCompetencyActive(
   });
 }
 
-/**
- * Deletes an unused custom competency.
- */
 export async function deleteUnusedCustomCompetency(
   tenantId: string,
   id: string
@@ -407,10 +382,6 @@ export async function deleteUnusedCustomCompetency(
   });
 }
 
-/**
- * Updates a tenant competency's weighting (OA-02 requirement).
- * Strictly scoped to tenantId.
- */
 export async function updateCompetencyWeight(
   tenantId: string,
   id: string,

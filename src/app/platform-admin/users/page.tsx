@@ -41,7 +41,6 @@ export default async function PlatformUsersPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Platform Users</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -49,7 +48,6 @@ export default async function PlatformUsersPage() {
         </p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: 'Active Users', value: activeUsers.length },
@@ -63,7 +61,6 @@ export default async function PlatformUsersPage() {
         ))}
       </div>
 
-      {/* Invite form */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">Invite Platform User</h2>
@@ -76,7 +73,6 @@ export default async function PlatformUsersPage() {
         </div>
       </div>
 
-      {/* Active Users table */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">Active Accounts</h2>
@@ -127,7 +123,6 @@ export default async function PlatformUsersPage() {
         )}
       </div>
 
-      {/* Pending Invitations */}
       {pendingInvitations.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
@@ -172,7 +167,6 @@ export default async function PlatformUsersPage() {
         </div>
       )}
 
-      {/* Inactive Users */}
       {inactiveUsers.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">

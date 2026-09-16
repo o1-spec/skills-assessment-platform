@@ -95,7 +95,6 @@ export function PlatformAdminAuditView({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Platform Audit Logs</h1>
@@ -109,7 +108,6 @@ export function PlatformAdminAuditView({
         </div>
       </div>
 
-      {/* Filter Bar */}
       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
@@ -194,7 +192,6 @@ export function PlatformAdminAuditView({
         </div>
       </div>
 
-      {/* Audit Log Table */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -288,7 +285,6 @@ export function PlatformAdminAuditView({
           </div>
         )}
 
-        {/* Pagination Controls */}
         {initialData.totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
             <button
@@ -314,7 +310,6 @@ export function PlatformAdminAuditView({
         )}
       </div>
 
-      {/* Details Modal */}
       {selectedLog && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"

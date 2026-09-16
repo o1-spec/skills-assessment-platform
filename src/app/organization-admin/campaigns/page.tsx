@@ -10,7 +10,6 @@ export default async function CampaignsListPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header & Primary Action */}
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Assessment Campaigns</h1>
@@ -31,7 +30,6 @@ export default async function CampaignsListPage() {
         </div>
       </div>
 
-      {/* Campaigns List */}
       {campaigns.length === 0 ? (
         <div className="text-center bg-white rounded-lg border border-dashed border-gray-300 p-12">
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

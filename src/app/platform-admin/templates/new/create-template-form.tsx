@@ -64,7 +64,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
 
   const selectedFramework = publishedFrameworks.find((f) => f.id === selectedFrameworkId);
 
-  // Group root categories by TECHNICAL and BEHAVIORAL
   const rootCategories = selectedFramework
     ? selectedFramework.categories.filter((c) => !c.parentId)
     : [];
@@ -72,7 +71,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
   const technicalCategories = rootCategories.filter((c) => c.type === 'TECHNICAL');
   const behavioralCategories = rootCategories.filter((c) => c.type === 'BEHAVIORAL');
 
-  // Collect all competencies from the selected framework
   const getAllFrameworkCompetencies = () => {
     if (!selectedFramework) return [];
     const comps: {
@@ -115,7 +113,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
 
   const handleFrameworkChange = (newFrameworkId: string) => {
     setSelectedFrameworkId(newFrameworkId);
-    // Reset selection when framework changes
     setSelectedCompetencyIds(new Set());
   };
 
@@ -207,7 +204,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Template Information Card */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-xs p-6 space-y-4">
           <h2 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-2">
             1. Template Metadata
@@ -266,7 +262,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
           </div>
         </div>
 
-        {/* Competency Selection Card */}
         {selectedFramework && (
           <div className="bg-white rounded-lg border border-gray-200 shadow-xs p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-100 pb-3">
@@ -302,7 +297,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Technical Competencies */}
                 {technicalCategories.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
@@ -343,7 +337,7 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
-                                  onChange={() => {}} // handled by parent div click
+                                  onChange={() => {}}
                                   className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mt-0.5 ml-2"
                                 />
                               </div>
@@ -354,7 +348,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
                   </div>
                 )}
 
-                {/* Behavioral Competencies */}
                 {behavioralCategories.length > 0 && (
                   <div className="space-y-3 pt-2">
                     <div className="flex items-center space-x-2">
@@ -410,7 +403,6 @@ export function CreateTemplateForm({ publishedFrameworks }: CreateTemplateFormPr
           </div>
         )}
 
-        {/* Form Actions */}
         <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
           <Link
             href="/platform-admin/templates"

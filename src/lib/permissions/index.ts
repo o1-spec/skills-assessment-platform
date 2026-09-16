@@ -1,4 +1,3 @@
-// Role and permission definitions for the Skills Assessment Platform
 
 export const Roles = {
   PLATFORM_ADMIN: 'PLATFORM_ADMIN',

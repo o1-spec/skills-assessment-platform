@@ -10,7 +10,7 @@ export const ALLOWED_EVIDENCE_MIME_TYPES = [
 
 export type AllowedEvidenceMimeType = (typeof ALLOWED_EVIDENCE_MIME_TYPES)[number];
 
-export const MAX_EVIDENCE_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+export const MAX_EVIDENCE_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
 export function isAllowedMimeType(mimeType: string): boolean {
   return (ALLOWED_EVIDENCE_MIME_TYPES as readonly string[]).includes(mimeType.toLowerCase());
@@ -19,13 +19,10 @@ export function isAllowedMimeType(mimeType: string): boolean {
 export function sanitizeFileName(fileName: string): string {
   if (!fileName) return 'unnamed-file';
 
-  // Remove any path traversal or absolute path separators
   const baseName = fileName.replace(/^.*[\\/]/, '');
 
-  // Strip null bytes and non-printable characters
   const cleanName = baseName.replace(/[\0-\x1F\x7F-\x9F]/g, '');
 
-  // Separate name and extension
   const lastDot = cleanName.lastIndexOf('.');
   if (lastDot === -1) {
     const sanitized = cleanName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);

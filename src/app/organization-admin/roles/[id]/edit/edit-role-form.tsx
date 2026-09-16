@@ -17,7 +17,6 @@ export function EditRoleForm({ roleProfile, competencies }: EditRoleFormProps) {
   const updateActionWithId = updateRoleProfileAction.bind(null, roleProfile.id);
   const [state, formAction, isPending] = useActionState(updateActionWithId, initialState);
 
-  // Initialize selected levels from existing role requirements
   const initialLevels: Record<string, number> = {};
   for (const req of roleProfile.requirements) {
     initialLevels[req.competencyId] = req.targetLevel;
@@ -58,7 +57,6 @@ export function EditRoleForm({ roleProfile, competencies }: EditRoleFormProps) {
         </div>
       )}
 
-      {/* Role Profile Info Card */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-5">
         <h2 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
           Role Information
@@ -104,7 +102,6 @@ export function EditRoleForm({ roleProfile, competencies }: EditRoleFormProps) {
         </div>
       </div>
 
-      {/* Summary Banner */}
       <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-5 py-3">
         <div className="flex items-center space-x-2">
           <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,7 +116,6 @@ export function EditRoleForm({ roleProfile, competencies }: EditRoleFormProps) {
         </span>
       </div>
 
-      {/* Technical Competencies Section */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Technical Competencies</h2>
@@ -185,7 +181,6 @@ export function EditRoleForm({ roleProfile, competencies }: EditRoleFormProps) {
         )}
       </div>
 
-      {/* Behavioral Competencies Section */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Behavioral Competencies</h2>
@@ -251,7 +246,6 @@ export function EditRoleForm({ roleProfile, competencies }: EditRoleFormProps) {
         )}
       </div>
 
-      {/* Form Submission Actions */}
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-gray-200">
         <Link
           href={`/organization-admin/roles/${roleProfile.id}`}

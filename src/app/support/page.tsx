@@ -31,7 +31,6 @@ export default async function SupportPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-100">Support Operations</h1>
         <p className="mt-1 text-sm text-slate-400">
@@ -39,7 +38,6 @@ export default async function SupportPage() {
         </p>
       </div>
 
-      {/* Identity card */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
@@ -57,7 +55,6 @@ export default async function SupportPage() {
         </div>
       </div>
 
-      {/* Tenant Troubleshooting / Impersonation Section */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
@@ -143,7 +140,6 @@ export default async function SupportPage() {
         )}
       </div>
 
-      {/* Access restrictions notice */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800">
         <div className="p-5">
           <h3 className="text-sm font-semibold text-slate-200">Security & Operational Guardrails</h3>

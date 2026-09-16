@@ -31,10 +31,6 @@ export interface DispatchedTestEmail extends SendEmailOptions {
   dispatchedAt: Date;
 }
 
-/**
- * In-memory test email client for deterministic unit & integration tests.
- * Captures outgoing emails without making external network calls.
- */
 class InMemoryTestEmailClient implements EmailClient {
   private dispatched: DispatchedTestEmail[] = [];
   private shouldFailNext: boolean = false;
@@ -88,10 +84,6 @@ class InMemoryTestEmailClient implements EmailClient {
   }
 }
 
-/**
- * Resend REST API adapter using global fetch.
- * Server-only; credentials never exposed to client.
- */
 class ResendEmailClient implements EmailClient {
   private apiKey: string;
   private from: string;
@@ -164,9 +156,6 @@ class ResendEmailClient implements EmailClient {
   }
 }
 
-/**
- * Development & fallback client when no provider credentials are configured.
- */
 class FallbackDevEmailClient implements EmailClient {
   async sendEmail(options: SendEmailOptions): Promise<EmailSendResult> {
     const isProduction = process.env.NODE_ENV === 'production';
@@ -192,7 +181,6 @@ class FallbackDevEmailClient implements EmailClient {
   }
 }
 
-// Global active test client instance for testing assertions
 let mockEmailClientInstance: InMemoryTestEmailClient | null = null;
 
 export function getMockEmailClient(): InMemoryTestEmailClient {
@@ -206,12 +194,6 @@ export function setMockEmailClient(client: InMemoryTestEmailClient | null): void
   mockEmailClientInstance = client;
 }
 
-/**
- * Resolves the active email client:
- * 1. If test mock is set, returns mock client.
- * 2. If RESEND_API_KEY is configured, returns ResendEmailClient.
- * 3. Otherwise returns FallbackDevEmailClient (SKIPPED).
- */
 export function getEmailClient(): EmailClient {
   if (mockEmailClientInstance) {
     return mockEmailClientInstance;
@@ -225,9 +207,6 @@ export function getEmailClient(): EmailClient {
   return new FallbackDevEmailClient();
 }
 
-/**
- * Top-level email dispatch helper.
- */
 export async function sendEmail(options: SendEmailOptions): Promise<EmailSendResult> {
   const client = getEmailClient();
   return client.sendEmail(options);

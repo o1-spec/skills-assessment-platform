@@ -44,7 +44,6 @@ export async function createRoleProfileAction(
       ? RoleProfileStatus.PUBLISHED
       : RoleProfileStatus.DRAFT;
 
-  // Extract selected competency target levels from form
   const requirements: Array<{ competencyId: string; targetLevel: number }> = [];
 
   for (const [key, value] of formData.entries()) {

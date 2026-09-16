@@ -19,7 +19,6 @@ export default async function ManagerCorroborationsQueuePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Corroboration Queue</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -27,7 +26,6 @@ export default async function ManagerCorroborationsQueuePage() {
         </p>
       </div>
 
-      {/* Queue Content */}
       {pendingAssessments.length === 0 ? (
         <div className="text-center bg-white rounded-lg border border-dashed border-gray-300 p-12">
           <svg

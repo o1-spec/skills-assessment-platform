@@ -43,7 +43,6 @@ export function InterviewQuestionGenerator({ roleProfiles }: Props) {
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
 
-  // Custom question modal state
   const [isAddingCustom, setIsAddingCustom] = useState(false);
   const [customQuestionText, setCustomQuestionText] = useState('');
   const [customFollowUpText, setCustomFollowUpText] = useState('');
@@ -166,7 +165,6 @@ export function InterviewQuestionGenerator({ roleProfiles }: Props) {
         </div>
       )}
 
-      {/* Step 1: Role Profile Selector & Generation trigger */}
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-2xs space-y-4">
         <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">
           Step 1: Choose Target Role Profile
@@ -214,7 +212,6 @@ export function InterviewQuestionGenerator({ roleProfiles }: Props) {
         )}
       </div>
 
-      {/* Step 2: Review and Edit Questions */}
       {hasGenerated && (
         <div className="bg-white p-6 sm:p-8 rounded-xl border border-gray-200 shadow-2xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-4 gap-4">
@@ -250,7 +247,6 @@ export function InterviewQuestionGenerator({ roleProfiles }: Props) {
             />
           </div>
 
-          {/* Custom Question Dialog / Inline Form */}
           {isAddingCustom && (
             <div className="p-4 rounded-lg bg-indigo-50/70 border border-indigo-200 space-y-3">
               <h3 className="text-xs font-bold text-indigo-900 uppercase">Add Custom Interview Question</h3>
@@ -294,7 +290,6 @@ export function InterviewQuestionGenerator({ roleProfiles }: Props) {
             </div>
           )}
 
-          {/* Questions list */}
           <div className="space-y-4">
             {questions.map((q, idx) => (
               <div
@@ -384,7 +379,6 @@ export function InterviewQuestionGenerator({ roleProfiles }: Props) {
             ))}
           </div>
 
-          {/* Actions */}
           <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
             <button
               type="button"

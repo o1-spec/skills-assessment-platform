@@ -101,9 +101,6 @@ export type FullIndustryTemplate = IndustryTemplate & {
   })[];
 };
 
-/**
- * Retrieves all industry templates with summary counts.
- */
 export async function getIndustryTemplates(): Promise<IndustryTemplateWithStats[]> {
   return prisma.industryTemplate.findMany({
     include: {
@@ -128,9 +125,6 @@ export async function getIndustryTemplates(): Promise<IndustryTemplateWithStats[
   });
 }
 
-/**
- * Retrieves only active industry templates.
- */
 export async function getActiveIndustryTemplates(): Promise<IndustryTemplateWithStats[]> {
   return prisma.industryTemplate.findMany({
     where: {
@@ -158,9 +152,6 @@ export async function getActiveIndustryTemplates(): Promise<IndustryTemplateWith
   });
 }
 
-/**
- * Retrieves a single industry template by ID with full relations.
- */
 export async function getIndustryTemplateById(id: string): Promise<FullIndustryTemplate | null> {
   const template = await prisma.industryTemplate.findUnique({
     where: { id },
@@ -241,7 +232,6 @@ export async function getIndustryTemplateById(id: string): Promise<FullIndustryT
 
   if (!template) return null;
 
-  // Root categories only for tree presentation
   const rootCategories = template.frameworkVersion.categories.filter((cat) => !cat.parentId);
 
   return {
@@ -253,9 +243,6 @@ export async function getIndustryTemplateById(id: string): Promise<FullIndustryT
   } as unknown as FullIndustryTemplate;
 }
 
-/**
- * Creates a new Industry Template bound to a published framework version.
- */
 export async function createIndustryTemplate(
   data: {
     name: string;
@@ -270,7 +257,6 @@ export async function createIndustryTemplate(
     throw new Error('Template name is required.');
   }
 
-  // 1. Verify framework exists and is PUBLISHED
   const framework = await prisma.frameworkVersion.findUnique({
     where: { id: data.frameworkVersionId },
     include: {
@@ -290,7 +276,6 @@ export async function createIndustryTemplate(
     throw new Error('Cannot create industry template: Target framework must be in PUBLISHED status.');
   }
 
-  // 2. Check unique name
   const existing = await prisma.industryTemplate.findUnique({
     where: { name: trimmedName },
   });
@@ -299,7 +284,6 @@ export async function createIndustryTemplate(
     throw new Error(`An industry template with the name '${trimmedName}' already exists.`);
   }
 
-  // 3. Verify all selected competency IDs belong to this framework version
   const validCompetencyIds = new Set(
     framework.categories.flatMap((cat) => cat.competencies.map((c) => c.id))
   );
@@ -309,7 +293,6 @@ export async function createIndustryTemplate(
     throw new Error('One or more selected competencies do not belong to the selected framework version.');
   }
 
-  // 4. Create template and competencies in a transaction
   return prisma.$transaction(async (tx) => {
     const template = await tx.industryTemplate.create({
       data: {
@@ -349,9 +332,6 @@ export async function createIndustryTemplate(
   });
 }
 
-/**
- * Updates an existing Industry Template's metadata.
- */
 export async function updateIndustryTemplate(
   id: string,
   data: {
@@ -411,9 +391,6 @@ export async function updateIndustryTemplate(
   });
 }
 
-/**
- * Toggles an Industry Template's active status.
- */
 export async function toggleIndustryTemplateActive(
   id: string,
   actorContext?: { actorId?: string | null; ipAddress?: string | null; userAgent?: string | null }
@@ -452,9 +429,6 @@ export async function toggleIndustryTemplateActive(
   });
 }
 
-/**
- * Deletes an Industry Template.
- */
 export async function deleteIndustryTemplate(id: string): Promise<IndustryTemplate> {
   const template = await prisma.industryTemplate.findUnique({
     where: { id },
@@ -469,9 +443,6 @@ export async function deleteIndustryTemplate(id: string): Promise<IndustryTempla
   });
 }
 
-/**
- * Adds a canonical competency to an industry template with optional weighting.
- */
 export async function addTemplateCompetency(
   industryTemplateId: string,
   frameworkCompetencyId: string,
@@ -485,7 +456,6 @@ export async function addTemplateCompetency(
     throw new Error('Industry template not found.');
   }
 
-  // Verify competency belongs to the template's framework version
   const competency = await prisma.frameworkCompetency.findUnique({
     where: { id: frameworkCompetencyId },
     include: {
@@ -501,7 +471,6 @@ export async function addTemplateCompetency(
     throw new Error('Competency weight must be a positive integer.');
   }
 
-  // Check if already added
   const existing = await prisma.industryTemplateCompetency.findUnique({
     where: {
       industryTemplateId_frameworkCompetencyId: {
@@ -524,9 +493,6 @@ export async function addTemplateCompetency(
   });
 }
 
-/**
- * Updates the weight for an industry template competency.
- */
 export async function updateTemplateCompetencyWeight(
   industryTemplateId: string,
   frameworkCompetencyId: string,
@@ -547,9 +513,6 @@ export async function updateTemplateCompetencyWeight(
   });
 }
 
-/**
- * Removes a canonical competency from an industry template, cleaning up any role requirements referencing it.
- */
 export async function removeTemplateCompetency(
   industryTemplateId: string,
   frameworkCompetencyId: string
@@ -566,7 +529,6 @@ export async function removeTemplateCompetency(
   }
 
   return prisma.$transaction(async (tx) => {
-    // 1. Remove requirement from role templates in this template
     const roleProfileIds = template.roleProfiles.map((r) => r.id);
     if (roleProfileIds.length > 0) {
       await tx.templateRequirement.deleteMany({
@@ -577,7 +539,6 @@ export async function removeTemplateCompetency(
       });
     }
 
-    // 2. Remove join record
     return tx.industryTemplateCompetency.delete({
       where: {
         industryTemplateId_frameworkCompetencyId: {
@@ -589,9 +550,6 @@ export async function removeTemplateCompetency(
   });
 }
 
-/**
- * Creates a predefined Template Role Profile inside an industry template.
- */
 export async function createTemplateRoleProfile(
   industryTemplateId: string,
   data: {
@@ -621,7 +579,6 @@ export async function createTemplateRoleProfile(
 
   const includedCompIds = new Set(template.competencies.map((c) => c.frameworkCompetencyId));
 
-  // Validate duplicate competency IDs in requirements
   const seenCompIds = new Set<string>();
   for (const req of data.requirements) {
     if (seenCompIds.has(req.frameworkCompetencyId)) {
@@ -630,7 +587,6 @@ export async function createTemplateRoleProfile(
     seenCompIds.add(req.frameworkCompetencyId);
   }
 
-  // Validate each requirement against actual FrameworkLevel records and template inclusion
   for (const req of data.requirements) {
     if (!includedCompIds.has(req.frameworkCompetencyId)) {
       throw new Error('All role requirements must reference competencies included in this industry template.');
@@ -673,9 +629,6 @@ export async function createTemplateRoleProfile(
   });
 }
 
-/**
- * Updates a Template Role Profile's details and requirements.
- */
 export async function updateTemplateRoleProfile(
   id: string,
   data: {
@@ -762,9 +715,6 @@ export async function updateTemplateRoleProfile(
   });
 }
 
-/**
- * Deletes a Template Role Profile.
- */
 export async function deleteTemplateRoleProfile(id: string): Promise<TemplateRoleProfile> {
   const roleProfile = await prisma.templateRoleProfile.findUnique({
     where: { id },

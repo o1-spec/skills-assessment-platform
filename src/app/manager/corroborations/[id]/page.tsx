@@ -37,7 +37,6 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Breadcrumb */}
       <div>
         <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
@@ -87,7 +86,6 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
         </div>
       </div>
 
-      {/* Meta Stats Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <div>
           <div className="text-xs text-gray-500 font-medium">Direct Report</div>
@@ -110,7 +108,6 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
         </div>
       </div>
 
-      {/* Completed Banner if applicable */}
       {isCompleted && (
         <div className="rounded-md bg-emerald-50 p-4 border border-emerald-200">
           <div className="flex">
@@ -136,7 +133,6 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
         </div>
       )}
 
-      {/* Interactive Corroboration Form vs. Read-Only Review */}
       {isPending ? (
         <CorroborationForm assessment={assessment} />
       ) : (
@@ -195,7 +191,6 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
                       </div>
                     </div>
 
-                    {/* Staff Evidence */}
                     <div className="text-xs text-gray-700 bg-white p-3 rounded border border-gray-200 space-y-1">
                       <div className="font-semibold text-gray-900">
                         Staff Self-Assessment (Level {item.selfRating}):
@@ -217,7 +212,6 @@ export default async function ManagerCorroborationDetailPage({ params }: PagePro
                       />
                     </div>
 
-                    {/* Manager Corroboration */}
                     <div className="text-xs text-gray-700 bg-white p-3 rounded border border-gray-200 space-y-1">
                       <div className="font-semibold text-indigo-900 flex items-center justify-between">
                         <span>Corroborated Final Rating: Level {item.finalRating}</span>

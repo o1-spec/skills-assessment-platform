@@ -14,10 +14,6 @@ import { CreateCareerPathInput, UpdateCareerPathInput, createCareerPathSchema, u
 import { logAuditEvent, AuditActorContext } from './audit';
 import { getLatestVerifiedRatingsForUsers, VerifiedCompetencyRating } from './skills-profile';
 
-// ---------------------------------------------------------------------------
-// TYPES
-// ---------------------------------------------------------------------------
-
 export type CompetencyDeltaType =
   | 'NEW_REQUIREMENT'
   | 'LEVEL_INCREASE'
@@ -104,27 +100,17 @@ export interface StaffCareerPathViewData {
     isNextRole: boolean;
     isFutureRole: boolean;
   }>;
-  currentRoleIndex: number; // -1 if not in path
+  currentRoleIndex: number;
   nextRole: Pick<RoleProfile, 'id' | 'name' | 'description'> | null;
   progressionItems: StaffProgressionItem[];
 }
 
-// ---------------------------------------------------------------------------
-// CORE DELTA CALCULATION ALGORITHM
-// ---------------------------------------------------------------------------
-
-/**
- * Calculates deterministic skill/level deltas between sourceRole and targetRole.
- */
 export type RoleRequirementWithCompetency = {
   competencyId: string;
   targetLevel: number;
   competency: Pick<Competency, 'id' | 'name' | 'type'> & Partial<Competency>;
 };
 
-/**
- * Pure derived computation using RoleRequirement.competencyId (never matching by name).
- */
 export function calculateRoleProgressionDeltas(
   sourceRequirements: RoleRequirementWithCompetency[],
   targetRequirements: RoleRequirementWithCompetency[]
@@ -175,7 +161,6 @@ export function calculateRoleProgressionDeltas(
     });
   }
 
-  // Deterministic order: Technical first, then alphabetical
   deltas.sort((a, b) => {
     if (a.competencyType !== b.competencyType) {
       return a.competencyType === CompetencyType.TECHNICAL ? -1 : 1;
@@ -186,9 +171,6 @@ export function calculateRoleProgressionDeltas(
   return deltas;
 }
 
-/**
- * Builds all adjacent step-to-step transitions for a loaded career path.
- */
 export function buildCareerPathTransitions(steps: CareerPathStepWithRole[]): CareerPathTransition[] {
   const transitions: CareerPathTransition[] = [];
   const sortedSteps = [...steps].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -241,13 +223,6 @@ export function buildCareerPathTransitions(steps: CareerPathStepWithRole[]): Car
   return transitions;
 }
 
-// ---------------------------------------------------------------------------
-// QUERIES & MUTATIONS (ORGANIZATION ADMIN)
-// ---------------------------------------------------------------------------
-
-/**
- * Lists career paths for an organization.
- */
 export async function getCareerPathsForTenant(
   tenantId: string,
   options?: { onlyPublished?: boolean }
@@ -284,9 +259,6 @@ export async function getCareerPathsForTenant(
   });
 }
 
-/**
- * Loads a single CareerPath with role requirements and derived transitions.
- */
 export async function getCareerPathById(
   id: string,
   tenantId: string
@@ -323,10 +295,6 @@ export async function getCareerPathById(
   };
 }
 
-/**
- * Creates a new Career Path.
- * Rejects draft roles, archived roles, duplicate roles, or foreign tenant roles.
- */
 export async function createCareerPath(
   tenantId: string,
   rawInput: CreateCareerPathInput,
@@ -338,7 +306,6 @@ export async function createCareerPath(
 
   const input = createCareerPathSchema.parse(rawInput);
 
-  // Validate roles eligibility: must belong to tenant, be PUBLISHED, not archived
   const roles = await prisma.roleProfile.findMany({
     where: {
       id: { in: input.roleProfileIds },
@@ -401,10 +368,6 @@ export async function createCareerPath(
   });
 }
 
-/**
- * Updates a DRAFT Career Path.
- * Published paths are structurally immutable.
- */
 export async function updateCareerPath(
   tenantId: string,
   id: string,
@@ -429,7 +392,6 @@ export async function updateCareerPath(
 
   const input = updateCareerPathSchema.parse(rawInput);
 
-  // Validate roles
   const roles = await prisma.roleProfile.findMany({
     where: {
       id: { in: input.roleProfileIds },
@@ -494,9 +456,6 @@ export async function updateCareerPath(
   });
 }
 
-/**
- * Publishes a Career Path.
- */
 export async function publishCareerPath(
   tenantId: string,
   id: string,
@@ -563,14 +522,6 @@ export async function publishCareerPath(
   });
 }
 
-// ---------------------------------------------------------------------------
-// STAFF CAREER PATH VIEWS (SM-04)
-// ---------------------------------------------------------------------------
-
-/**
- * Loads published career paths relevant to a staff user, along with progression analysis
- * against their next role in the path.
- */
 export async function getStaffCareerPathView(
   userId: string,
   tenantId: string,
@@ -644,7 +595,6 @@ export async function getStaffCareerPathView(
     };
   }
 
-  // Find candidate path: selectedPathId, or first path that includes the user's current role, or first available
   let chosenPath = publishedPaths.find((p) => p.id === selectedPathId);
   if (!chosenPath) {
     chosenPath = publishedPaths.find((p) =>
@@ -664,7 +614,6 @@ export async function getStaffCareerPathView(
     };
   }
 
-  // Locate user's position in this path
   const currentRoleIdx = chosenPath.steps.findIndex(
     (s) => s.roleProfileId === user.roleProfileId
   );
@@ -673,7 +622,6 @@ export async function getStaffCareerPathView(
     ? chosenPath.steps[currentRoleIdx + 1]
     : null;
 
-  // Resolve verified ratings for the staff user
   const ratingsMap = await getLatestVerifiedRatingsForUsers([userId], tenantId);
   const userRatings = ratingsMap.get(userId) || new Map<string, VerifiedCompetencyRating>();
 
@@ -713,7 +661,6 @@ export async function getStaffCareerPathView(
       };
     });
 
-    // Order: Technical first, then alphabetical
     progressionItems.sort((a, b) => {
       if (a.competencyType !== b.competencyType) {
         return a.competencyType === CompetencyType.TECHNICAL ? -1 : 1;

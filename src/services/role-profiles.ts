@@ -37,10 +37,6 @@ export interface RoleProfilesFilterOptions {
   onlyArchived?: boolean;
 }
 
-/**
- * Retrieves role profiles for an organization, ordered by newest first.
- * Strictly scoped by tenantId with optional filtering for archive/publication status.
- */
 export async function getRoleProfilesForTenant(
   tenantId: string,
   options?: RoleProfilesFilterOptions
@@ -77,10 +73,6 @@ export async function getRoleProfilesForTenant(
   });
 }
 
-/**
- * Retrieves a single role profile by ID, verifying tenant ownership.
- * Returns null if not found or if it belongs to another tenant.
- */
 export async function getRoleProfileById(
   id: string,
   tenantId: string
@@ -146,22 +138,16 @@ export interface AvailableTemplateRole {
   }>;
 }
 
-/**
- * Discovers active Industry Template roles compatible with the tenant's adopted framework version.
- * Verifies mapping strictly through frameworkCompetencyId.
- */
 export async function getAvailableTemplateRolesForTenant(
   tenantId: string
 ): Promise<AvailableTemplateRole[]> {
   if (!tenantId) return [];
 
-  // 1. Identify active tenant framework adoption
   const activeAdoption = await getActiveFrameworkAdoptionForTenant(tenantId);
   if (!activeAdoption) return [];
 
   const frameworkVersionId = activeAdoption.frameworkVersionId;
 
-  // 2. Load active industry templates matching framework version
   const templates = await prisma.industryTemplate.findMany({
     where: {
       frameworkVersionId,
@@ -186,7 +172,6 @@ export async function getAvailableTemplateRolesForTenant(
     },
   });
 
-  // 3. Load tenant operational competencies for mapping
   const tenantCompetencies = await prisma.competency.findMany({
     where: {
       tenantId,
@@ -301,10 +286,6 @@ export interface PrefilledRoleProfileData {
   }>;
 }
 
-/**
- * Pre-fills role profile data from an Industry Template role.
- * Enforces strict framework compatibility and active tenant competency mapping.
- */
 export async function prefillRoleProfileFromTemplate(
   tenantId: string,
   templateRoleProfileId: string
@@ -336,14 +317,12 @@ export async function prefillRoleProfileFromTemplate(
     throw new Error('Template role profile not found.');
   }
 
-  // Enforce framework version compatibility
   if (templateRole.industryTemplate.frameworkVersionId !== activeAdoption.frameworkVersionId) {
     throw new Error(
       `This template belongs to an incompatible framework version and cannot be used with your organization's active framework.`
     );
   }
 
-  // Load tenant competencies corresponding to template requirements
   const frameworkCompIds = templateRole.requirements.map((r) => r.frameworkCompetencyId);
 
   const tenantCompetencies = await prisma.competency.findMany({
@@ -406,9 +385,6 @@ export async function prefillRoleProfileFromTemplate(
   };
 }
 
-/**
- * Validates submitted competency requirements for a tenant.
- */
 async function validateRoleRequirements(
   tenantId: string,
   requirements: Array<{ competencyId: string; targetLevel: number }>
@@ -463,9 +439,6 @@ async function validateRoleRequirements(
   return entries;
 }
 
-/**
- * Creates a new role profile and its requirements atomically.
- */
 export async function createRoleProfile(
   tenantId: string,
   input: CreateRoleProfileInput,
@@ -537,10 +510,6 @@ export async function createRoleProfile(
   });
 }
 
-/**
- * Updates an existing DRAFT role profile atomically.
- * Published roles are structurally immutable and will be rejected.
- */
 export async function updateRoleProfile(
   tenantId: string,
   roleProfileId: string,
@@ -560,14 +529,12 @@ export async function updateRoleProfile(
     throw new Error('Role profile not found.');
   }
 
-  // Structural Immutability Guard: Published roles cannot be modified
   if (role.status === RoleProfileStatus.PUBLISHED) {
     throw new Error(
       'Published role profiles cannot be modified. They are immutable benchmarks used by active campaigns and assessments.'
     );
   }
 
-  // Archived roles cannot be modified
   if (role.isArchived) {
     throw new Error('Archived role profiles cannot be modified. Unarchive the role profile first.');
   }
@@ -645,9 +612,6 @@ export async function updateRoleProfile(
   });
 }
 
-/**
- * Publishes an existing DRAFT role profile.
- */
 export async function publishRoleProfile(
   tenantId: string,
   roleProfileId: string,
@@ -705,10 +669,6 @@ export async function publishRoleProfile(
   });
 }
 
-/**
- * Archives a role profile safely (OA-05).
- * Preserves all existing references and historical analytics.
- */
 export async function archiveRoleProfile(
   tenantId: string,
   roleProfileId: string,
@@ -753,9 +713,6 @@ export async function archiveRoleProfile(
   });
 }
 
-/**
- * Unarchives a previously archived role profile.
- */
 export async function unarchiveRoleProfile(
   tenantId: string,
   roleProfileId: string,

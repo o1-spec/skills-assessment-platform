@@ -39,7 +39,6 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Breadcrumb Navigation */}
       <div>
         <nav className="flex text-sm text-gray-500 mb-2" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
@@ -91,7 +90,6 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Archived Warning Banner */}
       {roleProfile.isArchived && (
         <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-md">
           <div className="flex">
@@ -111,7 +109,6 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* Action Bar */}
       <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between flex-wrap gap-4">
         <div>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Role Management</span>
@@ -133,7 +130,6 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
         />
       </div>
 
-      {/* Meta Stats Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <div>
           <div className="text-xs text-gray-500 font-medium">Total Competencies</div>
@@ -157,7 +153,6 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Technical Competencies Section */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
         <div className="border-b border-gray-100 pb-3">
           <h2 className="text-base font-bold text-gray-900">Technical Competencies</h2>
@@ -202,7 +197,6 @@ export default async function RoleProfileDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Behavioral Competencies Section */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
         <div className="border-b border-gray-100 pb-3">
           <h2 className="text-base font-bold text-gray-900">Behavioral Competencies</h2>

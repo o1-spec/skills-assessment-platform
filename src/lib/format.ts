@@ -1,9 +1,5 @@
 import { AssessmentStatus, CampaignStatus, RoleProfileStatus } from '@prisma/client';
 
-/**
- * Formats a Date or ISO string into a standard, human-readable date.
- * Example output: "15 Sep 2026"
- */
 export function formatDate(date: Date | string | number | null | undefined): string {
   if (!date) return '—';
   const d = typeof date === 'object' ? date : new Date(date);
@@ -16,9 +12,6 @@ export function formatDate(date: Date | string | number | null | undefined): str
   });
 }
 
-/**
- * Returns human-friendly text for assessment lifecycle statuses.
- */
 export function formatAssessmentStatus(status: AssessmentStatus | string): string {
   switch (status) {
     case AssessmentStatus.NOT_STARTED:
@@ -36,9 +29,6 @@ export function formatAssessmentStatus(status: AssessmentStatus | string): strin
   }
 }
 
-/**
- * Returns human-friendly text for assessment campaign statuses.
- */
 export function formatCampaignStatus(status: CampaignStatus | string): string {
   switch (status) {
     case CampaignStatus.ACTIVE:
@@ -52,9 +42,6 @@ export function formatCampaignStatus(status: CampaignStatus | string): string {
   }
 }
 
-/**
- * Returns human-friendly text for role profile statuses.
- */
 export function formatRoleStatus(status: RoleProfileStatus | string): string {
   switch (status) {
     case RoleProfileStatus.PUBLISHED:
@@ -66,9 +53,6 @@ export function formatRoleStatus(status: RoleProfileStatus | string): string {
   }
 }
 
-/**
- * Returns human-friendly text for gap statuses.
- */
 export function formatGapStatus(status: string): string {
   switch (status) {
     case 'BELOW_TARGET':

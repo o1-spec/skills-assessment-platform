@@ -22,9 +22,6 @@ export type AvailablePublishedFramework = FrameworkVersion & {
   competencyCount: number;
 };
 
-/**
- * Retrieves the currently active framework adoption for a tenant.
- */
 export async function getActiveFrameworkAdoptionForTenant(
   tenantId: string
 ): Promise<ActiveTenantAdoptionWithVersion | null> {
@@ -66,9 +63,6 @@ export async function getActiveFrameworkAdoptionForTenant(
   };
 }
 
-/**
- * Retrieves all published canonical frameworks, highlighting any active/past adoption by the tenant.
- */
 export async function getAvailablePublishedFrameworksForTenant(
   tenantId: string
 ): Promise<AvailablePublishedFramework[]> {
@@ -114,13 +108,6 @@ export async function getAvailablePublishedFrameworksForTenant(
   });
 }
 
-/**
- * Adopts a published framework version for a tenant.
- * - Deactivates prior framework adoptions and operational canonical competencies of prior versions
- * - Creates/Reactivates operational competency & level records for the newly adopted version
- * - Idempotent: Does not create duplicate competency records if already adopted
- * - Preserves existing historical competencies used in past role profiles/campaigns
- */
 export async function adoptFrameworkVersion(
   tenantId: string,
   frameworkVersionId: string,
@@ -130,7 +117,6 @@ export async function adoptFrameworkVersion(
     throw new Error('Tenant ID is required.');
   }
 
-  // 1. Verify target framework is published
   const framework = await prisma.frameworkVersion.findUnique({
     where: { id: frameworkVersionId },
     include: {
@@ -156,9 +142,7 @@ export async function adoptFrameworkVersion(
     throw new Error('Cannot adopt unpublished framework: Framework must be in PUBLISHED status.');
   }
 
-  // 2. Perform atomic adoption transaction
   return prisma.$transaction(async (tx) => {
-    // 2a. Deactivate existing active adoption records
     await tx.tenantFrameworkAdoption.updateMany({
       where: {
         tenantId,
@@ -169,7 +153,6 @@ export async function adoptFrameworkVersion(
       },
     });
 
-    // 2b. Upsert new adoption record
     const adoption = await tx.tenantFrameworkAdoption.upsert({
       where: {
         tenantId_frameworkVersionId: {
@@ -189,7 +172,6 @@ export async function adoptFrameworkVersion(
       },
     });
 
-    // 2c. Deactivate operational canonical competencies belonging to other framework versions
     const allCanonicalCompetenciesOfOtherVersions = await tx.competency.findMany({
       where: {
         tenantId,
@@ -215,7 +197,6 @@ export async function adoptFrameworkVersion(
       });
     }
 
-    // 2d. Snapshot/Create or Reactivate competencies and levels for the adopted version
     const allFrameworkCompetencies = framework.categories.flatMap((cat) => cat.competencies);
 
     for (const fwComp of allFrameworkCompetencies) {
@@ -229,7 +210,6 @@ export async function adoptFrameworkVersion(
       });
 
       if (!tenantComp) {
-        // Create new operational snapshot
         tenantComp = await tx.competency.create({
           data: {
             tenantId,
@@ -242,7 +222,6 @@ export async function adoptFrameworkVersion(
           },
         });
 
-        // Copy levels exactly
         for (const lvl of fwComp.levels) {
           await tx.competencyLevel.create({
             data: {
@@ -254,7 +233,6 @@ export async function adoptFrameworkVersion(
           });
         }
       } else {
-        // Reactivate existing snapshot without overwriting historical modifications
         await tx.competency.update({
           where: { id: tenantComp.id },
           data: {

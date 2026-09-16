@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Look up attachment in DB and verify authorization
   const attachment = await prisma.evidenceAttachment.findFirst({
     where: { storagePath },
     include: {
@@ -49,12 +48,10 @@ export async function GET(request: NextRequest) {
 
   const assessment = attachment.assessmentItem.assessment;
 
-  // Tenant check
   if (assessment.campaign.tenantId !== user.tenantId) {
     return new NextResponse('Forbidden: Cross-tenant access denied', { status: 403 });
   }
 
-  // Role authorization
   if (user.role === UserRole.STAFF) {
     if (assessment.userId !== user.id) {
       return new NextResponse('Forbidden: You can only access your own evidence attachments', {
@@ -72,7 +69,6 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Forbidden: Access denied for role', { status: 403 });
   }
 
-  // Serve file from local storage fallback
   const bucket = process.env.SUPABASE_EVIDENCE_BUCKET || 'assessment-evidence';
   const fullPath = path.join(process.cwd(), '.storage', bucket, storagePath);
 

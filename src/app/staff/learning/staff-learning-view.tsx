@@ -23,7 +23,6 @@ export function StaffLearningView({ data }: Props) {
     }
   };
 
-  // Case 1: No role profile assigned
   if (!data.hasRoleProfile) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-2xs">
@@ -40,7 +39,6 @@ export function StaffLearningView({ data }: Props) {
     );
   }
 
-  // Case 2: No gaps needing recommendation (meets/exceeds target on all requirements)
   if (!data.hasGaps || data.recommendations.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-2xs">
@@ -57,7 +55,6 @@ export function StaffLearningView({ data }: Props) {
     );
   }
 
-  // Case 3: Recommendations based on verified gaps
   return (
     <div className="space-y-6">
       <div className="bg-linear-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-5">
@@ -85,7 +82,6 @@ export function StaffLearningView({ data }: Props) {
               key={item.competencyId}
               className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-2xs"
             >
-              {/* Header card for the competency requirement */}
               <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <div className="flex items-center space-x-2">
@@ -132,7 +128,6 @@ export function StaffLearningView({ data }: Props) {
                 </div>
               </div>
 
-              {/* Recommended Resources List */}
               <div className="p-5">
                 {item.resources.length === 0 ? (
                   <div className="text-center py-6 border border-dashed border-gray-200 rounded-lg bg-gray-50/30">

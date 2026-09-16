@@ -27,7 +27,6 @@ export default async function ManagerDirectReportDetailPage({
 
   return (
     <div className="space-y-8">
-      {/* Back link & Header */}
       <div>
         <Link
           href="/manager"
@@ -70,7 +69,6 @@ export default async function ManagerDirectReportDetailPage({
         </div>
       </div>
 
-      {/* Gap Analysis Summary if Role Profile Assigned */}
       {gapAnalysis && gapAnalysis.hasRoleProfile && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -129,7 +127,6 @@ export default async function ManagerDirectReportDetailPage({
         </div>
       )}
 
-      {/* Verified Competencies List */}
       <div className="space-y-6">
         <h2 className="text-lg font-bold text-gray-900">Verified Competencies Matrix</h2>
 

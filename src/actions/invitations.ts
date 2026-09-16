@@ -19,7 +19,6 @@ export async function acceptInvitationAction(formData: FormData) {
 
     const result = await acceptTenantAdminInvitation(parsed.data);
 
-    // Create session cookie automatically for newly registered admin
     await createSession(result.user.id);
 
     let redirectUrl = '/staff';

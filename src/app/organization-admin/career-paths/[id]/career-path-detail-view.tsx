@@ -48,7 +48,6 @@ export function CareerPathDetailView({ careerPath }: CareerPathDetailViewProps) 
 
   return (
     <div className="space-y-8">
-      {/* Header & Status */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center space-x-2 text-xs text-gray-500 mb-1">
@@ -116,7 +115,6 @@ export function CareerPathDetailView({ careerPath }: CareerPathDetailViewProps) 
         </div>
       )}
 
-      {/* Career Path Steps Timeline */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-2xs space-y-4">
         <h2 className="text-base font-bold text-gray-900">Progression Track</h2>
         <div className="flex flex-col md:flex-row items-stretch gap-4 pt-2">
@@ -158,7 +156,6 @@ export function CareerPathDetailView({ careerPath }: CareerPathDetailViewProps) 
         </div>
       </div>
 
-      {/* Adjacent Role Transitions & Deltas */}
       <div className="space-y-6">
         <div>
           <h2 className="text-lg font-bold text-gray-900">Role Transitions &amp; Skill Deltas</h2>
@@ -172,7 +169,6 @@ export function CareerPathDetailView({ careerPath }: CareerPathDetailViewProps) 
             key={`${trans.sourceRole.id}-${trans.targetRole.id}`}
             className="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden"
           >
-            {/* Transition Header */}
             <div className="bg-gray-50/80 px-6 py-4 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center space-x-2">
@@ -184,7 +180,6 @@ export function CareerPathDetailView({ careerPath }: CareerPathDetailViewProps) 
                   </h3>
                 </div>
 
-                {/* Summary Pills */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     +{trans.newSkillsCount} New Skills
@@ -199,7 +194,6 @@ export function CareerPathDetailView({ careerPath }: CareerPathDetailViewProps) 
               </div>
             </div>
 
-            {/* Delta Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm divide-y divide-gray-200">
                 <thead className="bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">

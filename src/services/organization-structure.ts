@@ -8,10 +8,6 @@ import {
 } from '@/lib/validation/organization-structure';
 import { logAuditEvent } from './audit';
 
-// -------------------------------------------------------
-// DEPARTMENT
-// -------------------------------------------------------
-
 export async function getDepartmentsForTenant(tenantId: string) {
   return prisma.department.findMany({
     where: { tenantId },
@@ -160,10 +156,6 @@ export async function toggleDepartmentActive(
   });
 }
 
-// -------------------------------------------------------
-// TEAM
-// -------------------------------------------------------
-
 export async function getTeamsForTenant(tenantId: string) {
   return prisma.team.findMany({
     where: { tenantId },
@@ -207,7 +199,6 @@ export async function createTeam(
   });
   if (existing) throw new Error(`A team named "${input.name}" already exists.`);
 
-  // Validate department belongs to tenant
   if (input.departmentId) {
     const dept = await prisma.department.findUnique({ where: { id: input.departmentId } });
     if (!dept || dept.tenantId !== tenantId) {
@@ -216,7 +207,6 @@ export async function createTeam(
     if (!dept.isActive) throw new Error('Selected department is inactive.');
   }
 
-  // Validate manager belongs to tenant and is a MANAGER
   if (input.managerId) {
     const manager = await prisma.user.findUnique({ where: { id: input.managerId } });
     if (!manager || manager.tenantId !== tenantId) {
@@ -357,10 +347,6 @@ export async function toggleTeamActive(
   });
 }
 
-// -------------------------------------------------------
-// MEMBERSHIPS
-// -------------------------------------------------------
-
 export async function addTeamMember(
   tenantId: string,
   teamId: string,
@@ -458,10 +444,6 @@ export async function getUserTeamMemberships(tenantId: string, userId: string) {
   });
 }
 
-/**
- * Replaces all team memberships for a user in one transaction.
- * Adds/removes as needed. Validates each teamId against the tenant.
- */
 export async function setUserTeamMemberships(
   tenantId: string,
   userId: string,
@@ -471,7 +453,6 @@ export async function setUserTeamMemberships(
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user || user.tenantId !== tenantId) throw new Error('User does not belong to this organization.');
 
-  // Validate all requested teams
   for (const teamId of teamIds) {
     const team = await prisma.team.findUnique({ where: { id: teamId } });
     if (!team || team.tenantId !== tenantId) {
@@ -483,12 +464,10 @@ export async function setUserTeamMemberships(
   }
 
   await prisma.$transaction(async (tx) => {
-    // Remove all current memberships for this user's teams in this tenant
     await tx.teamMembership.deleteMany({
       where: { userId, team: { tenantId } },
     });
 
-    // Add the new set
     if (teamIds.length > 0) {
       await tx.teamMembership.createMany({
         data: teamIds.map((teamId) => ({ teamId, userId })),

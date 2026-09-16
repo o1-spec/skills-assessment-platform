@@ -22,17 +22,6 @@ export interface SearchResultsGrouped {
   totalMatches: number;
 }
 
-/**
- * Searches across competencies, role profiles, and people within a single tenant boundary.
- *
- * Security & Isolation:
- * - tenantId is strictly required and sourced from authenticated session.
- * - Results are always filtered by tenantId.
- * - People results are role-bounded:
- *   - ORGANIZATION_ADMIN: searches all active tenant users
- *   - MANAGER: searches only direct reports
- *   - STAFF: receives 0 people results
- */
 export async function searchTenantEntities(
   tenantId: string,
   userRole: UserRole,
@@ -59,7 +48,6 @@ export async function searchTenantEntities(
 
   const limit = Math.min(Math.max(1, options?.limitPerCategory || 5), 20);
 
-  // 1. Search Competencies in tenant
   const competenciesPromise = prisma.competency.findMany({
     where: {
       tenantId,
@@ -76,7 +64,6 @@ export async function searchTenantEntities(
     orderBy: { name: 'asc' },
   });
 
-  // 2. Search Role Profiles in tenant (Org Admin sees drafts + published; others see published)
   const rolesPromise = prisma.roleProfile.findMany({
     where: {
       tenantId,
@@ -93,7 +80,6 @@ export async function searchTenantEntities(
     orderBy: { name: 'asc' },
   });
 
-  // 3. Search People in tenant with role-awareness
   let peoplePromise: Promise<
     Array<{ id: string; name: string; email: string; role: UserRole; isActive: boolean }>
   > = Promise.resolve([]);

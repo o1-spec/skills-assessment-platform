@@ -12,7 +12,6 @@ export default async function RoleProfilesListPage({ searchParams }: PageProps) 
   const user = await requireTenantUser();
   const { filter = 'active' } = await searchParams;
 
-  // Fetch all roles (including archived) to calculate accurate tab counts
   const allRoles = await getRoleProfilesForTenant(user.tenantId, { includeArchived: true });
 
   const activeCount = allRoles.filter((r) => !r.isArchived).length;
@@ -41,7 +40,6 @@ export default async function RoleProfilesListPage({ searchParams }: PageProps) 
 
   return (
     <div className="space-y-6">
-      {/* Header & Primary Action */}
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Role Profiles</h1>
@@ -62,7 +60,6 @@ export default async function RoleProfilesListPage({ searchParams }: PageProps) 
         </div>
       </div>
 
-      {/* Filter Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
           {tabs.map((tab) => {
@@ -91,7 +88,6 @@ export default async function RoleProfilesListPage({ searchParams }: PageProps) 
         </nav>
       </div>
 
-      {/* Role Profiles List */}
       {displayedRoles.length === 0 ? (
         <div className="text-center bg-white rounded-lg border border-dashed border-gray-300 p-12">
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

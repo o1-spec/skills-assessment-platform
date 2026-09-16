@@ -23,7 +23,6 @@ interface TemplateDetailViewProps {
 export function TemplateDetailView({ template }: TemplateDetailViewProps) {
   const router = useRouter();
 
-  // Modals & UI state
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [metaName, setMetaName] = useState(template.name);
   const [metaDescription, setMetaDescription] = useState(template.description || '');
@@ -41,17 +40,13 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Competency weight editing state
   const [editingWeightCompId, setEditingWeightCompId] = useState<string | null>(null);
   const [weightValue, setWeightValue] = useState<number>(100);
 
-  // Active tab inside template detail: 'competencies' | 'roles'
   const [activeTab, setActiveTab] = useState<'competencies' | 'roles'>('competencies');
 
-  // Included competency IDs
   const includedCompIds = new Set(template.competencies.map((c) => c.frameworkCompetencyId));
 
-  // Collect all available framework competencies in this framework version that are not yet added
   const allFrameworkCompetencies = template.frameworkVersion.categories.flatMap((cat) => {
     const direct = cat.competencies.map((c) => ({
       ...c,
@@ -70,7 +65,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
 
   const availableToAdd = allFrameworkCompetencies.filter((c) => !includedCompIds.has(c.id));
 
-  // Group included competencies
   const technicalIncluded = template.competencies.filter(
     (c) => c.frameworkCompetency.category.type === 'TECHNICAL'
   );
@@ -78,9 +72,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
     (c) => c.frameworkCompetency.category.type === 'BEHAVIORAL'
   );
 
-  // ----------------------------------------------------
-  // Handlers: Metadata
-  // ----------------------------------------------------
   const handleSaveMetadata = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -144,9 +135,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
     }
   };
 
-  // ----------------------------------------------------
-  // Handlers: Competencies
-  // ----------------------------------------------------
   const handleAddCompetency = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCompToAdd) return;
@@ -216,9 +204,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
     }
   };
 
-  // ----------------------------------------------------
-  // Handlers: Role Profile Builder
-  // ----------------------------------------------------
   const handleOpenAddRole = () => {
     setEditingRoleId(null);
     setRoleName('');
@@ -248,7 +233,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
       if (exists) {
         return prev.filter((r) => r.frameworkCompetencyId !== frameworkCompetencyId);
       } else {
-        // Default to level 1 or first available level
         const comp = template.competencies.find((c) => c.frameworkCompetencyId === frameworkCompetencyId);
         const firstLevel = comp?.frameworkCompetency.levels[0]?.level || 1;
         return [...prev, { frameworkCompetencyId, targetLevel: firstLevel }];
@@ -330,7 +314,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
-      {/* Back Link */}
       <div className="flex items-center space-x-4">
         <Link
           href="/platform-admin/templates"
@@ -343,7 +326,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         </Link>
       </div>
 
-      {/* Header Card */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-xs p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="space-y-2">
@@ -430,7 +412,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         </div>
       )}
 
-      {/* Navigation Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           <button
@@ -464,7 +445,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         </nav>
       </div>
 
-      {/* TAB 1: Competencies */}
       {activeTab === 'competencies' && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -501,7 +481,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Technical Section */}
               {technicalIncluded.length > 0 && (
                 <div className="bg-white rounded-lg border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-blue-50/70 px-4 py-2.5 border-b border-blue-100 flex items-center justify-between">
@@ -597,7 +576,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
                 </div>
               )}
 
-              {/* Behavioral Section */}
               {behavioralIncluded.length > 0 && (
                 <div className="bg-white rounded-lg border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-purple-50/70 px-4 py-2.5 border-b border-purple-100 flex items-center justify-between">
@@ -697,7 +675,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         </div>
       )}
 
-      {/* TAB 2: Predefined Role Profiles */}
       {activeTab === 'roles' && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -831,9 +808,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         </div>
       )}
 
-      {/* ---------------------------------------------------- */}
-      {/* MODAL: Edit Template Metadata */}
-      {/* ---------------------------------------------------- */}
       {isEditingMetadata && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl space-y-4">
@@ -885,9 +859,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         </div>
       )}
 
-      {/* ---------------------------------------------------- */}
-      {/* MODAL: Add Competency to Template */}
-      {/* ---------------------------------------------------- */}
       {isAddingCompetency && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl space-y-4">
@@ -937,9 +908,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
         </div>
       )}
 
-      {/* ---------------------------------------------------- */}
-      {/* MODAL: Role Template Builder (Add / Edit) */}
-      {/* ---------------------------------------------------- */}
       {roleModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl">
@@ -982,7 +950,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
                 </div>
               </div>
 
-              {/* Requirement Selection */}
               <div className="space-y-3 pt-2 border-t border-gray-100">
                 <div className="flex items-center justify-between">
                   <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -1024,7 +991,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
                             </div>
                           </label>
 
-                          {/* Level Selector */}
                           {isChecked && (
                             <div className="flex items-center space-x-2 shrink-0">
                               <span className="text-[11px] font-medium text-gray-600">Target Level:</span>
@@ -1045,7 +1011,6 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
                           )}
                         </div>
 
-                        {/* Show selected level description */}
                         {isChecked && (
                           <div className="mt-2 pl-6 pt-2 border-t border-indigo-100/60 text-[11px] text-gray-600">
                             <strong>Level {selectedReq.targetLevel} Expectation:</strong>{' '}

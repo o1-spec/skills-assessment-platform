@@ -35,7 +35,6 @@ export default async function OrganizationAdminReportsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Workforce Capability Reports</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -43,7 +42,6 @@ export default async function OrganizationAdminReportsPage() {
         </p>
       </div>
 
-      {/* SECTION 1: ON-DEMAND EXPORTS */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-6">
         <div>
           <h2 className="text-base font-bold text-gray-900">On-Demand Capability Reports</h2>
@@ -53,7 +51,6 @@ export default async function OrganizationAdminReportsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Organization Report Card */}
           <div className="rounded-lg border border-gray-100 bg-gray-50 p-5 space-y-3">
             <div className="flex items-start justify-between">
               <div>
@@ -88,7 +85,6 @@ export default async function OrganizationAdminReportsPage() {
             </div>
           </div>
 
-          {/* Team Reports Card */}
           <div className="rounded-lg border border-gray-100 bg-gray-50 p-5 space-y-3">
             <div className="flex items-start justify-between">
               <div>
@@ -145,7 +141,6 @@ export default async function OrganizationAdminReportsPage() {
         </div>
       </div>
 
-      {/* SECTION 2: SCHEDULED REPORTS */}
       <ScheduleListClient
         schedules={schedules}
         users={activeUsers}

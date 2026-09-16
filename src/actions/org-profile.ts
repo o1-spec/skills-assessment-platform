@@ -14,10 +14,6 @@ async function getActorContext() {
   };
 }
 
-/**
- * Updates the organization profile (name, logoUrl, industryTemplateId).
- * Template change is a preference-only update — no competency modification.
- */
 export async function updateOrganizationProfileAction(formData: FormData) {
   try {
     const user = await requireRole(UserRole.ORGANIZATION_ADMIN);
@@ -50,10 +46,6 @@ export async function updateOrganizationProfileAction(formData: FormData) {
   }
 }
 
-/**
- * Applies missing competencies from the tenant's selected industry template.
- * Explicit, separate action — does NOT fire automatically on template selection.
- */
 export async function applyIndustryTemplateCompetenciesAction(industryTemplateId: string) {
   try {
     const user = await requireRole(UserRole.ORGANIZATION_ADMIN);
