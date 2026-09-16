@@ -176,7 +176,7 @@ export default async function PlatformUsersPage() {
       {inactiveUsers.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="text-base font-semibold text-gray-900 text-gray-400">Inactive Accounts</h2>
+            <h2 className="text-base font-semibold text-gray-400">Inactive Accounts</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">

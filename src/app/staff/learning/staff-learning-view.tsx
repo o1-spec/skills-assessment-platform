@@ -60,7 +60,7 @@ export function StaffLearningView({ data }: Props) {
   // Case 3: Recommendations based on verified gaps
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-5">
+      <div className="bg-linear-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-5">
         <div className="flex items-start">
           <div className="p-2 bg-white rounded-lg shadow-2xs text-indigo-600 mr-4 shrink-0">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,20 +91,18 @@ export function StaffLearningView({ data }: Props) {
                   <div className="flex items-center space-x-2">
                     <h3 className="text-base font-bold text-gray-900">{item.competencyName}</h3>
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        item.competencyType === CompetencyType.TECHNICAL
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${item.competencyType === CompetencyType.TECHNICAL
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-purple-100 text-purple-800'
-                      }`}
+                        }`}
                     >
                       {item.competencyType}
                     </span>
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        isBelow
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${isBelow
                           ? 'bg-amber-100 text-amber-800'
                           : 'bg-gray-200 text-gray-800'
-                      }`}
+                        }`}
                     >
                       {isBelow ? 'Development Needed' : 'Not Assessed Yet'}
                     </span>
