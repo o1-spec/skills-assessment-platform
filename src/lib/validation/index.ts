@@ -19,3 +19,5 @@ export * from './industry-templates';
 export * from './users';
 export * from './evidence-attachment';
 export * from './career-paths';
+export * from './learning-resources';
+export * from './interview-questions';

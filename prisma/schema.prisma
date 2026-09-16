@@ -130,6 +130,22 @@ enum AuditAction {
   CAREER_PATH_CREATE
   CAREER_PATH_UPDATE
   CAREER_PATH_PUBLISH
+  LEARNING_RESOURCE_CREATE
+  LEARNING_RESOURCE_UPDATE
+  LEARNING_RESOURCE_ACTIVATE
+  LEARNING_RESOURCE_DEACTIVATE
+  LEARNING_RESOURCE_MAPPING_UPDATE
+  INTERVIEW_QUESTION_SET_CREATE
+  INTERVIEW_QUESTION_SET_UPDATE
+  INTERVIEW_QUESTION_SET_DELETE
+}
+
+enum LearningResourceType {
+  COURSE
+  ARTICLE
+  VIDEO
+  DOCUMENT
+  OTHER
 }
 
 // ------------------------------------------------------
@@ -180,6 +196,8 @@ model Tenant {
   teams              Team[]
   notifications      Notification[]
   auditLogs          AuditLog[]
+  learningResources  LearningResource[]
+  interviewQuestionSets InterviewQuestionSet[]
 
   @@index([planId])
 }
@@ -398,6 +416,7 @@ model User {
   managedTeams           Team[]                @relation("TeamManager")
   notifications          Notification[]        @relation("UserNotifications")
   auditLogs              AuditLog[]
+  interviewQuestionSets  InterviewQuestionSet[]
 
   @@index([tenantId])
   @@index([managerId])
@@ -427,6 +446,8 @@ model Competency {
   roleRequirements     RoleRequirement[]
   campaignCompetencies CampaignCompetency[]
   assessmentItems      AssessmentItem[]
+  learningResourceMappings CompetencyLearningResource[]
+  interviewQuestions       InterviewQuestion[]
 
   @@unique([tenantId, frameworkCompetencyId])
   @@index([tenantId])
@@ -466,6 +487,7 @@ model RoleProfile {
   users        User[]
   invitations  TenantInvitation[]
   careerPathSteps CareerPathStep[]
+  interviewQuestionSets InterviewQuestionSet[]
 
   @@index([tenantId])
 }
@@ -778,5 +800,84 @@ model AuditLog {
   @@index([actorId, createdAt])
   @@index([action, createdAt])
   @@index([resourceType, resourceId])
+}
+
+// ------------------------------------------------------
+// LEARNING RESOURCES
+// ------------------------------------------------------
+
+model LearningResource {
+  id           String               @id @default(cuid())
+  tenantId     String
+  title        String
+  description  String?
+  url          String
+  provider     String?
+  resourceType LearningResourceType @default(COURSE)
+  isActive     Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  tenant   Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  mappings CompetencyLearningResource[]
+
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+model CompetencyLearningResource {
+  id                 String   @id @default(cuid())
+  learningResourceId String
+  competencyId       String
+  targetLevel        Int?
+  createdAt          DateTime @default(now())
+
+  learningResource LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
+  competency       Competency       @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@index([learningResourceId])
+  @@index([competencyId])
+  @@index([competencyId, targetLevel])
+}
+
+// ------------------------------------------------------
+// INTERVIEW QUESTION SETS
+// ------------------------------------------------------
+
+model InterviewQuestionSet {
+  id            String   @id @default(cuid())
+  tenantId      String
+  roleProfileId String
+  title         String
+  createdById   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roleProfile RoleProfile         @relation(fields: [roleProfileId], references: [id], onDelete: Restrict)
+  createdBy   User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  questions   InterviewQuestion[]
+
+  @@index([tenantId])
+  @@index([roleProfileId])
+  @@index([createdById])
+}
+
+model InterviewQuestion {
+  id            String   @id @default(cuid())
+  questionSetId String
+  competencyId  String?
+  targetLevel   Int?
+  question      String
+  followUp      String?
+  orderIndex    Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  questionSet InterviewQuestionSet @relation(fields: [questionSetId], references: [id], onDelete: Cascade)
+  competency  Competency?          @relation(fields: [competencyId], references: [id], onDelete: SetNull)
+
+  @@index([questionSetId])
+  @@index([competencyId])
 }
 

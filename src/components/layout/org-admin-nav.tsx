@@ -42,6 +42,16 @@ const navItems: NavItem[] = [
     activePattern: (p) => p.startsWith('/organization-admin/career-paths'),
   },
   {
+    name: 'Learning Resources',
+    href: '/organization-admin/learning-resources',
+    activePattern: (p) => p.startsWith('/organization-admin/learning-resources'),
+  },
+  {
+    name: 'Interview Questions',
+    href: '/organization-admin/interview-questions',
+    activePattern: (p) => p.startsWith('/organization-admin/interview-questions'),
+  },
+  {
     name: 'Campaigns',
     href: '/organization-admin/campaigns',
     activePattern: (p) => p.startsWith('/organization-admin/campaigns'),

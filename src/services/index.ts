@@ -20,3 +20,5 @@ export * from './reports';
 export * from './notifications';
 export * from './audit';
 export * from './career-paths';
+export * from './learning-resources';
+export * from './interview-questions';

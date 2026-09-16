@@ -116,15 +116,30 @@ export function StaffNav() {
             Career Paths
           </Link>
 
-          <span
-            className="inline-flex items-center px-1 pt-3 pb-3 border-b-2 border-transparent text-sm font-medium text-gray-400 cursor-not-allowed select-none"
-            title="Learning recommendations coming in a future sprint"
+          <Link
+            href="/staff/learning"
+            className={`inline-flex items-center px-1 pt-3 pb-3 border-b-2 text-sm font-medium transition-colors ${
+              pathname.startsWith('/staff/learning')
+                ? 'border-blue-600 text-blue-600 font-semibold'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            aria-current={pathname.startsWith('/staff/learning') ? 'page' : undefined}
           >
+            <svg
+              className={`mr-2 h-4 w-4 ${pathname.startsWith('/staff/learning') ? 'text-blue-600' : 'text-gray-400'}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
             Learning
-            <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">
-              Soon
-            </span>
-          </span>
+          </Link>
         </nav>
       </div>
     </div>
