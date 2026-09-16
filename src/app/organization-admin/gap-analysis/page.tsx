@@ -238,6 +238,14 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                           >
                             Export CSV
                           </a>
+                          <a
+                            href={`/api/reports/gap-analysis/individual/${item.assessmentId}/excel`}
+                            download
+                            className="text-xs font-semibold text-emerald-600 hover:text-emerald-800"
+                            title="Export Excel (.xlsx)"
+                          >
+                            Export Excel
+                          </a>
                           <Link
                             href={`/organization-admin/gap-analysis/${item.assessmentId}`}
                             className="text-xs font-semibold text-blue-600 hover:text-blue-800"
@@ -331,16 +339,28 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                     {teamAnalysis.competencies.length} Competencies Evaluated
                   </span>
                 </div>
-                <a
-                  href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}`}
-                  download
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                >
-                  <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Export CSV
-                </a>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}`}
+                    download
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export CSV
+                  </a>
+                  <a
+                    href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}/excel`}
+                    download
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-emerald-300 shadow-sm text-xs font-medium rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export Excel (.xlsx)
+                  </a>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -463,16 +483,28 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                   {orgAnalysis.competencies.length} Required Competencies
                 </span>
               </div>
-              <a
-                href="/api/reports/gap-analysis/organization"
-                download
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Export CSV
-              </a>
+              <div className="flex items-center gap-2">
+                <a
+                  href="/api/reports/gap-analysis/organization"
+                  download
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export CSV
+                </a>
+                <a
+                  href="/api/reports/gap-analysis/organization/excel"
+                  download
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-emerald-300 shadow-sm text-xs font-medium rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export Excel (.xlsx)
+                </a>
+              </div>
             </div>
 
             {orgAnalysis.competencies.length === 0 ? (

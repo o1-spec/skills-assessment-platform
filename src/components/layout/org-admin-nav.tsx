@@ -62,6 +62,11 @@ const navItems: NavItem[] = [
     activePattern: (p) => p.startsWith('/organization-admin/gap-analysis'),
   },
   {
+    name: 'Reports',
+    href: '/organization-admin/reports',
+    activePattern: (p) => p.startsWith('/organization-admin/reports'),
+  },
+  {
     name: 'Audit Trail',
     href: '/organization-admin/audit',
     activePattern: (p) => p.startsWith('/organization-admin/audit'),

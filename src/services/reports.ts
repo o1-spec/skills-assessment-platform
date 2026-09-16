@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import Papa from 'papaparse';
+import ExcelJS from 'exceljs';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import {
   getOrganizationGapAnalysis,
@@ -179,10 +180,275 @@ export async function generateIndividualGapCsv(
   return { filename, csv };
 }
 
+export interface ExcelReportResult {
+  filename: string;
+  buffer: Buffer;
+}
+
+function styleExcelHeaderRow(row: ExcelJS.Row) {
+  row.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  row.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF1E3A8A' },
+  };
+  row.alignment = { vertical: 'middle', horizontal: 'left' };
+  row.height = 24;
+}
+
+function autoFitExcelColumns(worksheet: ExcelJS.Worksheet) {
+  worksheet.columns.forEach((column) => {
+    let maxLength = 14;
+    if (column.values) {
+      column.values.forEach((v) => {
+        const str = v !== undefined && v !== null ? v.toString() : '';
+        if (str.length > maxLength) {
+          maxLength = Math.min(str.length + 3, 50);
+        }
+      });
+    }
+    column.width = maxLength;
+  });
+}
+
+/**
+ * Generates Organization Gap Analysis Excel Workbook (.xlsx).
+ * Produces genuine Excel document with structured sheets, styling, and metadata.
+ */
+export async function generateOrganizationGapExcel(
+  tenantId: string
+): Promise<ExcelReportResult> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { name: true, slug: true },
+  });
+
+  const tenantName = tenant?.name || 'Organization';
+  const tenantSlug = tenant?.slug || 'organization';
+  const filename = sanitizeReportFilename(
+    `${tenantSlug}-organization-gap-${getFilenameDate()}`,
+    'xlsx'
+  );
+
+  const orgAnalysis = await getOrganizationGapAnalysis(tenantId);
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Skills Assessment Platform';
+  workbook.created = new Date();
+
+  const worksheet = workbook.addWorksheet('Organization Gap Analysis');
+
+  // Title block
+  const titleRow = worksheet.addRow([`${tenantName} — Organization Capability Gap Analysis`]);
+  titleRow.font = { bold: true, size: 14, color: { argb: 'FF111827' } };
+
+  const metaRow = worksheet.addRow([
+    `Generated: ${new Date().toISOString()} | Scope: Organization-wide`,
+  ]);
+  metaRow.font = { italic: true, size: 10, color: { argb: 'FF6B7280' } };
+
+  worksheet.addRow([]); // Blank spacer
+
+  // Table Headers
+  const headerRow = worksheet.addRow([
+    'Competency',
+    'Type',
+    'Employees Requiring Skill',
+    'Assessed',
+    'Below Target',
+    'Meets Target',
+    'Exceeds Target',
+    'Not Assessed',
+    'Average Verified Level',
+  ]);
+  styleExcelHeaderRow(headerRow);
+
+  for (const comp of orgAnalysis.competencies) {
+    worksheet.addRow([
+      comp.competencyName,
+      comp.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral',
+      comp.employeesRequiringCount,
+      comp.assessedCount,
+      comp.belowTargetCount,
+      comp.meetsTargetCount,
+      comp.exceedsTargetCount,
+      comp.notAssessedCount,
+      comp.averageVerifiedLevel !== null ? Number(comp.averageVerifiedLevel.toFixed(1)) : 'N/A',
+    ]);
+  }
+
+  autoFitExcelColumns(worksheet);
+
+  const uint8 = await workbook.xlsx.writeBuffer();
+  return {
+    filename,
+    buffer: Buffer.from(uint8),
+  };
+}
+
+/**
+ * Generates Team Gap Analysis Excel Workbook (.xlsx).
+ * Strictly scoped to tenant and team.
+ */
+export async function generateTeamGapExcel(
+  tenantId: string,
+  teamId: string
+): Promise<ExcelReportResult | null> {
+  const team = await prisma.team.findFirst({
+    where: { id: teamId, tenantId },
+    select: { id: true, name: true },
+  });
+
+  if (!team) return null;
+
+  const teamAnalysis = await getTeamGapAnalysis(teamId, tenantId);
+  if (!teamAnalysis) return null;
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { name: true },
+  });
+  const tenantName = tenant?.name || 'Organization';
+
+  const filename = sanitizeReportFilename(
+    `${team.name}-team-gap-${getFilenameDate()}`,
+    'xlsx'
+  );
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Skills Assessment Platform';
+  workbook.created = new Date();
+
+  const worksheet = workbook.addWorksheet('Team Gap Analysis');
+
+  const titleRow = worksheet.addRow([`${team.name} — Team Capability Gap Analysis`]);
+  titleRow.font = { bold: true, size: 14, color: { argb: 'FF111827' } };
+
+  const metaRow = worksheet.addRow([
+    `Organization: ${tenantName} | Generated: ${new Date().toISOString()} | Scope: Team (${team.name})`,
+  ]);
+  metaRow.font = { italic: true, size: 10, color: { argb: 'FF6B7280' } };
+
+  worksheet.addRow([]);
+
+  const headerRow = worksheet.addRow([
+    'Team',
+    'Competency',
+    'Type',
+    'Employees Requiring Skill',
+    'Assessed',
+    'Below Target',
+    'Meets Target',
+    'Exceeds Target',
+    'Not Assessed',
+    'Average Verified Level',
+  ]);
+  styleExcelHeaderRow(headerRow);
+
+  for (const comp of teamAnalysis.competencies) {
+    worksheet.addRow([
+      team.name,
+      comp.competencyName,
+      comp.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral',
+      comp.employeesRequiringCount,
+      comp.assessedCount,
+      comp.belowTargetCount,
+      comp.meetsTargetCount,
+      comp.exceedsTargetCount,
+      comp.notAssessedCount,
+      comp.averageVerifiedLevel !== null ? Number(comp.averageVerifiedLevel.toFixed(1)) : 'N/A',
+    ]);
+  }
+
+  autoFitExcelColumns(worksheet);
+
+  const uint8 = await workbook.xlsx.writeBuffer();
+  return {
+    filename,
+    buffer: Buffer.from(uint8),
+  };
+}
+
+/**
+ * Generates Individual Assessment Gap Excel Workbook (.xlsx).
+ * Strictly scoped to tenant and assessment.
+ */
+export async function generateIndividualGapExcel(
+  tenantId: string,
+  assessmentId: string
+): Promise<ExcelReportResult | null> {
+  const gapDetail = await getAssessmentGapAnalysis(assessmentId, tenantId);
+  if (!gapDetail) return null;
+
+  const filename = sanitizeReportFilename(
+    `${gapDetail.user.name}-${gapDetail.roleProfile.name}-gap-${getFilenameDate()}`,
+    'xlsx'
+  );
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Skills Assessment Platform';
+  workbook.created = new Date();
+
+  const worksheet = workbook.addWorksheet('Individual Gap Analysis');
+
+  const titleRow = worksheet.addRow([`${gapDetail.user.name} — Individual Capability Gap Analysis`]);
+  titleRow.font = { bold: true, size: 14, color: { argb: 'FF111827' } };
+
+  const metaRow = worksheet.addRow([
+    `Role Profile: ${gapDetail.roleProfile.name} | Campaign: ${gapDetail.campaign.name} | Generated: ${new Date().toISOString()}`,
+  ]);
+  metaRow.font = { italic: true, size: 10, color: { argb: 'FF6B7280' } };
+
+  worksheet.addRow([]);
+
+  const headerRow = worksheet.addRow([
+    'Employee',
+    'Email',
+    'Role Profile',
+    'Campaign',
+    'Competency',
+    'Type',
+    'Current Verified Level',
+    'Target Level',
+    'Gap',
+    'Status',
+  ]);
+  styleExcelHeaderRow(headerRow);
+
+  const allGaps = [...gapDetail.technicalGaps, ...gapDetail.behavioralGaps];
+  for (const item of allGaps) {
+    let statusLabel = 'Meets Target';
+    if (item.status === 'BELOW_TARGET') statusLabel = 'Below Target';
+    else if (item.status === 'EXCEEDS_TARGET') statusLabel = 'Exceeds Target';
+
+    worksheet.addRow([
+      gapDetail.user.name,
+      gapDetail.user.email,
+      gapDetail.roleProfile.name,
+      gapDetail.campaign.name,
+      item.competencyName,
+      item.competencyType === CompetencyType.TECHNICAL ? 'Technical' : 'Behavioral',
+      item.currentLevel,
+      item.targetLevel,
+      item.gap,
+      statusLabel,
+    ]);
+  }
+
+  autoFitExcelColumns(worksheet);
+
+  const uint8 = await workbook.xlsx.writeBuffer();
+  return {
+    filename,
+    buffer: Buffer.from(uint8),
+  };
+}
+
 export interface CampaignSummaryPdfResult {
   filename: string;
   pdfBuffer: Uint8Array;
 }
+
 
 /**
  * Generates a structured Assessment Campaign Summary PDF (OA-10).

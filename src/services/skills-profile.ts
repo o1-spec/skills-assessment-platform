@@ -1,6 +1,35 @@
 import { prisma } from '@/lib/db';
-import { AssessmentStatus, CompetencyType } from '@prisma/client';
+import { AssessmentStatus, CompetencyType, RoleProfileStatus } from '@prisma/client';
 import { calculateCapabilityGap, CapabilityGapStatus } from './gap-analysis';
+
+export interface CompetencyHistoryRecord {
+  assessmentId: string;
+  campaignName: string;
+  frameworkVersion: string | null;
+  completedAt: Date;
+  finalRating: number;
+}
+
+export interface CompetencyProgression {
+  competencyId: string;
+  competencyName: string;
+  competencyType: CompetencyType;
+  competencyDescription: string | null;
+  latestRating: number;
+  previousRating: number | null;
+  change: number;
+  historyCount: number;
+  isSingleAssessment: boolean;
+  history: CompetencyHistoryRecord[];
+}
+
+export interface StaffSkillsHistory {
+  userId: string;
+  hasHistory: boolean;
+  totalCompletedAssessments: number;
+  technical: CompetencyProgression[];
+  behavioral: CompetencyProgression[];
+}
 
 export interface VerifiedCompetencyRating {
   competencyId: string;
@@ -482,3 +511,323 @@ export async function getStaffPersonalGapAnalysis(
     },
   };
 }
+
+/**
+ * Retrieves chronological historical progression and trends over time for a staff member.
+ *
+ * Rules:
+ * 1. COMPLETED assessments only.
+ * 2. Uses AssessmentItem.finalRating only (never selfRating, never draft/unverified).
+ * 3. Matched strictly by competencyId.
+ * 4. Chronological order by completedAt (or updatedAt).
+ * 5. Distinct technical vs behavioral groupings.
+ * 6. Handles single completed assessment record with clear indicator (isSingleAssessment).
+ * 7. Handles no completed history gracefully.
+ */
+export async function getStaffSkillsHistory(
+  userId: string,
+  tenantId: string
+): Promise<StaffSkillsHistory> {
+  if (!userId || !tenantId) {
+    return {
+      userId: userId || '',
+      hasHistory: false,
+      totalCompletedAssessments: 0,
+      technical: [],
+      behavioral: [],
+    };
+  }
+
+  // Find all COMPLETED assessments for this user in this tenant
+  const completedAssessments = await prisma.assessment.findMany({
+    where: {
+      userId,
+      status: AssessmentStatus.COMPLETED,
+      campaign: {
+        tenantId,
+      },
+    },
+    include: {
+      campaign: {
+        include: {
+          frameworkVersion: {
+            select: { version: true },
+          },
+        },
+      },
+      items: {
+        where: {
+          finalRating: { not: null },
+        },
+        include: {
+          competency: true,
+        },
+      },
+    },
+    orderBy: [
+      { completedAt: 'asc' },
+      { updatedAt: 'asc' },
+    ],
+  });
+
+  if (completedAssessments.length === 0) {
+    return {
+      userId,
+      hasHistory: false,
+      totalCompletedAssessments: 0,
+      technical: [],
+      behavioral: [],
+    };
+  }
+
+  // Map competencyId -> records
+  const competencyMap = new Map<
+    string,
+    {
+      competency: {
+        id: string;
+        name: string;
+        type: CompetencyType;
+        description: string | null;
+      };
+      records: CompetencyHistoryRecord[];
+    }
+  >();
+
+  for (const assessment of completedAssessments) {
+    const completedAt = assessment.completedAt ?? assessment.updatedAt;
+    const campaignName = assessment.campaign.name;
+    const frameworkVersion = assessment.campaign.frameworkVersion?.version ?? null;
+
+    for (const item of assessment.items) {
+      if (item.finalRating === null || item.finalRating === undefined) {
+        continue;
+      }
+
+      let entry = competencyMap.get(item.competencyId);
+      if (!entry) {
+        entry = {
+          competency: {
+            id: item.competency.id,
+            name: item.competency.name,
+            type: item.competency.type,
+            description: item.competency.description,
+          },
+          records: [],
+        };
+        competencyMap.set(item.competencyId, entry);
+      }
+
+      entry.records.push({
+        assessmentId: assessment.id,
+        campaignName,
+        frameworkVersion,
+        completedAt,
+        finalRating: item.finalRating,
+      });
+    }
+  }
+
+  const technical: CompetencyProgression[] = [];
+  const behavioral: CompetencyProgression[] = [];
+
+  for (const entry of competencyMap.values()) {
+    // Sort records chronologically ascending
+    const sortedRecords = [...entry.records].sort(
+      (a, b) => a.completedAt.getTime() - b.completedAt.getTime()
+    );
+
+    if (sortedRecords.length === 0) continue;
+
+    const latestRecord = sortedRecords[sortedRecords.length - 1];
+    const previousRecord = sortedRecords.length > 1 ? sortedRecords[sortedRecords.length - 2] : null;
+
+    const latestRating = latestRecord.finalRating;
+    const previousRating = previousRecord ? previousRecord.finalRating : null;
+    const change = previousRating !== null ? latestRating - previousRating : 0;
+    const isSingleAssessment = sortedRecords.length === 1;
+
+    const progressionItem: CompetencyProgression = {
+      competencyId: entry.competency.id,
+      competencyName: entry.competency.name,
+      competencyType: entry.competency.type,
+      competencyDescription: entry.competency.description,
+      latestRating,
+      previousRating,
+      change,
+      historyCount: sortedRecords.length,
+      isSingleAssessment,
+      history: sortedRecords,
+    };
+
+    if (entry.competency.type === CompetencyType.TECHNICAL) {
+      technical.push(progressionItem);
+    } else {
+      behavioral.push(progressionItem);
+    }
+  }
+
+  technical.sort((a, b) => a.competencyName.localeCompare(b.competencyName));
+  behavioral.sort((a, b) => a.competencyName.localeCompare(b.competencyName));
+
+  return {
+    userId,
+    hasHistory: technical.length > 0 || behavioral.length > 0,
+    totalCompletedAssessments: completedAssessments.length,
+    technical,
+    behavioral,
+  };
+}
+
+/**
+ * Builds the aspirational gap-to-target analysis for a staff member against a target role profile.
+ *
+ * Rules:
+ * 1. Target role must belong to same tenant.
+ * 2. Target role must be PUBLISHED.
+ * 3. Target role must NOT be archived.
+ * 4. Strictly temporary analysis: NEVER mutates user.roleProfileId or role assignments.
+ * 5. Reuses latest completed verified ratings (getLatestVerifiedRatingsForUser).
+ * 6. Competencies on aspirational role not in current role are assessed if historical rating exists,
+ *    otherwise NOT_ASSESSED.
+ */
+export async function getStaffAspirationalGapAnalysis(
+  userId: string,
+  tenantId: string,
+  aspirationalRoleId: string
+): Promise<StaffPersonalGapAnalysis | null> {
+  if (!userId || !tenantId || !aspirationalRoleId) return null;
+
+  // 1. Verify user exists and belongs to tenant
+  const user = await prisma.user.findFirst({
+    where: { id: userId, tenantId },
+    select: { id: true, name: true, email: true, roleProfileId: true },
+  });
+  if (!user) return null;
+
+  // 2. Verify target role profile: same tenant, PUBLISHED, NOT archived
+  const aspirationalRole = await prisma.roleProfile.findFirst({
+    where: {
+      id: aspirationalRoleId,
+      tenantId,
+      status: RoleProfileStatus.PUBLISHED,
+      isArchived: false,
+    },
+    include: {
+      requirements: {
+        include: {
+          competency: {
+            include: {
+              levels: {
+                orderBy: { level: 'asc' },
+              },
+            },
+          },
+        },
+        orderBy: [
+          { competency: { type: 'asc' } },
+          { competency: { name: 'asc' } },
+        ],
+      },
+    },
+  });
+
+  if (!aspirationalRole) return null;
+
+  // 3. User's latest verified ratings across completed assessments
+  const ratingsMap = await getLatestVerifiedRatingsForUser(userId, tenantId);
+
+  const requirementsList: PersonalGapRequirementItem[] = [];
+  let assessedCount = 0;
+  let belowTargetCount = 0;
+  let meetsTargetCount = 0;
+  let exceedsTargetCount = 0;
+  let notAssessedCount = 0;
+  let totalGapPoints = 0;
+
+  for (const req of aspirationalRole.requirements) {
+    const ratingInfo = ratingsMap.get(req.competencyId);
+    const verifiedRating = ratingInfo?.finalRating ?? null;
+    const calc = calculateCapabilityGap(verifiedRating, req.targetLevel);
+
+    if (calc.status === 'NOT_ASSESSED') {
+      notAssessedCount++;
+    } else {
+      assessedCount++;
+      if (calc.status === 'BELOW_TARGET') {
+        belowTargetCount++;
+        totalGapPoints += calc.gap ?? 0;
+      } else if (calc.status === 'MEETS_TARGET') {
+        meetsTargetCount++;
+      } else if (calc.status === 'EXCEEDS_TARGET') {
+        exceedsTargetCount++;
+      }
+    }
+
+    const currentLevelRecord = verifiedRating !== null
+      ? req.competency.levels.find((l) => l.level === verifiedRating)
+      : null;
+    const targetLevelRecord = req.competency.levels.find((l) => l.level === req.targetLevel);
+
+    requirementsList.push({
+      competencyId: req.competencyId,
+      competencyName: req.competency.name,
+      competencyType: req.competency.type,
+      currentLevel: verifiedRating,
+      currentLevelDescription: currentLevelRecord?.description ?? null,
+      targetLevel: req.targetLevel,
+      targetLevelDescription: targetLevelRecord?.description ?? null,
+      gap: calc.gap,
+      rawGap: calc.rawGap,
+      status: calc.status,
+    });
+  }
+
+  // NOTE: user.roleProfileId remains untouched
+  return {
+    userId: user.id,
+    userName: user.name,
+    userEmail: user.email,
+    hasRoleProfile: true,
+    roleProfile: {
+      id: aspirationalRole.id,
+      name: aspirationalRole.name,
+      description: aspirationalRole.description,
+    },
+    requirements: requirementsList,
+    metrics: {
+      totalRequirements: aspirationalRole.requirements.length,
+      assessedRequirementsCount: assessedCount,
+      belowTargetCount,
+      meetsTargetCount,
+      exceedsTargetCount,
+      notAssessedCount,
+      totalGapPoints,
+    },
+  };
+}
+
+/**
+ * Returns all published, unarchived role profiles in the tenant that can be selected as aspirational roles.
+ */
+export async function getAspirationalTargetRolesForStaff(
+  tenantId: string
+): Promise<Array<{ id: string; name: string; description: string | null }>> {
+  if (!tenantId) return [];
+  return prisma.roleProfile.findMany({
+    where: {
+      tenantId,
+      status: RoleProfileStatus.PUBLISHED,
+      isArchived: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+    },
+    orderBy: {
+      name: 'asc',
+    },
+  });
+}
+

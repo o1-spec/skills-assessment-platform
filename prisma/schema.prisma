@@ -138,7 +138,34 @@ enum AuditAction {
   INTERVIEW_QUESTION_SET_CREATE
   INTERVIEW_QUESTION_SET_UPDATE
   INTERVIEW_QUESTION_SET_DELETE
+  REPORT_SCHEDULE_CREATE
+  REPORT_SCHEDULE_UPDATE
+  REPORT_SCHEDULE_ACTIVATE
+  REPORT_SCHEDULE_DEACTIVATE
+  REPORT_SCHEDULE_RUN
 }
+
+enum ReportType {
+  ORGANIZATION_GAP
+  TEAM_GAP
+}
+
+enum ScheduleFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ScheduleScopeType {
+  ORGANIZATION
+  TEAM
+}
+
+enum ScheduleRunStatus {
+  SUCCESS
+  FAILED
+}
+
 
 enum LearningResourceType {
   COURSE
@@ -198,6 +225,7 @@ model Tenant {
   auditLogs          AuditLog[]
   learningResources  LearningResource[]
   interviewQuestionSets InterviewQuestionSet[]
+  reportSchedules    ReportSchedule[]
 
   @@index([planId])
 }
@@ -417,6 +445,8 @@ model User {
   notifications          Notification[]        @relation("UserNotifications")
   auditLogs              AuditLog[]
   interviewQuestionSets  InterviewQuestionSet[]
+  createdReportSchedules ReportSchedule[]      @relation("ReportScheduleCreator")
+  reportScheduleRecipients ReportScheduleRecipient[]
 
   @@index([tenantId])
   @@index([managerId])
@@ -880,4 +910,48 @@ model InterviewQuestion {
   @@index([questionSetId])
   @@index([competencyId])
 }
+
+// ------------------------------------------------------
+// SCHEDULED CAPABILITY REPORTS
+// ------------------------------------------------------
+
+model ReportSchedule {
+  id             String            @id @default(cuid())
+  tenantId       String
+  createdById    String
+  name           String
+  reportType     ReportType
+  scopeType      ScheduleScopeType
+  scopeId        String?
+  frequency      ScheduleFrequency
+  nextRunAt      DateTime
+  lastRunAt      DateTime?
+  lastRunStatus  ScheduleRunStatus?
+  lastRunError   String?
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  tenant         Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy      User              @relation("ReportScheduleCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  recipients     ReportScheduleRecipient[]
+
+  @@index([tenantId])
+  @@index([nextRunAt, isActive])
+  @@index([createdById])
+}
+
+model ReportScheduleRecipient {
+  id         String         @id @default(cuid())
+  scheduleId String
+  userId     String
+  createdAt  DateTime       @default(now())
+
+  schedule   ReportSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleId, userId])
+  @@index([userId])
+}
+
 

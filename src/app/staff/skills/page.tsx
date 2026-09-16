@@ -1,17 +1,28 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
-import { getStaffSkillsProfile } from '@/services';
+import { getStaffSkillsProfile, getStaffSkillsHistory, CompetencyProgression } from '@/services';
 import { UserRole, CompetencyType } from '@prisma/client';
 import { formatDate } from '@/lib/format';
 
-export default async function StaffSkillsPage() {
+interface StaffSkillsPageProps {
+  searchParams: Promise<{ tab?: string }>;
+}
+
+export default async function StaffSkillsPage({ searchParams }: StaffSkillsPageProps) {
   const user = await requireTenantUser();
 
   if (user.role !== UserRole.STAFF) {
     redirect(getRoleDashboardPath(user.role));
   }
 
-  const profile = await getStaffSkillsProfile(user.id, user.tenantId);
+  const { tab = 'current' } = await searchParams;
+  const activeTab = tab === 'history' ? 'history' : 'current';
+
+  const [profile, history] = await Promise.all([
+    getStaffSkillsProfile(user.id, user.tenantId),
+    getStaffSkillsHistory(user.id, user.tenantId),
+  ]);
 
   if (!profile) {
     return (
@@ -22,8 +33,8 @@ export default async function StaffSkillsPage() {
   }
 
   const totalRequired =
-    (profile.technical.filter((c) => c.isRequiredByRole).length) +
-    (profile.behavioral.filter((c) => c.isRequiredByRole).length);
+    profile.technical.filter((c) => c.isRequiredByRole).length +
+    profile.behavioral.filter((c) => c.isRequiredByRole).length;
 
   return (
     <div className="space-y-8">
@@ -61,7 +72,7 @@ export default async function StaffSkillsPage() {
         </div>
 
         {/* High-level stats */}
-        <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
             <div className="text-xs font-medium text-gray-500 uppercase">Verified Competencies</div>
             <div className="mt-1 text-2xl font-bold text-gray-900">
@@ -72,7 +83,13 @@ export default async function StaffSkillsPage() {
             <div className="text-xs font-medium text-gray-500 uppercase">Role Requirements</div>
             <div className="mt-1 text-2xl font-bold text-gray-900">{totalRequired}</div>
           </div>
-          <div className="col-span-2 sm:col-span-1">
+          <div>
+            <div className="text-xs font-medium text-gray-500 uppercase">Completed Evaluations</div>
+            <div className="mt-1 text-2xl font-bold text-gray-900">
+              {history.totalCompletedAssessments}
+            </div>
+          </div>
+          <div>
             <div className="text-xs font-medium text-gray-500 uppercase">Profile Status</div>
             <div className="mt-1 text-sm font-medium text-emerald-600 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -82,19 +99,84 @@ export default async function StaffSkillsPage() {
         </div>
       </div>
 
-      {/* Technical Competencies Section */}
-      <CompetencySection
-        title="Technical Competencies"
-        type={CompetencyType.TECHNICAL}
-        items={profile.technical}
-      />
+      {/* Tabs: Current Skills vs Historical Progression */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Profile Tabs">
+          <Link
+            href="/staff/skills?tab=current"
+            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'current'
+                ? 'border-blue-600 text-blue-600 font-semibold'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Current Skills Profile
+          </Link>
+          <Link
+            href="/staff/skills?tab=history"
+            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'history'
+                ? 'border-blue-600 text-blue-600 font-semibold'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Historical Progression & Trends
+          </Link>
+        </nav>
+      </div>
 
-      {/* Behavioral Competencies Section */}
-      <CompetencySection
-        title="Behavioral Competencies"
-        type={CompetencyType.BEHAVIORAL}
-        items={profile.behavioral}
-      />
+      {/* TAB 1: CURRENT SKILLS */}
+      {activeTab === 'current' && (
+        <div className="space-y-8">
+          <CompetencySection
+            title="Technical Competencies"
+            type={CompetencyType.TECHNICAL}
+            items={profile.technical}
+          />
+          <CompetencySection
+            title="Behavioral Competencies"
+            type={CompetencyType.BEHAVIORAL}
+            items={profile.behavioral}
+          />
+        </div>
+      )}
+
+      {/* TAB 2: HISTORICAL PROGRESSION & TRENDS */}
+      {activeTab === 'history' && (
+        <div className="space-y-8">
+          {!history.hasHistory ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center max-w-md mx-auto">
+              <div className="h-12 w-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-gray-900">No Assessment History Available</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                You do not have any completed assessments yet. Once a manager corroborates and completes an assessment campaign, your verified skill progression over time will be recorded here.
+              </p>
+            </div>
+          ) : (
+            <>
+              <HistoricalSection
+                title="Technical Skill Progression"
+                type={CompetencyType.TECHNICAL}
+                items={history.technical}
+              />
+              <HistoricalSection
+                title="Behavioral Skill Progression"
+                type={CompetencyType.BEHAVIORAL}
+                items={history.behavioral}
+              />
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -141,7 +223,6 @@ function CompetencySection({
                     )}
                   </div>
 
-                  {/* Level Badge */}
                   <div>
                     {comp.isAssessed && comp.verifiedLevel !== null ? (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
@@ -161,7 +242,6 @@ function CompetencySection({
                   </p>
                 )}
 
-                {/* Level Ladder Visualizer */}
                 <div className="mt-4">
                   <div className="flex items-center justify-between text-[11px] text-gray-400 mb-1">
                     <span>Capability Ladder</span>
@@ -190,7 +270,6 @@ function CompetencySection({
                   </div>
                 </div>
 
-                {/* Verified Descriptor or Unassessed State */}
                 <div className="mt-4 pt-3 border-t border-gray-100">
                   {comp.isAssessed && comp.verifiedLevelDescription ? (
                     <div className="text-xs text-gray-700 bg-gray-50 p-2.5 rounded border border-gray-100">
@@ -211,13 +290,129 @@ function CompetencySection({
                 </div>
               </div>
 
-              {/* Card Footer: Source / Date */}
               {comp.verifiedAt && (
                 <div className="mt-4 pt-2 text-[11px] text-gray-400 flex items-center justify-between">
                   <span>Corroborated</span>
                   <span>{formatDate(comp.verifiedAt)}</span>
                 </div>
               )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function HistoricalSection({
+  title,
+  type,
+  items,
+}: {
+  title: string;
+  type: CompetencyType;
+  items: CompetencyProgression[];
+}) {
+  return (
+    <section className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <span>{title}</span>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+            {items.length}
+          </span>
+        </h2>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="bg-white p-6 rounded-lg border border-gray-200 text-center text-sm text-gray-500">
+          No historical {type === CompetencyType.TECHNICAL ? 'technical' : 'behavioral'} assessments recorded yet.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map((comp) => (
+            <div
+              key={comp.competencyId}
+              className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">{comp.competencyName}</h3>
+                  {comp.competencyDescription && (
+                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                      {comp.competencyDescription}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {comp.isSingleAssessment ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500 italic">
+                        Only one completed assessment is available.
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                        Level {comp.latestRating}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 font-medium">
+                        Level {comp.previousRating} → Level {comp.latestRating}
+                      </span>
+                      {comp.change > 0 && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                          +{comp.change}
+                        </span>
+                      )}
+                      {comp.change === 0 && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                          No change
+                        </span>
+                      )}
+                      {comp.change < 0 && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                          {comp.change}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Chronological Evaluations Timeline */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-xs">
+                  <thead className="bg-gray-50 text-gray-500 font-medium uppercase">
+                    <tr>
+                      <th scope="col" className="px-4 py-2 text-left">Date</th>
+                      <th scope="col" className="px-4 py-2 text-left">Assessment Campaign</th>
+                      <th scope="col" className="px-4 py-2 text-left">Framework</th>
+                      <th scope="col" className="px-4 py-2 text-center">Assessed Level</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white">
+                    {comp.history.map((record, idx) => (
+                      <tr key={`${record.assessmentId}-${idx}`} className="hover:bg-gray-50">
+                        <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">
+                          {formatDate(record.completedAt)}
+                        </td>
+                        <td className="px-4 py-2.5 font-medium text-gray-900">
+                          {record.campaignName}
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-500">
+                          {record.frameworkVersion ? `v${record.frameworkVersion}` : 'Default'}
+                        </td>
+                        <td className="px-4 py-2.5 text-center">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700">
+                            Level {record.finalRating}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ))}
         </div>

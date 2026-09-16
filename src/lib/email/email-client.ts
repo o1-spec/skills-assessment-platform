@@ -2,11 +2,18 @@ if (typeof window !== 'undefined') {
   throw new Error('This module can only be executed on the server.');
 }
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer | Uint8Array | string;
+  contentType?: string;
+}
+
 export interface SendEmailOptions {
   to: string;
   subject: string;
   text?: string;
   html?: string;
+  attachments?: EmailAttachment[];
 }
 
 export interface EmailSendResult {
@@ -96,19 +103,32 @@ class ResendEmailClient implements EmailClient {
 
   async sendEmail(options: SendEmailOptions): Promise<EmailSendResult> {
     try {
+      const payload: Record<string, unknown> = {
+        from: this.from,
+        to: [options.to],
+        subject: options.subject,
+        text: options.text,
+        html: options.html,
+      };
+
+      if (options.attachments && options.attachments.length > 0) {
+        payload.attachments = options.attachments.map((att) => ({
+          filename: att.filename,
+          content: Buffer.isBuffer(att.content)
+            ? att.content.toString('base64')
+            : typeof att.content === 'string'
+            ? Buffer.from(att.content).toString('base64')
+            : Buffer.from(att.content).toString('base64'),
+        }));
+      }
+
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          from: this.from,
-          to: [options.to],
-          subject: options.subject,
-          text: options.text,
-          html: options.html,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -163,7 +183,7 @@ class FallbackDevEmailClient implements EmailClient {
     }
 
     console.info(
-      `[NotificationEngine:Email:Dev] Email to <${options.to}> skipped (no RESEND_API_KEY configured): "${options.subject}"`
+      `[NotificationEngine:Email:Dev] Email to <${options.to}> skipped (no RESEND_API_KEY configured): "${options.subject}" (attachments: ${options.attachments?.length ?? 0})`
     );
     return {
       success: true,

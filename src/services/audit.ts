@@ -57,7 +57,8 @@ export function isSensitiveKey(key: string): boolean {
     normalized === 'tenantid' ||
     normalized === 'actorid' ||
     normalized === 'userid' ||
-    normalized === 'careerpathid'
+    normalized === 'careerpathid' ||
+    normalized === 'scheduleid'
   ) {
     return false;
   }
