@@ -9,6 +9,7 @@ import {
   TenantStatus,
   UserRole,
 } from '@prisma/client';
+import { getTenantNotificationSettings } from './tenant-notification-settings';
 
 export interface CreateNotificationInput {
   tenantId?: string | null;
@@ -138,6 +139,20 @@ export async function createAndDispatchNotification(
 
   // 4. Attempt email delivery safely without throwing or rolling back
   try {
+    if (tenantId) {
+      const tenantSettings = await getTenantNotificationSettings(tenantId);
+      if (!tenantSettings.emailEnabled) {
+        notification = await prisma.notification.update({
+          where: { id: notification.id },
+          data: {
+            emailStatus: NotificationEmailStatus.SKIPPED,
+            emailError: 'Email notifications disabled by organization settings',
+          },
+        });
+        return notification;
+      }
+    }
+
     const emailSubject = input.emailSubject || input.title;
     const emailText = input.emailText || `${input.title}\n\n${input.message}${safeHref ? `\n\nLink: ${safeHref}` : ''}`;
     const emailHtml = input.emailHtml || `
@@ -561,12 +576,18 @@ export async function runCorroborationReminderNotifications(
     const submissionDate = assessment.submittedAt || assessment.updatedAt;
     const businessDaysPassed = calculateBusinessDaysPassed(submissionDate, now);
 
-    if (businessDaysPassed < threshold) {
+    let effectiveThreshold = threshold;
+    if (!options?.thresholdBusinessDays) {
+      const tenantSettings = await getTenantNotificationSettings(assessment.campaign.tenantId);
+      effectiveThreshold = tenantSettings.corroborationOverdueBusinessDays;
+    }
+
+    if (businessDaysPassed < effectiveThreshold) {
       continue;
     }
 
     result.processed++;
-    const dedupeKey = `reminder:overdue-corrob:${assessment.id}:threshold:${threshold}`;
+    const dedupeKey = `reminder:overdue-corrob:${assessment.id}:threshold:${effectiveThreshold}`;
 
     const existing = await prisma.notification.findUnique({
       where: { dedupeKey },

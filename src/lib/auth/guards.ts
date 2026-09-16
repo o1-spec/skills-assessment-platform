@@ -31,7 +31,12 @@ export async function requireRole(allowedRoles: UserRole | UserRole[]): Promise<
   const user = await requireUser();
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
-  if (!roles.includes(user.role)) {
+  const isImpersonatingOrgAdmin =
+    Boolean(user.impersonation?.isImpersonating) &&
+    (user.role === UserRole.SUPPORT || user.role === UserRole.PLATFORM_ADMIN) &&
+    roles.includes(UserRole.ORGANIZATION_ADMIN);
+
+  if (!roles.includes(user.role) && !isImpersonatingOrgAdmin) {
     redirect(getRoleDashboardPath(user.role));
   }
 

@@ -150,6 +150,12 @@ enum AuditAction {
   PLATFORM_USER_REACTIVATE
   ORGANIZATION_PROFILE_UPDATE
   ORGANIZATION_TEMPLATE_CHANGE
+  SUPPORT_IMPERSONATION_START
+  SUPPORT_IMPERSONATION_END
+  NOTIFICATION_TEMPLATE_UPDATE
+  NOTIFICATION_TEMPLATE_RESET
+  TENANT_NOTIFICATION_SETTINGS_UPDATE
+  INTEGRATION_CONFIG_UPDATE
 }
 
 enum ReportType {
@@ -218,8 +224,8 @@ model Tenant {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
-  plan                  SubscriptionPlan?         @relation(fields: [planId], references: [id], onDelete: SetNull)
-  industryTemplate      IndustryTemplate?         @relation(fields: [industryTemplateId], references: [id], onDelete: SetNull)
+  plan                  SubscriptionPlan?           @relation(fields: [planId], references: [id], onDelete: SetNull)
+  industryTemplate      IndustryTemplate?           @relation(fields: [industryTemplateId], references: [id], onDelete: SetNull)
   users                 User[]
   competencies          Competency[]
   roleProfiles          RoleProfile[]
@@ -234,6 +240,7 @@ model Tenant {
   learningResources     LearningResource[]
   interviewQuestionSets InterviewQuestionSet[]
   reportSchedules       ReportSchedule[]
+  notificationSettings  TenantNotificationSettings?
 
   @@index([planId])
   @@index([industryTemplateId])
@@ -986,4 +993,71 @@ model PlatformInvitation {
   @@index([email])
   @@index([expiresAt])
   @@index([createdById])
+}
+
+// ------------------------------------------------------
+// OPTIONAL PLATFORM ENHANCEMENTS (SHOULD + COULD)
+// ------------------------------------------------------
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
+
+enum IntegrationProviderType {
+  SSO
+  HRIS
+  LMS
+}
+
+// ------------------------------------------------------
+// NOTIFICATION TEMPLATES (PLATFORM-WIDE)
+// ------------------------------------------------------
+
+model NotificationTemplate {
+  id        String              @id @default(cuid())
+  type      NotificationType
+  channel   NotificationChannel
+  subject   String?
+  title     String?
+  body      String
+  isActive  Boolean             @default(true)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@unique([type, channel])
+  @@index([type])
+}
+
+// ------------------------------------------------------
+// TENANT NOTIFICATION SETTINGS (PER-TENANT PREFERENCES)
+// ------------------------------------------------------
+
+model TenantNotificationSettings {
+  id                               String   @id @default(cuid())
+  tenantId                         String   @unique
+  assessmentReminderDays           String   @default("3,1")
+  corroborationOverdueBusinessDays Int      @default(5)
+  emailEnabled                     Boolean  @default(true)
+  inAppEnabled                     Boolean  @default(true)
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------------------------------------
+// INTEGRATION CONFIGURATION REGISTRY
+// ------------------------------------------------------
+
+model IntegrationConfiguration {
+  id                    String                  @id @default(cuid())
+  providerType          IntegrationProviderType
+  providerName          String
+  isEnabled             Boolean                 @default(false)
+  configurationMetadata Json?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  @@unique([providerType, providerName])
 }

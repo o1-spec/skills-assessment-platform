@@ -3,6 +3,13 @@ import { prisma } from '@/lib/db';
 import { createSessionToken, setSessionCookie, deleteSessionCookie, getSessionToken, verifySessionToken } from './session';
 import type { UserRole, TenantStatus } from '@prisma/client';
 
+export interface ImpersonationState {
+  isImpersonating: boolean;
+  impersonatedTenantId: string;
+  impersonatedTenantName: string;
+  reason: string | null;
+}
+
 export interface AuthenticatedUser {
   id: string;
   name: string;
@@ -19,6 +26,7 @@ export interface AuthenticatedUser {
     slug: string;
     status: TenantStatus;
   } | null;
+  impersonation?: ImpersonationState | null;
 }
 
 export async function authenticateUser(email: string, password: string): Promise<AuthenticatedUser | null> {
@@ -111,16 +119,65 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
     return null;
   }
 
+  // Handle support impersonation context
+  let effectiveTenantId = user.tenantId;
+  let effectiveTenant = user.tenant;
+  let impersonation: ImpersonationState | null = null;
+
+  if (
+    session.impersonatedTenantId &&
+    (user.role === 'SUPPORT' || user.role === 'PLATFORM_ADMIN')
+  ) {
+    const targetTenant = await prisma.tenant.findUnique({
+      where: { id: session.impersonatedTenantId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        status: true,
+      },
+    });
+
+    if (targetTenant && targetTenant.status !== 'ARCHIVED') {
+      effectiveTenantId = targetTenant.id;
+      effectiveTenant = targetTenant;
+      impersonation = {
+        isImpersonating: true,
+        impersonatedTenantId: targetTenant.id,
+        impersonatedTenantName: targetTenant.name,
+        reason: session.impersonationReason || null,
+      };
+    }
+  }
+
   return {
     id: user.id,
     name: user.name,
     email: user.email,
     role: user.role,
     isActive: user.isActive,
-    tenantId: user.tenantId,
+    tenantId: effectiveTenantId,
     managerId: user.managerId,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-    tenant: user.tenant,
+    tenant: effectiveTenant,
+    impersonation,
   };
+}
+
+export async function createImpersonationSession(
+  userId: string,
+  tenantId: string,
+  reason: string
+): Promise<void> {
+  const token = await createSessionToken(userId, {
+    impersonatedTenantId: tenantId,
+    impersonationReason: reason,
+  });
+  await setSessionCookie(token);
+}
+
+export async function endImpersonationSession(userId: string): Promise<void> {
+  const token = await createSessionToken(userId);
+  await setSessionCookie(token);
 }

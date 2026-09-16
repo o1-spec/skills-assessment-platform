@@ -14,12 +14,21 @@ function getAuthSecretKey(): Uint8Array {
 
 export interface SessionPayload {
   userId: string;
+  impersonatedTenantId?: string | null;
+  impersonationReason?: string | null;
   exp?: number;
 }
 
-export async function createSessionToken(userId: string): Promise<string> {
+export async function createSessionToken(
+  userId: string,
+  impersonation?: { impersonatedTenantId: string; impersonationReason: string }
+): Promise<string> {
   const secretKey = getAuthSecretKey();
-  const token = await new SignJWT({ userId })
+  const token = await new SignJWT({
+    userId,
+    impersonatedTenantId: impersonation?.impersonatedTenantId ?? null,
+    impersonationReason: impersonation?.impersonationReason ?? null,
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_DURATION_SECONDS}s`)
@@ -35,13 +44,16 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
       algorithms: ['HS256'],
     });
 
-
     if (typeof payload.userId !== 'string') {
       return null;
     }
 
     return {
       userId: payload.userId,
+      impersonatedTenantId:
+        typeof payload.impersonatedTenantId === 'string' ? payload.impersonatedTenantId : null,
+      impersonationReason:
+        typeof payload.impersonationReason === 'string' ? payload.impersonationReason : null,
       exp: payload.exp,
     };
   } catch {

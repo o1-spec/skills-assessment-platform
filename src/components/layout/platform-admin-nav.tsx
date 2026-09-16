@@ -65,6 +65,27 @@ export function PlatformAdminNav() {
       active: pathname?.startsWith('/platform-admin/users'),
       enabled: true,
     },
+    {
+      name: 'Analytics',
+      href: '/platform-admin/analytics',
+      exact: false,
+      active: pathname?.startsWith('/platform-admin/analytics'),
+      enabled: true,
+    },
+    {
+      name: 'Notification Templates',
+      href: '/platform-admin/notification-templates',
+      exact: false,
+      active: pathname?.startsWith('/platform-admin/notification-templates'),
+      enabled: true,
+    },
+    {
+      name: 'Integrations',
+      href: '/platform-admin/integrations',
+      exact: false,
+      active: pathname?.startsWith('/platform-admin/integrations'),
+      enabled: true,
+    },
   ];
 
   return (

@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { UserRole } from '@prisma/client';
 import { requireRole } from '@/lib/auth';
 import { LogoutButton } from '@/components/ui';
-import { OrgAdminNav } from '@/components/layout';
+import { OrgAdminNav, SupportImpersonationBanner } from '@/components/layout';
 import { NotificationBell } from '@/components/notifications';
 
 export default async function OrganizationAdminLayout({
@@ -14,6 +14,7 @@ export default async function OrganizationAdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <SupportImpersonationBanner />
       {/* Top Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">

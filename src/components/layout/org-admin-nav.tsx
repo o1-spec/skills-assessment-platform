@@ -71,6 +71,11 @@ const navItems: NavItem[] = [
     href: '/organization-admin/audit',
     activePattern: (p) => p.startsWith('/organization-admin/audit'),
   },
+  {
+    name: 'Search',
+    href: '/organization-admin/search',
+    activePattern: (p) => p.startsWith('/organization-admin/search'),
+  },
 ];
 
 export function OrgAdminNav() {
