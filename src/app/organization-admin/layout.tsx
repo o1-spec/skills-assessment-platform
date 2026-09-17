@@ -4,7 +4,7 @@ import { requireRole } from '@/lib/auth';
 import { AppShell, NavItem } from '@/components/app';
 import { SupportImpersonationBanner } from '@/components/layout/support-impersonation-banner';
 
-const ORG_ADMIN_NAV: NavItem[] = [
+export const ORG_ADMIN_NAV: NavItem[] = [
   {
     label: 'Overview',
     href: '/organization-admin',

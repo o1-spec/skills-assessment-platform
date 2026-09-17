@@ -5,7 +5,7 @@ import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { AppShell, NavItem } from '@/components/app';
 import { SupportImpersonationBanner } from '@/components/layout/support-impersonation-banner';
 
-const STAFF_NAV: NavItem[] = [
+export const STAFF_NAV: NavItem[] = [
   {
     label: 'My Assessments',
     href: '/staff/assessments',

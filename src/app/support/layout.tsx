@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { AppShell, NavItem } from '@/components/app';
 import { SupportImpersonationBanner } from '@/components/layout/support-impersonation-banner';
 
-const SUPPORT_NAV: NavItem[] = [
+export const SUPPORT_NAV: NavItem[] = [
   {
     label: 'Troubleshooting Sessions',
     href: '/support',

@@ -19,7 +19,6 @@ interface NotificationsViewProps {
   initialTotal: number;
   initialUnreadCount: number;
   dashboardHref: string;
-  userName: string;
 }
 
 export function NotificationsView({
@@ -27,7 +26,6 @@ export function NotificationsView({
   initialTotal,
   initialUnreadCount,
   dashboardHref,
-  userName,
 }: NotificationsViewProps) {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
@@ -131,33 +129,32 @@ export function NotificationsView({
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-      <header className="bg-white border-b border-stone-200/80">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 mb-1">
             <Link
               href={dashboardHref}
-              className="inline-flex items-center text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="hover:text-neutral-900 transition-colors inline-flex items-center gap-1"
               id="back-to-dashboard-link"
             >
-              <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Dashboard
             </Link>
-            <span className="text-stone-300">|</span>
-            <h1 className="text-sm font-bold text-neutral-900 tracking-tight">Notification Center</h1>
+            <span>/</span>
+            <span className="text-neutral-800 font-semibold">Notification Center</span>
           </div>
-
-          <div className="text-xs text-neutral-600 font-semibold">
-            {userName}
-          </div>
+          <h1 className="text-xl font-bold text-neutral-900 tracking-tight">Notification Center</h1>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            View, filter, and respond to account, review, and workflow notifications.
+          </p>
         </div>
-      </header>
+      </div>
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
-        <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 overflow-hidden">
-          <div className="px-6 py-4 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-50/50">
+      <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 overflow-hidden">
+        <div className="px-6 py-4 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-50/50">
             <div className="flex space-x-2" role="tablist">
               <button
                 type="button"
@@ -309,7 +306,6 @@ export function NotificationsView({
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
   );
 }

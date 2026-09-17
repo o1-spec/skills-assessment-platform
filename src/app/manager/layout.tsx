@@ -5,7 +5,7 @@ import { requireTenantUser, getRoleDashboardPath } from '@/lib/auth';
 import { AppShell, NavItem } from '@/components/app';
 import { SupportImpersonationBanner } from '@/components/layout/support-impersonation-banner';
 
-const MANAGER_NAV: NavItem[] = [
+export const MANAGER_NAV: NavItem[] = [
   {
     label: 'Team Dashboard',
     href: '/manager',
