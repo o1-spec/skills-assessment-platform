@@ -15,16 +15,16 @@ export default async function OrganizationAdminOverviewPage() {
   const user = await requireTenantUser();
 
   const [roleProfiles, campaigns, completedGapAssessments, frameworkAdoption, tenantUsers] = await Promise.all([
-    getRoleProfilesForTenant(user.tenantId),
-    getCampaignsForTenant(user.tenantId),
-    getGapAnalysisAssessmentsForTenant(user.tenantId),
-    getActiveFrameworkAdoptionForTenant(user.tenantId),
-    getUsersForTenant(user.tenantId),
+    getRoleProfilesForTenant(user.tenantId).catch(() => []),
+    getCampaignsForTenant(user.tenantId).catch(() => []),
+    getGapAnalysisAssessmentsForTenant(user.tenantId).catch(() => []),
+    getActiveFrameworkAdoptionForTenant(user.tenantId).catch(() => null),
+    getUsersForTenant(user.tenantId).catch(() => []),
   ]);
 
   const activeCampaigns = campaigns.filter((c) => c.status === 'ACTIVE');
   const totalIdentifiedGaps = completedGapAssessments.reduce(
-    (acc, a) => acc + a.totalGapPoints,
+    (acc, a) => acc + (a?.totalGapPoints ?? 0),
     0
   );
 
@@ -35,7 +35,7 @@ export default async function OrganizationAdminOverviewPage() {
         description="Manage your organization benchmarks, competencies, assessment campaigns, and skill gap analyses."
         badge={
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-            {user.tenant?.name}
+            {user.tenant?.name || 'Organization'}
           </span>
         }
         actions={
@@ -104,8 +104,8 @@ export default async function OrganizationAdminOverviewPage() {
         />
         <StatCard
           label="Organization Scope"
-          value={user.tenant.name}
-          subtext={`slug: ${user.tenant.slug}`}
+          value={user.tenant?.name || 'Organization'}
+          subtext={user.tenant?.slug ? `slug: ${user.tenant.slug}` : 'Configured workspace'}
           icon={
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />

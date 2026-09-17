@@ -3,13 +3,16 @@ import { UserRole } from '@prisma/client';
 import { getCurrentUser, getRoleDashboardPath } from '@/lib/auth';
 import { getNotificationsForUser } from '@/services/notifications';
 import { prisma } from '@/lib/db';
-import { AppShell, NavItem } from '@/components/app';
+import {
+  AppShell,
+  NavItem,
+  ORG_ADMIN_NAV,
+  PLATFORM_ADMIN_NAV,
+  MANAGER_NAV,
+  STAFF_NAV,
+  SUPPORT_NAV,
+} from '@/components/app';
 import { SupportImpersonationBanner } from '@/components/layout/support-impersonation-banner';
-import { ORG_ADMIN_NAV } from '@/app/organization-admin/layout';
-import { PLATFORM_ADMIN_NAV } from '@/app/platform-admin/layout';
-import { MANAGER_NAV } from '@/app/manager/layout';
-import { STAFF_NAV } from '@/app/staff/layout';
-import { SUPPORT_NAV } from '@/app/support/layout';
 import { NotificationsView } from './notifications-view';
 
 export const metadata = {

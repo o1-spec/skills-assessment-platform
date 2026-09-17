@@ -5,6 +5,25 @@ import Link from 'next/link';
 
 const emptySubscribe = () => () => {};
 
+function getLocalStorageItem(key: string): string | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function setLocalStorageItem(key: string, value: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {}
+}
+
 export function StaffOnboardingTour() {
   const [userDismissed, setUserDismissed] = useState(false);
   const isClient = useSyncExternalStore(
@@ -13,14 +32,14 @@ export function StaffOnboardingTour() {
     () => false
   );
 
-  const isStoredDismissed = isClient && typeof window !== 'undefined'
-    ? localStorage.getItem('skillsiq_staff_onboarding_dismissed') === 'true'
+  const isStoredDismissed = isClient
+    ? getLocalStorageItem('skillsiq_staff_onboarding_dismissed') === 'true'
     : false;
 
   const dismissed = userDismissed || isStoredDismissed;
 
   const handleDismiss = () => {
-    localStorage.setItem('skillsiq_staff_onboarding_dismissed', 'true');
+    setLocalStorageItem('skillsiq_staff_onboarding_dismissed', 'true');
     setUserDismissed(true);
   };
 

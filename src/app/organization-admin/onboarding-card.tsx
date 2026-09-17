@@ -13,6 +13,25 @@ interface OrgAdminOnboardingProps {
 
 const emptySubscribe = () => () => {};
 
+function getLocalStorageItem(key: string): string | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function setLocalStorageItem(key: string, value: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {}
+}
+
 export function OrgAdminOnboardingCard({
   tenantName,
   hasRoleProfiles,
@@ -27,14 +46,14 @@ export function OrgAdminOnboardingCard({
     () => false
   );
 
-  const isStoredDismissed = isClient && typeof window !== 'undefined'
-    ? localStorage.getItem('skillsiq_orgadmin_onboarding_dismissed') === 'true'
+  const isStoredDismissed = isClient
+    ? getLocalStorageItem('skillsiq_orgadmin_onboarding_dismissed') === 'true'
     : false;
 
   const dismissed = userDismissed || isStoredDismissed;
 
   const handleDismiss = () => {
-    localStorage.setItem('skillsiq_orgadmin_onboarding_dismissed', 'true');
+    setLocalStorageItem('skillsiq_orgadmin_onboarding_dismissed', 'true');
     setUserDismissed(true);
   };
 

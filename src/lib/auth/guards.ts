@@ -56,7 +56,13 @@ export interface TenantUser extends AuthenticatedUser {
 export async function requireTenantUser(): Promise<TenantUser> {
   const user = await requireUser();
   if (!user.tenantId || !user.tenant) {
-    redirect(getRoleDashboardPath(user.role));
+    if (user.role === UserRole.PLATFORM_ADMIN) {
+      redirect('/platform-admin');
+    }
+    if (user.role === UserRole.SUPPORT) {
+      redirect('/support');
+    }
+    redirect('/login');
   }
   return user as TenantUser;
 }
