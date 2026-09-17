@@ -9,6 +9,7 @@ import {
 } from '@/services';
 import { UserRole, CompetencyType } from '@prisma/client';
 import { formatDate } from '@/lib/format';
+import { ExportButton } from './export-button';
 
 interface GapAnalysisPageProps {
   searchParams: Promise<{ tab?: string; teamId?: string }>;
@@ -176,31 +177,31 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                 <table className="min-w-full divide-y divide-stone-100 text-xs">
                   <thead className="bg-stone-50/70 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left">Staff Member</th>
-                      <th scope="col" className="px-6 py-3 text-left">Campaign</th>
-                      <th scope="col" className="px-6 py-3 text-left">Target Role Profile</th>
-                      <th scope="col" className="px-6 py-3 text-center">Gaps Below Target</th>
-                      <th scope="col" className="px-6 py-3 text-center">Total Gap Deficit</th>
-                      <th scope="col" className="px-6 py-3 text-center">Completed</th>
-                      <th scope="col" className="px-6 py-3 text-right">Actions</th>
+                      <th scope="col" className="px-6 py-3.5 text-left whitespace-nowrap">Staff Member</th>
+                      <th scope="col" className="px-6 py-3.5 text-left whitespace-nowrap">Campaign</th>
+                      <th scope="col" className="px-6 py-3.5 text-left whitespace-nowrap">Target Role Profile</th>
+                      <th scope="col" className="px-6 py-3.5 text-center whitespace-nowrap">Gaps Below Target</th>
+                      <th scope="col" className="px-6 py-3.5 text-center whitespace-nowrap">Total Gap Deficit</th>
+                      <th scope="col" className="px-6 py-3.5 text-center whitespace-nowrap">Completed</th>
+                      <th scope="col" className="px-6 py-3.5 text-right whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-stone-100">
                     {assessments.map((item) => (
                       <tr key={item.assessmentId} className="hover:bg-stone-50/50 transition-colors">
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="font-semibold text-neutral-900">{item.user.name}</div>
                           <div className="text-[11px] text-neutral-500">{item.user.email}</div>
                         </td>
-                        <td className="px-6 py-4 text-neutral-700">{item.campaign.name}</td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
+                        <td className="px-6 py-4 text-neutral-700 whitespace-nowrap">{item.campaign.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-200/80">
                             {item.roleProfile.name}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 text-center whitespace-nowrap">
                           {item.belowTargetCount > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-800 border border-stone-200/80">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">
                               {item.belowTargetCount} {item.belowTargetCount === 1 ? 'gap' : 'gaps'}
                             </span>
                           ) : (
@@ -209,7 +210,7 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 text-center whitespace-nowrap">
                           {item.totalGapPoints > 0 ? (
                             <span className="font-semibold text-neutral-900">
                               -{item.totalGapPoints} levels
@@ -218,32 +219,28 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                             <span className="text-neutral-400">0</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center text-[11px] text-neutral-500">
+                        <td className="px-6 py-4 text-center text-[11px] text-neutral-500 whitespace-nowrap">
                           {item.completedAt ? formatDate(item.completedAt) : '—'}
                         </td>
-                        <td className="px-6 py-4 text-right space-x-3">
-                          <a
-                            href={`/api/reports/gap-analysis/individual/${item.assessmentId}`}
-                            download
-                            className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
-                            title="Export CSV"
-                          >
-                            Export CSV
-                          </a>
-                          <a
-                            href={`/api/reports/gap-analysis/individual/${item.assessmentId}/excel`}
-                            download
-                            className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
-                            title="Export Excel (.xlsx)"
-                          >
-                            Export Excel
-                          </a>
-                          <Link
-                            href={`/organization-admin/gap-analysis/${item.assessmentId}`}
-                            className="text-xs font-semibold text-neutral-900 hover:underline"
-                          >
-                            View Breakdown &rarr;
-                          </Link>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-2">
+                            <ExportButton
+                              url={`/api/reports/gap-analysis/individual/${item.assessmentId}`}
+                              label="CSV"
+                              title="Export CSV"
+                            />
+                            <ExportButton
+                              url={`/api/reports/gap-analysis/individual/${item.assessmentId}/excel`}
+                              label="Excel"
+                              title="Export Excel (.xlsx)"
+                            />
+                            <Link
+                              href={`/organization-admin/gap-analysis/${item.assessmentId}`}
+                              className="px-3 py-1 text-[11px] font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg transition-colors"
+                            >
+                              View Breakdown &rarr;
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -329,20 +326,16 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <a
-                    href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}`}
-                    download
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
-                  >
-                    Export CSV
-                  </a>
-                  <a
-                    href={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}/excel`}
-                    download
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
-                  >
-                    Export Excel (.xlsx)
-                  </a>
+                  <ExportButton
+                    url={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}`}
+                    label="Export CSV"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer disabled:opacity-50"
+                  />
+                  <ExportButton
+                    url={`/api/reports/gap-analysis/team/${teamAnalysis.team.id}/excel`}
+                    label="Export Excel (.xlsx)"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer disabled:opacity-50"
+                  />
                 </div>
               </div>
 
@@ -460,20 +453,16 @@ export default async function GapAnalysisListPage({ searchParams }: GapAnalysisP
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <a
-                  href="/api/reports/gap-analysis/organization"
-                  download
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
-                >
-                  Export CSV
-                </a>
-                <a
-                  href="/api/reports/gap-analysis/organization/excel"
-                  download
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer"
-                >
-                  Export Excel (.xlsx)
-                </a>
+                <ExportButton
+                  url="/api/reports/gap-analysis/organization"
+                  label="Export CSV"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer disabled:opacity-50"
+                />
+                <ExportButton
+                  url="/api/reports/gap-analysis/organization/excel"
+                  label="Export Excel (.xlsx)"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-stone-200/80 shadow-2xs text-xs font-semibold rounded-xl text-neutral-700 bg-white hover:bg-stone-50 transition-colors cursor-pointer disabled:opacity-50"
+                />
               </div>
             </div>
 
