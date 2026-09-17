@@ -102,6 +102,22 @@ async function main() {
     },
   });
 
+  const supportUser = await prisma.user.upsert({
+    where: { email: 'support@skills.test' },
+    update: {
+      passwordHash: demoPasswordHash,
+      isActive: true,
+    },
+    create: {
+      name: 'Sam Support',
+      email: 'support@skills.test',
+      passwordHash: demoPasswordHash,
+      role: UserRole.SUPPORT,
+      isActive: true,
+      tenantId: null,
+    },
+  });
+
   // Organization Admin
   const orgAdmin = await prisma.user.upsert({
     where: { email: 'admin@acme.test' },
@@ -155,7 +171,7 @@ async function main() {
     },
   });
 
-  console.log(`✓ Users ready: Platform Admin (${platformAdmin.email}), Org Admin (${orgAdmin.email}), Manager (${manager.email}), Staff (${staff.email})`);
+  console.log(`✓ Users ready: Platform Admin (${platformAdmin.email}), Support (${supportUser.email}), Org Admin (${orgAdmin.email}), Manager (${manager.email}), Staff (${staff.email})`);
 
   // 3. Canonical Framework: Version 1.0 (Platform Level)
   const frameworkVersion = await prisma.frameworkVersion.upsert({

@@ -10,7 +10,7 @@ interface LoginFormProps {
   showDemoHelpers?: boolean;
 }
 
-export function LoginForm({ showDemoHelpers = false }: LoginFormProps) {
+export function LoginForm({ showDemoHelpers = true }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [emailValue, setEmailValue] = useState('');
@@ -157,7 +157,7 @@ export function LoginForm({ showDemoHelpers = false }: LoginFormProps) {
                 key={acc.email}
                 type="button"
                 onClick={() => handleQuickFill(acc.email)}
-                className="text-left px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-50/50 hover:bg-stone-100 hover:border-stone-300 transition-colors text-[11px] flex flex-col"
+                className="text-left px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-50/50 hover:bg-stone-100 hover:border-stone-300 transition-colors text-[11px] flex flex-col last:col-span-2"
               >
                 <span className="font-semibold text-neutral-800">{acc.label}</span>
                 <span className="text-neutral-500 font-mono text-[10px] truncate">{acc.email}</span>

@@ -338,13 +338,23 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 All demo accounts use the standard development password: **`Password123!`**
 
+The sign-in screen (`/login`) includes interactive **Evaluation Sandbox Accounts** quick-fill buttons that populate credentials with a single click across all environments (including production).
+
+> **Platform Administrator Notice:**  
+> There is exactly **one** Platform Administrator provisioned on the platform:  
+> - **Email:** `platform@skills.test`  
+> - **Password:** `Password123!`  
+> - **Role:** `PLATFORM_ADMIN`  
+> - **Scope:** Global SaaS Platform Operator (`tenantId = null`)  
+> This persona holds exclusive authority to provision client organizations, assign plan tiers and seat caps, author canonical framework versions (levels 1–5+ and behavioral descriptors), publish curated industry templates, view global business metrics, and inspect the platform-wide audit log.
+
 | Portal Role | Email | Scope / Context | Key Capabilities to Explore |
 | :--- | :--- | :--- | :--- |
-| **Organization Admin** | `admin@acme.test` | Acme Technologies | Role builder, campaigns, gap analysis, Excel exports, scheduled reports, CSV import |
-| **Staff Member** | `staff@acme.test` | Backend Engineer (Sarah Staff) | Open Q3 assessment, level rating, evidence uploads, skills profile, career paths |
-| **Manager** | `manager@acme.test` | Engineering Manager (Michael) | Corroboration queue, justification rules, team competency matrix, gap summaries |
 | **Platform Admin** | `platform@skills.test` | Global SaaS Operator | Tenant provisioning, framework version authoring, industry templates, audit viewer |
-| **Support Staff** | `support@skills.test` | Platform Support Tier | Support impersonation sessions with banner and audit logging |
+| **Support Staff** | `support@skills.test` | Platform Support Tier | Support impersonation sessions with persistent banner and audit trail |
+| **Organization Admin** | `admin@acme.test` | Acme Technologies | Role builder, campaigns, gap analysis, Excel exports, scheduled reports, CSV import |
+| **Manager** | `manager@acme.test` | Engineering Manager (Michael) | Corroboration queue, justification rules, team competency matrix, gap summaries |
+| **Staff Member** | `staff@acme.test` | Backend Engineer (Sarah Staff) | Open Q3 assessment, level rating, evidence uploads, skills profile, career paths |
 
 ---
 

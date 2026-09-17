@@ -25,6 +25,7 @@
    - [5.3 Application-Level Append-Only Audit Trail](#53-application-level-append-only-audit-trail)
    - [5.4 Private Object Storage & Signed URL Generation](#54-private-object-storage--signed-url-generation)
    - [5.5 Support Impersonation Protocol](#55-support-impersonation-protocol)
+   - [5.6 Evaluation Sandbox & Preconfigured Platform Credentials](#56-evaluation-sandbox--preconfigured-platform-credentials)
 6. [Complete Route & Navigation Directory (52 Routes)](#6-complete-route--navigation-directory-52-routes)
 7. [Environment Variables & Configuration Reference](#7-environment-variables--configuration-reference)
 8. [Database Maintenance, Migrations & Provenance](#8-database-maintenance-migrations--provenance)
@@ -308,6 +309,29 @@ Support operators can diagnose tenant issues under strict oversight:
 3. A persistent amber banner displays throughout the user interface: `"SUPPORT MODE: Impersonating [Tenant Name] | Reason: [Reason]"`.
 4. All actions performed during impersonation are attributed to the Support operator.
 5. Exiting impersonation logs `IMPERSONATION_END` and restores normal session tokens.
+
+### 5.6 Evaluation Sandbox & Preconfigured Platform Credentials
+
+For evaluator testing and system validation, preconfigured demo accounts representing each role hierarchy are provided. The login page (`/login`) includes interactive evaluation sandbox buttons that autofill credentials with a single click across all environments (including production).
+
+#### Platform Administrator Account (Single Authority)
+> **Crucial System Note:** There is exactly **one** Platform Administrator account provisioned on the platform:
+> - **Email:** `platform@skills.test`
+> - **Password:** `Password123!`
+> - **Role:** `PLATFORM_ADMIN`
+> - **Scope:** Global SaaS Platform Operator (`tenantId = null`)
+> - **Exclusive Capabilities:** Client organization provisioning, tiered subscription plan assignment, seat quota management, SFIA-aligned canonical framework authoring (competencies, levels 1–5+, level behavioral indicators), curated industry template publishing, platform-wide tenant analytics, and immutable audit log exploration.
+
+#### Complete Preconfigured Demo Account Directory
+All demo accounts use the standard evaluation password: **`Password123!`**
+
+| Persona | Role | Email | Password | Tenant / Context | Primary Test Workflows |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Platform Admin** | `PLATFORM_ADMIN` | `platform@skills.test` | `Password123!` | Global (None) | Author canonical framework versions, manage industry templates, provision client organizations, inspect platform audit trails |
+| **Support Staff** | `SUPPORT` | `support@skills.test` | `Password123!` | Global (None) | Initiate audited support impersonation sessions with reason justification, verify active amber banner |
+| **Organization Admin** | `ORGANIZATION_ADMIN` | `admin@acme.test` | `Password123!` | Acme Technologies | Configure org profile, adopt industry templates, manage departments & teams, bulk import users via CSV, author role benchmark profiles, map career progression paths, launch assessment campaigns, schedule automated capability reports |
+| **Manager** | `MANAGER` | `manager@acme.test` | `Password123!` | Acme Technologies (Engineering Manager) | Review direct reports' self-assessments, corroborate ratings with mandatory justifications, inspect live team competency matrix, evaluate capability heatmaps |
+| **Staff Member** | `STAFF` | `staff@acme.test` | `Password123!` | Acme Technologies (Sarah Jenkins, Backend Eng) | Complete self-assessment against SFIA level descriptors, upload private evidence files, view verified skills profile, explore directional career progression ladders & targeted learning |
 
 ---
 

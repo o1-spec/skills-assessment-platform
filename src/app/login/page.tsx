@@ -14,17 +14,13 @@ export default async function LoginPage() {
     redirect(getRoleDashboardPath(user.role));
   }
 
-  const showDemoHelpers =
-    process.env.NODE_ENV !== 'production' ||
-    process.env.NEXT_PUBLIC_SHOW_DEMO_HELPERS === 'true';
-
   return (
     <AuthShell mode="login">
       <AuthFormCard
         title="Welcome back"
         subtitle="Sign in to continue to your SkillsIQ workspace."
       >
-        <LoginForm showDemoHelpers={showDemoHelpers} />
+        <LoginForm showDemoHelpers={true} />
       </AuthFormCard>
     </AuthShell>
   );
