@@ -35,11 +35,6 @@ export function SkillsLibraryView({
     e.preventDefault();
     if (!selectedFrameworkId) return;
 
-    const targetFw = availableFrameworks.find((f) => f.id === selectedFrameworkId);
-    if (!confirm(`Are you sure you want to adopt Framework Version ${targetFw?.version || ''}? Adopting a new framework version creates an updated operational skill snapshot. Existing historical role profiles and assessments will remain completely unchanged.`)) {
-      return;
-    }
-
     setAdoptError(null);
     setIsAdopting(true);
 
