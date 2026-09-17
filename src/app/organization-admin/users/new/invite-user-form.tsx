@@ -159,15 +159,15 @@ export function InviteUserForm({ managers, roleProfiles, seatUsage, teams = [] }
             </div>
           </div>
 
-          <div className="p-4 bg-stone-50 border border-stone-200/80 rounded-xl space-y-1.5">
-            <div className="flex items-center space-x-2 text-xs font-bold text-neutral-900">
-              <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="p-4 bg-emerald-50/60 border border-emerald-200/80 rounded-xl space-y-1.5">
+            <div className="flex items-center space-x-2 text-xs font-bold text-emerald-900">
+              <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <span>Email Delivery Notice</span>
+              <span>Invitation Email Dispatched</span>
             </div>
             <p className="text-xs text-stone-600 leading-relaxed">
-              Invitation created. Email delivery is not configured in this MVP environment. Copy the one-time invitation link below and provide it to the invited member to complete their account setup.
+              An invitation email has been sent to <strong className="text-neutral-900 font-semibold">{invitationResult.email}</strong>. You can also copy the one-time link below and share it directly.
             </p>
           </div>
 

@@ -255,8 +255,8 @@ export function getEmailClient(): EmailClient {
   const smtpPass = process.env.SMTP_PASS;
   if (smtpUser && smtpPass) {
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const port = Number(process.env.SMTP_PORT) || 465;
-    const secure = process.env.SMTP_SECURE !== 'false';
+    const port = Number(process.env.SMTP_PORT) || 587;
+    const secure = process.env.SMTP_SECURE === 'true';
     const from = process.env.EMAIL_FROM || `"skillsiq" <${smtpUser}>`;
     return new SmtpEmailClient(host, port, secure, smtpUser, smtpPass, from);
   }
