@@ -1,3 +1,5 @@
+import nodemailer, { type Transporter } from 'nodemailer';
+
 if (typeof window !== 'undefined') {
   throw new Error('This module can only be executed on the server.');
 }
@@ -156,13 +158,63 @@ class ResendEmailClient implements EmailClient {
   }
 }
 
+class SmtpEmailClient implements EmailClient {
+  private transporter: Transporter;
+  private from: string;
+
+  constructor(host: string, port: number, secure: boolean, user: string, pass: string, from: string) {
+    this.from = from;
+    this.transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: {
+        user,
+        pass,
+      },
+    });
+  }
+
+  async sendEmail(options: SendEmailOptions): Promise<EmailSendResult> {
+    try {
+      const attachments = options.attachments?.map((att) => ({
+        filename: att.filename,
+        content: Buffer.isBuffer(att.content) ? att.content : Buffer.from(att.content),
+        contentType: att.contentType,
+      }));
+
+      const info = (await this.transporter.sendMail({
+        from: this.from,
+        to: options.to,
+        subject: options.subject,
+        text: options.text,
+        html: options.html,
+        attachments,
+      })) as { messageId?: string };
+
+      return {
+        success: true,
+        status: 'SENT',
+        messageId: info.messageId,
+      };
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown SMTP error';
+      return {
+        success: false,
+        status: 'FAILED',
+        error: `SMTP transport failure: ${errorMsg}`,
+      };
+    }
+  }
+}
+
 class FallbackDevEmailClient implements EmailClient {
   async sendEmail(options: SendEmailOptions): Promise<EmailSendResult> {
     const isProduction = process.env.NODE_ENV === 'production';
 
     if (isProduction) {
       console.warn(
-        '[NotificationEngine:Email] WARNING: Email provider credentials (RESEND_API_KEY) are not configured in production environment. Email delivery was skipped.'
+        '[NotificationEngine:Email] WARNING: Email provider credentials are not configured in production environment. Email delivery was skipped.'
       );
       return {
         success: false,
@@ -172,7 +224,7 @@ class FallbackDevEmailClient implements EmailClient {
     }
 
     console.info(
-      `[NotificationEngine:Email:Dev] Email to <${options.to}> skipped (no RESEND_API_KEY configured): "${options.subject}" (attachments: ${options.attachments?.length ?? 0})`
+      `[NotificationEngine:Email:Dev] Email to <${options.to}> skipped: "${options.subject}" (attachments: ${options.attachments?.length ?? 0})`
     );
     return {
       success: true,
@@ -197,6 +249,16 @@ export function setMockEmailClient(client: InMemoryTestEmailClient | null): void
 export function getEmailClient(): EmailClient {
   if (mockEmailClientInstance) {
     return mockEmailClientInstance;
+  }
+
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (smtpUser && smtpPass) {
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = Number(process.env.SMTP_PORT) || 465;
+    const secure = process.env.SMTP_SECURE !== 'false';
+    const from = process.env.EMAIL_FROM || `"skillsiq" <${smtpUser}>`;
+    return new SmtpEmailClient(host, port, secure, smtpUser, smtpPass, from);
   }
 
   const resendApiKey = process.env.RESEND_API_KEY;

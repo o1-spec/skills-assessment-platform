@@ -56,8 +56,13 @@ export async function sendInvitationEmail(params: {
     year: 'numeric',
   });
 
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const fullUrl = params.invitationUrl.startsWith('http')
+    ? params.invitationUrl
+    : `${baseUrl.replace(/\/$/, '')}${params.invitationUrl}`;
+
   const subject = `You're invited to join ${params.organizationName} on Skills Assessment Platform`;
-  const text = `Hello ${params.name},\n\nYou have been invited to join ${params.organizationName} as a ${params.role} on the Skills Assessment Platform.\n\nPlease accept your invitation using the following link:\n${params.invitationUrl}\n\nThis invitation expires on ${formattedExpiry}.\n\nIf you did not expect this invitation, you can safely ignore this email.`;
+  const text = `Hello ${params.name},\n\nYou have been invited to join ${params.organizationName} as a ${params.role} on the Skills Assessment Platform.\n\nPlease accept your invitation using the following link:\n${fullUrl}\n\nThis invitation expires on ${formattedExpiry}.\n\nIf you did not expect this invitation, you can safely ignore this email.`;
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1f2937;">
       <h2 style="color: #111827; margin-bottom: 16px;">Welcome to ${escapeHtml(params.organizationName)}</h2>
@@ -68,11 +73,11 @@ export async function sendInvitationEmail(params: {
         You have been invited to join <strong>${escapeHtml(params.organizationName)}</strong> as <strong>${escapeHtml(params.role)}</strong> on the Skills Assessment Platform.
       </p>
       <p style="margin-bottom: 24px;">
-        <a href="${params.invitationUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">Accept Invitation</a>
+        <a href="${fullUrl}" style="display: inline-block; background-color: #171717; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Accept Invitation</a>
       </p>
       <p style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
         Or copy and paste this link into your browser:<br/>
-        <span style="color: #2563eb; word-break: break-all;">${params.invitationUrl}</span>
+        <span style="color: #171717; word-break: break-all; font-weight: 500;">${fullUrl}</span>
       </p>
       <p style="font-size: 13px; color: #9ca3af; margin-top: 16px;">
         This invitation link will expire on ${formattedExpiry}.
