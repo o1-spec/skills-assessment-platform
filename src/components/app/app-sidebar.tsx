@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserRole } from '@prisma/client';
 import { ConfirmDialog } from './confirm-dialog';
+import { logoutAction } from '@/lib/auth/actions';
 
 export interface NavItem {
   label: string;
@@ -47,7 +48,7 @@ export function AppSidebar({
   const roleConfig = ROLE_LABELS[role] || { label: role, badgeBg: 'bg-stone-100', badgeText: 'text-stone-800' };
 
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const logoutFormRef = useRef<HTMLFormElement>(null);
+  const [isLoggingOut, startTransition] = useTransition();
 
   const initials = user.name
     ? user.name
@@ -172,23 +173,21 @@ export function AppSidebar({
                 </div>
               </div>
 
-              <form ref={logoutFormRef} action="/api/auth/logout" method="POST" className="shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsLogoutModalOpen(true)}
-                  title="Sign out"
-                  className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                </button>
-              </form>
+              <button
+                type="button"
+                onClick={() => setIsLogoutModalOpen(true)}
+                title="Sign out"
+                className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -199,11 +198,13 @@ export function AppSidebar({
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={() => {
           setIsLogoutModalOpen(false);
-          logoutFormRef.current?.submit();
+          startTransition(async () => {
+            await logoutAction();
+          });
         }}
         title="Sign Out of SkillsIQ"
         description="Are you sure you want to end your current session? Any unsaved changes in active forms will not be retained."
-        confirmLabel="Sign Out"
+        confirmLabel={isLoggingOut ? 'Signing Out...' : 'Sign Out'}
         cancelLabel="Stay Signed In"
         variant="danger"
       />
