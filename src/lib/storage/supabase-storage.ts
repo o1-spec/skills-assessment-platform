@@ -19,6 +19,9 @@ class SupabaseStorageClient implements StorageClient {
         persistSession: false,
         autoRefreshToken: false,
       },
+      realtime: {
+        transport: class {} as never,
+      },
     });
     this.bucket = bucket;
   }

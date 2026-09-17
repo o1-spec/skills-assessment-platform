@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 
 interface OrgAdminOnboardingProps {
@@ -11,6 +11,8 @@ interface OrgAdminOnboardingProps {
   hasFramework: boolean;
 }
 
+const emptySubscribe = () => () => {};
+
 export function OrgAdminOnboardingCard({
   tenantName,
   hasRoleProfiles,
@@ -18,18 +20,22 @@ export function OrgAdminOnboardingCard({
   hasUsers,
   hasFramework,
 }: OrgAdminOnboardingProps) {
-  const [dismissed, setDismissed] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [userDismissed, setUserDismissed] = useState(false);
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
-  useEffect(() => {
-    const isDismissed = localStorage.getItem('skillsiq_orgadmin_onboarding_dismissed') === 'true';
-    setDismissed(isDismissed);
-    setIsLoaded(true);
-  }, []);
+  const isStoredDismissed = isClient && typeof window !== 'undefined'
+    ? localStorage.getItem('skillsiq_orgadmin_onboarding_dismissed') === 'true'
+    : false;
+
+  const dismissed = userDismissed || isStoredDismissed;
 
   const handleDismiss = () => {
     localStorage.setItem('skillsiq_orgadmin_onboarding_dismissed', 'true');
-    setDismissed(true);
+    setUserDismissed(true);
   };
 
   const steps = [
@@ -73,7 +79,7 @@ export function OrgAdminOnboardingCard({
   const completedCount = steps.filter((s) => s.done).length;
   const progressPercent = Math.round((completedCount / steps.length) * 100);
 
-  if (!isLoaded || dismissed) {
+  if (!isClient || dismissed) {
     return null;
   }
 

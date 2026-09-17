@@ -544,8 +544,11 @@ async function main() {
     // =========================================================================
     console.log('\n7. Testing Email Provider Statuses & Failure Containment (Tests 24-26)...');
 
-    // Test 24a: Missing provider credentials -> emailStatus SKIPPED
-    setMockEmailClient(null); // Temporarily clear mock to hit FallbackDevEmailClient
+    const savedSmtpUser = process.env.SMTP_USER;
+    const savedResendKey = process.env.RESEND_API_KEY;
+    delete process.env.SMTP_USER;
+    delete process.env.RESEND_API_KEY;
+    setMockEmailClient(null);
     const skippedNotif = await createAndDispatchNotification({
       tenantId,
       recipientId: testStaff1.id,
@@ -554,8 +557,10 @@ async function main() {
       message: 'This notification should be created with emailStatus SKIPPED.',
     });
     cleanupNotificationIds.push(skippedNotif.id);
+    if (savedSmtpUser) process.env.SMTP_USER = savedSmtpUser;
+    if (savedResendKey) process.env.RESEND_API_KEY = savedResendKey;
     assert.strictEqual(skippedNotif.emailStatus, NotificationEmailStatus.SKIPPED, 'Missing provider must set emailStatus SKIPPED');
-    setMockEmailClient(mockEmail); // Restore mock client
+    setMockEmailClient(mockEmail);
 
     // Test 24b: Successful mock provider -> emailStatus SENT
     const sentNotif = await createAndDispatchNotification({

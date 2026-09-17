@@ -1,24 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 
-export function ManagerQuickStartCard() {
-  const [dismissed, setDismissed] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+const emptySubscribe = () => () => {};
 
-  useEffect(() => {
-    const isDismissed = localStorage.getItem('skillsiq_manager_onboarding_dismissed') === 'true';
-    setDismissed(isDismissed);
-    setIsLoaded(true);
-  }, []);
+export function ManagerQuickStartCard() {
+  const [userDismissed, setUserDismissed] = useState(false);
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  const isStoredDismissed = isClient && typeof window !== 'undefined'
+    ? localStorage.getItem('skillsiq_manager_onboarding_dismissed') === 'true'
+    : false;
+
+  const dismissed = userDismissed || isStoredDismissed;
 
   const handleDismiss = () => {
     localStorage.setItem('skillsiq_manager_onboarding_dismissed', 'true');
-    setDismissed(true);
+    setUserDismissed(true);
   };
 
-  if (!isLoaded || dismissed) {
+  if (!isClient || dismissed) {
     return null;
   }
 

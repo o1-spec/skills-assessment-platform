@@ -16,8 +16,13 @@ import {
   acceptTenantInvitation,
 } from '../src/services/invitations';
 import { updateTenantPlanAndSeatLimit } from '../src/services/tenants';
+import { getMockEmailClient, setMockEmailClient } from '../src/lib/email';
 
 async function runTests() {
+  const mockEmail = getMockEmailClient();
+  setMockEmailClient(mockEmail);
+  mockEmail.clear();
+
   console.log('🧪 Starting Organization User Management & Role Assignment Tests...\n');
 
   let passed = 0;

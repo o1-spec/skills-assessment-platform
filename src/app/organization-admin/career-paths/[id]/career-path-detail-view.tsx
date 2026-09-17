@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CareerPathStatus, CompetencyType } from '@prisma/client';
+import { CareerPathStatus } from '@prisma/client';
 import { CareerPathDetail } from '@/services/career-paths';
 import { publishCareerPathAction } from '@/actions/career-paths';
 

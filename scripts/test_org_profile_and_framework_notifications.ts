@@ -8,8 +8,13 @@ import {
   getIndustryTemplatesForOrgAdmin,
 } from '../src/services/tenants';
 import { publishFrameworkVersion } from '../src/services/frameworks';
+import { getMockEmailClient, setMockEmailClient } from '../src/lib/email';
 
 async function runTests() {
+  const mockEmail = getMockEmailClient();
+  setMockEmailClient(mockEmail);
+  mockEmail.clear();
+
   console.log('🧪 Starting Org Profile & Framework Notifications Tests...\n');
 
   let passed = 0;

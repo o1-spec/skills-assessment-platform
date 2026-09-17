@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { CompetencyType, RoleProfile } from '@prisma/client';
+import { RoleProfile } from '@prisma/client';
 import { StaffCareerPathViewData, StaffCareerProgressionStatus } from '@/services/career-paths';
 
 interface StaffCareerPathViewProps {
