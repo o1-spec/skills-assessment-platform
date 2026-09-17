@@ -9,6 +9,7 @@ import {
 import { UserRole, CompetencyType } from '@prisma/client';
 import { formatDate } from '@/lib/format';
 import { PageHeader, StatCard, SectionCard } from '@/components/app';
+import { ManagerQuickStartCard } from './quick-start-card';
 
 export default async function ManagerOverviewPage() {
   const user = await requireTenantUser();
@@ -50,6 +51,8 @@ export default async function ManagerOverviewPage() {
           </Link>
         }
       />
+
+      <ManagerQuickStartCard />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard

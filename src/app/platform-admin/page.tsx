@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import Link from 'next/link';
 import { PageHeader, StatCard, SectionCard, StatusBadge } from '@/components/app';
 import { getTenantsForPlatformAdmin } from '@/services/tenants';
+import { PlatformAdminQuickStartCard } from './quick-start-card';
 
 export default async function PlatformAdminPage() {
   const user = await requireRole(UserRole.PLATFORM_ADMIN);
@@ -46,6 +47,8 @@ export default async function PlatformAdminPage() {
           </>
         }
       />
+
+      <PlatformAdminQuickStartCard />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

@@ -3,6 +3,7 @@ import { UserRole, TenantStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { startImpersonationAction, endImpersonationAction } from '@/actions/impersonation';
 import { PageHeader, SectionCard } from '@/components/app';
+import { SupportGuidelinesCard } from './guidelines-card';
 
 export const metadata = {
   title: 'Support Dashboard | Skills Assessment Platform',
@@ -41,6 +42,8 @@ export default async function SupportPage() {
           </span>
         }
       />
+
+      <SupportGuidelinesCard />
 
       <div className="bg-white rounded-2xl border border-stone-200/80 p-5 shadow-xs">
         <div className="flex items-center gap-4">

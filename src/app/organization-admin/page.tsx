@@ -4,17 +4,22 @@ import {
   getRoleProfilesForTenant,
   getCampaignsForTenant,
   getGapAnalysisAssessmentsForTenant,
+  getActiveFrameworkAdoptionForTenant,
+  getUsersForTenant,
 } from '@/services';
 import { PageHeader, StatCard, SectionCard, StatusBadge } from '@/components/app';
 import { formatDate } from '@/lib/format';
+import { OrgAdminOnboardingCard } from './onboarding-card';
 
 export default async function OrganizationAdminOverviewPage() {
   const user = await requireTenantUser();
 
-  const [roleProfiles, campaigns, completedGapAssessments] = await Promise.all([
+  const [roleProfiles, campaigns, completedGapAssessments, frameworkAdoption, tenantUsers] = await Promise.all([
     getRoleProfilesForTenant(user.tenantId),
     getCampaignsForTenant(user.tenantId),
     getGapAnalysisAssessmentsForTenant(user.tenantId),
+    getActiveFrameworkAdoptionForTenant(user.tenantId),
+    getUsersForTenant(user.tenantId),
   ]);
 
   const activeCampaigns = campaigns.filter((c) => c.status === 'ACTIVE');
@@ -50,6 +55,14 @@ export default async function OrganizationAdminOverviewPage() {
             </Link>
           </>
         }
+      />
+
+      <OrgAdminOnboardingCard
+        tenantName={user.tenant?.name || 'Organization'}
+        hasRoleProfiles={roleProfiles.length > 0}
+        hasCampaigns={campaigns.length > 0}
+        hasUsers={tenantUsers.length > 1}
+        hasFramework={Boolean(frameworkAdoption?.isActive)}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
